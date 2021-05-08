@@ -549,7 +549,7 @@ static BOOL isInPictureInPicture = NO;
 %hook YTIBackgroundOfflineSettingCategoryEntryRenderer
 
 - (BOOL)isBackgroundEnabled {
-	return YES;
+    return YES;
 }
 
 %end
@@ -557,8 +557,8 @@ static BOOL isInPictureInPicture = NO;
 %hook YTBackgroundabilityPolicy
 
 - (void)updateIsBackgroundableByUserSettings {
-	%orig;
-	MSHookIvar<BOOL>(self, "_backgroundableByUserSettings") = YES;
+    %orig;
+    MSHookIvar<BOOL>(self, "_backgroundableByUserSettings") = YES;
 }
 
 - (bool)isPlayableInPictureInPictureByUserSettings {
@@ -582,7 +582,7 @@ static BOOL isInPictureInPicture = NO;
 %hook YTIPictureInPictureRenderer
 
 - (BOOL)playableInPip {
-	return YES;
+    return YES;
 }
 
 %end
