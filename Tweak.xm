@@ -1,4 +1,3 @@
-#import <UIKit/UIImage+Private.h>
 #import <AVFoundation/AVFoundation.h>
 #import <AVKit/AVKit.h>
 #import <version.h>
@@ -210,11 +209,6 @@
 - (GIMBindingBuilder *)initializedWith:(id (^)(id))block;
 @end
 
-@interface QTMIcon : NSObject
-+ (UIImage *)imageWithName:(NSString *)name color:(UIColor *)color;
-+ (UIImage *)tintImage:(UIImage *)image color:(UIColor *)color;
-@end
-
 @interface YTMainAppVideoPlayerOverlayView : UIView
 @end
 
@@ -232,26 +226,14 @@
 @interface YTPlayerResources : NSObject
 @end
 
-@interface YTColor : NSObject
-+ (UIColor *)white1;
-@end
-
 @interface MLDefaultPlayerViewFactory : NSObject
 - (BOOL)canUsePlayerView:(UIView *)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)config;
 - (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)config;
 @end
 
-@interface NSMutableArray (YouTube)
-- (void)yt_addNullableObject:(id)object;
-@end
-
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [hotConfig mediaHotConfig].enablePictureInPicture = YES;
     [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig].enablePictureInPicture = YES;
-}
-
-static void forceSetRenderViewType(YTHotConfig *hotConfig) {
-    // [hotConfig hamplayerHotConfig].renderViewType = 6;
 }
 
 %hook YTMainAppControlsOverlayView
@@ -387,11 +369,6 @@ static BOOL isInPictureInPicture = NO;
 %end
 
 %hook MLDefaultPlayerViewFactory
-
-- (id)hamPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    forceSetRenderViewType([self valueForKey:@"_hotConfig"]);
-    return %orig;
-}
 
 - (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
