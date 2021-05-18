@@ -215,26 +215,15 @@
 + (UIImage *)tintImage:(UIImage *)image color:(UIColor *)color;
 @end
 
-@interface YTQTMButton : UIButton
-@end
-
 @interface YTMainAppVideoPlayerOverlayView : UIView
 @end
 
 @interface YTMainAppControlsOverlayView : UIView
-+ (CGFloat)topButtonAdditionalPadding;
-- (YTQTMButton *)buttonWithImage:(UIImage *)image accessibilityLabel:(NSString *)accessibilityLabel verticalContentPadding:(CGFloat)verticalContentPadding;
 @end
 
 @interface YTMainAppVideoPlayerOverlayViewController : UIViewController
 - (YTMainAppVideoPlayerOverlayView *)videoPlayerOverlayView;
 - (YTPlayerViewController *)delegate;
-@end
-
-@interface YTMainAppControlsOverlayView (YP)
-@property(retain, nonatomic) YTQTMButton *pipButton;
-- (void)didPressPiP:(id)arg;
-- (UIImage *)pipImage;
 @end
 
 @interface YTUIResources : NSObject
@@ -265,90 +254,26 @@ static void forceSetRenderViewType(YTHotConfig *hotConfig) {
     // [hotConfig hamplayerHotConfig].renderViewType = 6;
 }
 
-%hook YTMainAppVideoPlayerOverlayViewController
-
-- (void)updateTopRightButtonAvailability {
-    %orig;
-    YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
-    YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
-    c.pipButton.hidden = NO;
-    [c setNeedsLayout];
-}
-
-%end
-
 %hook YTMainAppControlsOverlayView
-
-%property(retain, nonatomic) YTQTMButton *pipButton;
 
 - (id)initWithDelegate:(id)delegate {
     self = %orig;
     if (self) {
-        CGFloat padding = [[self class] topButtonAdditionalPadding];
-        UIImage *image = [self pipImage];
-        self.pipButton = [self buttonWithImage:image accessibilityLabel:@"pip" verticalContentPadding:padding];
-        self.pipButton.hidden = YES;
-        self.pipButton.alpha = 0;
-        [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:64];
-        [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
+            YTPlayerViewController *p = [c delegate];
+            YTHotConfig *hotConfig = [p valueForKey:@"_hotConfig"];
+            forceEnablePictureInPictureInternal(hotConfig);
+            YTLocalPlaybackController *local = [p valueForKey:@"_playbackController"];
+            YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
+            if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
+                [controller maybeEnablePictureInPicture];
+            else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
+                [controller maybeInvokePictureInPicture];
+        });
     }
     return self;
 }
-
-- (NSMutableArray *)topControls {
-    NSMutableArray *controls = %orig;
-    [controls insertObject:self.pipButton atIndex:0];
-    return controls;
-}
-
-- (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
-    if (canceledState) {
-        if (!self.pipButton.hidden)
-            self.pipButton.alpha = 0.0;
-    } else {
-        if (!self.pipButton.hidden)
-            self.pipButton.alpha = visible ? 1.0 : 0.0;
-    }
-    %orig;
-}
-
-%new
-- (UIImage *)pipImage {
-    static UIImage *image = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        UIColor *color = [%c(YTColor) white1];
-        image = [UIImage imageWithContentsOfFile:@"/Library/Application Support/YouPIP/yt-pip-overlay.png"];
-        if ([%c(QTMIcon) respondsToSelector:@selector(tintImage:color:)])
-            image = [%c(QTMIcon) tintImage:image color:color];
-        else
-            image = [image _flatImageWithColor:color];
-        if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
-            image = [image imageFlippedForRightToLeftLayoutDirection];
-    });
-    return image;
-}
-
-%new
-- (void)didPressPiP:(id)arg {
-    YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
-    YTPlayerViewController *p = [c delegate];
-    YTHotConfig *hotConfig = [p valueForKey:@"_hotConfig"];
-    forceEnablePictureInPictureInternal(hotConfig);
-    YTLocalPlaybackController *local = [p valueForKey:@"_playbackController"];
-    YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
-    if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
-        [controller maybeEnablePictureInPicture];
-    else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
-        [controller maybeInvokePictureInPicture];
-    // UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"YouPIP" message:@"Now dismiss your app" preferredStyle:UIAlertControllerStyleAlert];
-    // [UIApplication.sharedApplication.keyWindow.rootViewController presentViewController:alert animated:YES completion:^{
-    //     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    //         [alert dismissViewControllerAnimated:YES completion:nil];
-    //     });
-    // }];
-}
-
 %end
 
 static BOOL overridePictureInPicture = NO;
