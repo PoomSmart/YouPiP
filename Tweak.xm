@@ -26,6 +26,9 @@
 - (void)setVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig;
 @end
 
+@interface MLHAMQueuePlayer : NSObject
+@end
+
 @protocol HAMPixelBufferRenderingView
 @end
 
@@ -72,6 +75,10 @@
 - (id)instanceForType:(id)type;
 @end
 
+@interface MLPlayerPoolImpl : NSObject
+- (GIMMe *)gimme;
+@end
+
 @interface MLAVPlayerLayerView : UIView <MLPlayerViewProtocol, HAMPixelBufferRenderingView>
 @end
 
@@ -99,6 +106,9 @@
 - (void)initializePictureInPicture;
 - (BOOL)startPictureInPicture;
 - (void)stopPictureInPicture;
+- (void)addPIPControllerObserver:(id)observer;
+- (void)activatePiPController;
+- (void)deactivatePiPController;
 @end
 
 @interface MLRemoteStream : NSObject
@@ -188,6 +198,7 @@
 @interface YTPlayerPIPController : NSObject
 @property(retain, nonatomic) YTSingleVideoController *activeSingleVideo;
 - (instancetype)initWithPlayerView:(id)playerView delegate:(id)delegate;
+- (instancetype)initWithDelegate:(id)delegate;
 - (GIMMe *)gimme;
 - (BOOL)isPictureInPictureActive;
 - (BOOL)canInvokePictureInPicture;
@@ -196,6 +207,13 @@
 - (void)maybeEnablePictureInPicture;
 - (void)play;
 - (void)pause;
+@end
+
+@interface YTBackgroundabilityPolicy : NSObject
+- (void)addBackgroundabilityPolicyObserver:(id)observer;
+@end
+
+@interface YTPlayerViewControllerConfig : NSObject
 @end
 
 @interface YTLocalPlaybackController : NSObject {
@@ -236,126 +254,93 @@ static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig].enablePictureInPicture = YES;
 }
 
-%hook YTMainAppControlsOverlayView
+static void activatePiP(YTPlayerPIPController *controller) {
+    if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
+        [controller maybeEnablePictureInPicture];
+    else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
+        [controller maybeInvokePictureInPicture];
+    else {
+        MLPIPController *pip = [controller valueForKey:@"_pipController"];
+        if ([controller canEnablePictureInPicture])
+            [pip activatePiPController];
+        else
+            [pip deactivatePiPController];
+    }
+}
+
+%hook YTPlayerViewController
+
+%new
+- (void)appWillResignActive:(id)arg1 {
+    YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
+    forceEnablePictureInPictureInternal(hotConfig);
+    YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
+    YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
+    activatePiP(controller);
+}
+
+%end
+
+MLPIPController *(*InjectMLPIPController)();
+YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)();
+YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)();
+YTHotConfig *(*InjectYTHotConfig)();
+
+%hook YTPlayerPIPController
 
 - (id)initWithDelegate:(id)delegate {
     self = %orig;
-    if (self) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
-            YTPlayerViewController *p = [c delegate];
-            YTHotConfig *hotConfig = [p valueForKey:@"_hotConfig"];
-            forceEnablePictureInPictureInternal(hotConfig);
-            YTLocalPlaybackController *local = [p valueForKey:@"_playbackController"];
-            YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
-            if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
-                [controller maybeEnablePictureInPicture];
-            else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
-                [controller maybeInvokePictureInPicture];
-        });
-    }
-    return self;
-}
-%end
-
-static BOOL overridePictureInPicture = NO;
-static BOOL isInPictureInPicture = NO;
-
-%hook YTLocalPlaybackController
-
-- (id)initWithParentResponder:(id)arg2 overlayFactory:(id)arg3 playerView:(id)playerView playbackControllerDelegate:(id)arg5 viewportSizeProvider:(id)arg6 lightweightPlayback:(bool)arg7 {
-    self = %orig;
-    if ([self valueForKey:@"_playerPIPController"] == nil) {
-        YTPlayerPIPController *pip = [(YTPlayerPIPController *)[[self gimme] allocOf:%c(YTPlayerPIPController)] initWithPlayerView:playerView delegate:self];
-        [self setValue:pip forKey:@"_playerPIPController"];
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && [self valueForKey:@"_pipController"] == nil) {
+        MLPIPController *pip = InjectMLPIPController();
+        YTBackgroundabilityPolicy *bgPolicy = InjectYTBackgroundabilityPolicy();
+        YTPlayerViewControllerConfig *playerConfig = InjectYTPlayerViewControllerConfig();
+        YTHotConfig *config = InjectYTHotConfig();
+        [self setValue:pip forKey:@"_pipController"];
+        [self setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
+        [self setValue:playerConfig forKey:@"_config"];
+        [self setValue:config forKey:@"_hotConfig"];
+        [self setValue:delegate forKey:@"_delegate"];
+        [bgPolicy addBackgroundabilityPolicyObserver:self];
+        [pip addPIPControllerObserver:self];
     }
     return self;
 }
 
-- (void)videoSequencer:(id)sequencer didActivateVideoController:(YTSingleVideoController *)videoController {
-    %orig;
-    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
-        YTPlayerPIPController *pip = [self valueForKey:@"_playerPIPController"];
-        [pip setActiveSingleVideo:videoController];
-    }
-}
-
-- (void)resetWithCurrentVideoSequencer {
-    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
-        YTPlayerPIPController *pip = [self valueForKey:@"_playerPIPController"];
-        [pip setActiveSingleVideo:nil];
-    }
-    %orig;
-}
-
-- (void)resetToState:(int)state {
-    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
-        YTPlayerPIPController *pip = [self valueForKey:@"_playerPIPController"];
-        [pip setActiveSingleVideo:nil];
-    }
-    %orig;
-}
-
-- (void)play {
-    %orig;
-    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
-        YTPlayerPIPController *pip = [self valueForKey:@"_playerPIPController"];
-        [pip play];
-    }
-}
-
-- (void)pause {
-    %orig;
-    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
-        YTPlayerPIPController *pip = [self valueForKey:@"_playerPIPController"];
-        [pip pause];
-    }
-}
-
-- (YTPlayerStatus *)playerStatusWithPlayerViewLayout:(int)layout {
-    overridePictureInPicture = !IS_IOS_OR_NEWER(iOS_14_0);
-    if (overridePictureInPicture) {
-        YTPlayerPIPController *pip = [self valueForKey:@"_playerPIPController"];
-        isInPictureInPicture = [pip isPictureInPictureActive];
-    }
-    YTPlayerStatus *status = %orig;
-    overridePictureInPicture = NO;
-    return status;
-}
-
 %end
 
-%hook MLPIPController
+// %hook MLPIPController
 
-- (void)activatePiPController {
-    if (IS_IOS_OR_NEWER(iOS_14_0))
-        %orig;
-    else {
-        if (![self isPictureInPictureActive]) {
-            AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
-            if (!pip) {
-                MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
-                if (avpip) {
-                    AVPlayerLayer *playerLayer = [avpip playerLayer];
-                    pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
-                    [self setValue:pip forKey:@"_pictureInPictureController"];
-                    pip.delegate = self;
-                }
-            }
-            [pip startPictureInPicture];
-        }
-    }
-}
+// - (void)activatePiPController {
+//     if (IS_IOS_OR_NEWER(iOS_14_0))
+//         %orig;
+//     else {
+//         if (![self isPictureInPictureActive]) {
+//             AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
+//             if (!pip) {
+//                 MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
+//                 if (avpip) {
+//                     AVPlayerLayer *playerLayer = [avpip playerLayer];
+//                     pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
+//                     [self setValue:pip forKey:@"_pictureInPictureController"];
+//                     pip.delegate = self;
+//                 }
+//             }
+//             [pip startPictureInPicture];
+//         }
+//     }
+// }
 
-%end
+// %end
 
 %hook MLHAMQueuePlayer
 
 - (id)initWithStickySettings:(id)stickySettings playerViewProvider:(id)playerViewProvider playerConfiguration:(id)playerConfiguration {
-    self = %orig;
-    if ([self valueForKey:@"_pipController"] == nil)
-        [self setValue:[[self gimme] nullableInstanceForType:%c(MLPIPController)] forKey:@"_pipController"];
-    return self;
+    id player = %orig;
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && [player valueForKey:@"_pipController"] == nil) {
+        MLPIPController *pip = InjectMLPIPController();
+        [player setValue:pip forKey:@"_pipController"];
+    }
+    return player;
 }
 
 %end
@@ -363,7 +348,10 @@ static BOOL isInPictureInPicture = NO;
 %hook MLAVPlayer
 
 - (bool)isPictureInPictureActive {
-    return [(MLPIPController *)[[self gimme] nullableInstanceForType:%c(MLPIPController)] isPictureInPictureActive];
+    if (IS_IOS_OR_NEWER(iOS_14_0))
+        return %orig;
+    MLPIPController *pip = InjectMLPIPController();
+    return [pip isPictureInPictureActive];
 }
 
 %end
@@ -390,7 +378,7 @@ static BOOL isInPictureInPicture = NO;
 - (id)init {
     id r = %orig;
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
-        MLPIPController *pip = (MLPIPController *)[[self gimme] nullableInstanceForType:%c(MLPIPController)];
+        MLPIPController *pip = InjectMLPIPController();
         [r setValue:pip forKey:@"_pipController"];
     }
     return r;
@@ -416,34 +404,6 @@ static BOOL isInPictureInPicture = NO;
             [pip setHAMPlayerView:(MLHAMSBDLSampleBufferRenderingView *)renderingView];
         }
     }
-}
-
-%end
-
-%hook YTPlayerStatus
-
-- (id)initWithExternalPlayback:(BOOL)externalPlayback
-    backgroundPlayback:(BOOL)backgroundPlayback
-    inlinePlaybackActive:(BOOL)inlinePlaybackActive
-    cardboardModeActive:(BOOL)cardboardModeActive
-    layout:(int)layout
-    userAudioOnlyModeActive:(BOOL)userAudioOnlyModeActive
-    blackoutActive:(BOOL)blackoutActive
-    clipID:(id)clipID
-    accountLinkState:(id)accountLinkState
-    muted:(BOOL)muted
-    pictureInPicture:(BOOL)pictureInPicture {
-        return %orig(externalPlayback,
-            backgroundPlayback,
-            inlinePlaybackActive,
-            cardboardModeActive,
-            layout,
-            userAudioOnlyModeActive,
-            blackoutActive,
-            clipID,
-            accountLinkState,
-            muted,
-            overridePictureInPicture ? isInPictureInPicture : pictureInPicture);
 }
 
 %end
@@ -584,6 +544,12 @@ BOOL override = NO;
 %ctor {
     %init;
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
+        NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+        MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
+        InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
+        InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
+        InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
+        InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(Compat);
     }
 }
