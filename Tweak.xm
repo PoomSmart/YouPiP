@@ -279,11 +279,7 @@ static void activatePiP(YTPlayerPIPController *controller) {
         YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
         YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
         NSLog(@"[YOUPIP] %@", [controller description] != nil ? [controller description] : @"controller == nil");
-        if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)]) {
-            [controller maybeEnablePictureInPicture];
-        } else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)]) {
-            [controller maybeInvokePictureInPicture];
-        }
+        activatePiP(controller);
     });
     return self;
 }
