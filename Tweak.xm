@@ -12,6 +12,7 @@
 - (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource;
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
 - (void)sampleBufferDisplayLayerDidAppear;
+- (void)_stopPictureInPictureAndRestoreUserInterface:(BOOL)arg1;
 @end
 
 @class MLAVPlayer, MLVideo, MLInnerTubePlayerConfig;
@@ -366,16 +367,22 @@ YTHotConfig *(*InjectYTHotConfig)();
 #pragma mark - This method is the method called to stop the playback after dismissing
 #pragma mark - the PIP view. We need to implement a new way to pause playback from here;
 #pragma mark - MRMediaRemoteCommandStop doesn't actually do anything,
-#pragma mark - MRMediaRemoteCommandPause does pause, but breaks playback.
+#pragma mark - MRMediaRemoteCommandPause does pause, but breaks playback unless
+#pragma mark - delayed for a little bit after PIP dismiss animation is complete.
 %hook AVPictureInPictureController
+- (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize {
+    %orig;
+    NSLog(@"[YOUPIP] sampleBufferDisplayLayerRenderSizeDidChangeToSize");
+}
+
 - (void)pictureInPicturePlatformAdapterPrepareToStopForDismissal:(id)arg1 {
     NSLog(@"[YOUPIP] (pictureInPicturePlatformAdapterPrepareToStopForDismissal) %@", [arg1 class]);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        MRMediaRemoteSendCommand(MRMediaRemoteCommandStop, 0);
-    });
     // dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-    //     MRMediaRemoteSendCommand(MRMediaRemoteCommandPause, 0);
+    //     MRMediaRemoteSendCommand(MRMediaRemoteCommandStop, 0);
     // });
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.75 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        MRMediaRemoteSendCommand(MRMediaRemoteCommandPause, 0);
+    });
 }
 %end
 
