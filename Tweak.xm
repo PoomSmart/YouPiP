@@ -272,7 +272,7 @@ static void activatePiP(YTPlayerPIPController *controller) {
 %hook YTPlayerViewController
 
 - (id)initWithParentResponder:(id)arg1 overlayFactory:(id)arg2 {
-    %orig;
+    self = %orig;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
         forceEnablePictureInPictureInternal(hotConfig);
