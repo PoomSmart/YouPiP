@@ -271,18 +271,14 @@ static void activatePiP(YTPlayerPIPController *controller) {
 %hook YTPlayerViewController
 
 - (id)initWithParentResponder:(id)arg1 overlayFactory:(id)arg2 {
-    %orig;
+    self = %orig;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
         forceEnablePictureInPictureInternal(hotConfig);
         YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
         YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
         NSLog(@"[YOUPIP] %@", [controller description] != nil ? [controller description] : @"controller == nil");
-        if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)]) {
-            [controller maybeEnablePictureInPicture];
-        } else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)]) {
-            [controller maybeInvokePictureInPicture];
-        }
+        activatePiP(controller);
     });
     return self;
 }
