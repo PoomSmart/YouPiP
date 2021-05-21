@@ -1,253 +1,5 @@
-#import <AVFoundation/AVFoundation.h>
-#import <AVKit/AVKit.h>
+#import "Header.h"
 #import <version.h>
-
-@interface AVPictureInPictureControllerContentSource : NSObject
-- (AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer;
-@end
-
-@interface AVPictureInPictureController (Private)
-@property(nonatomic, retain) AVPictureInPictureControllerContentSource *contentSource;
-@property(nonatomic, retain) id prerollDelegate;
-- (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource;
-- (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
-- (void)sampleBufferDisplayLayerDidAppear;
-@end
-
-@class MLAVPlayer, MLVideo, MLInnerTubePlayerConfig;
-
-@protocol MLPlayerViewProtocol
-- (void)makeActivePlayer;
-- (void)setVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig;
-@end
-
-@protocol MLHAMPlayerViewProtocol
-- (void)makeActivePlayer;
-- (void)setVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig;
-@end
-
-@interface MLHAMQueuePlayer : NSObject
-@end
-
-@protocol HAMPixelBufferRenderingView
-@end
-
-@interface YTIPictureInPictureRendererRoot : NSObject
-+ (id)pictureInPictureRenderer;
-@end
-
-@interface YTCommonUtils : NSObject
-+ (NSBundle *)bundleForClass:(Class)c;
-@end
-
-@interface YTIHamplayerHotConfig : NSObject
-@property(assign) int renderViewType;
-@end
-
-@interface YTIHamplayerConfig : NSObject
-@property(assign) int renderViewType;
-@end
-
-@interface YTIIosMediaHotConfig : NSObject
-@property(nonatomic, assign, readwrite) BOOL enablePictureInPicture;
-@end
-
-@interface YTIMediaHotConfig : NSObject
-- (YTIIosMediaHotConfig *)iosMediaHotConfig;
-@end
-
-@interface YTIHotConfigGroup : NSObject
-- (YTIMediaHotConfig *)mediaHotConfig;
-@end
-
-@interface YTHotConfig : NSObject
-- (YTIHotConfigGroup *)hotConfigGroup;
-- (YTIIosMediaHotConfig *)mediaHotConfig;
-- (YTIHamplayerHotConfig *)hamplayerHotConfig;
-@end
-
-@interface YTPlayerStatus : NSObject
-@end
-
-@interface GIMMe
-- (instancetype)allocOf:(Class)cls;
-- (id)nullableInstanceForType:(id)type;
-- (id)instanceForType:(id)type;
-@end
-
-@interface MLPlayerPoolImpl : NSObject
-- (GIMMe *)gimme;
-@end
-
-@interface MLAVPlayerLayerView : UIView <MLPlayerViewProtocol, HAMPixelBufferRenderingView>
-@end
-
-@interface MLAVPIPPlayerLayerView : MLAVPlayerLayerView
-- (AVPlayerLayer *)playerLayer;
-- (MLAVPlayer *)delegate;
-@end
-
-@interface MLHAMSBDLSampleBufferRenderingView : MLAVPIPPlayerLayerView
-@end
-
-@interface MLPIPController : NSObject <AVPictureInPictureControllerDelegate>
-@property(retain, nonatomic) MLAVPIPPlayerLayerView *AVPlayerView;
-@property(retain, nonatomic) MLHAMSBDLSampleBufferRenderingView *HAMPlayerView;
-- (id)initWithPlaceholderPlayerItem:(AVPlayerItem *)playerItem;
-- (id)initWithPlaceholderPlayerItemResourcePath:(NSString *)placeholderPath;
-- (AVPictureInPictureControllerContentSource *)newContentSource;
-- (BOOL)isPictureInPictureSupported;
-- (BOOL)isPictureInPictureActive;
-- (BOOL)contentSourceNeedsRefresh;
-- (GIMMe *)gimme;
-- (MLAVPIPPlayerLayerView *)playerLayerView;
-- (CGSize)renderSizeForView:(MLAVPIPPlayerLayerView *)view;
-- (void)setGimme:(GIMMe *)gimme;
-- (void)initializePictureInPicture;
-- (BOOL)startPictureInPicture;
-- (void)stopPictureInPicture;
-- (void)addPIPControllerObserver:(id)observer;
-- (void)activatePiPController;
-- (void)deactivatePiPController;
-@end
-
-@interface MLRemoteStream : NSObject
-- (NSURL *)URL;
-@end
-
-@interface MLStreamingData : NSObject
-- (NSArray <MLRemoteStream *> *)adaptiveStreams;
-@end
-
-@interface MLVideo : NSObject
-- (MLStreamingData *)streamingData;
-@end
-
-@interface MLInnerTubePlayerConfig : NSObject
-- (YTIHamplayerConfig *)hamplayerConfig;
-@end
-
-@interface MLPlayerStickySettings : NSObject
-@property(assign) float rate;
-@end
-
-@interface MLAVAssetPlayer : NSObject
-- (AVPlayerItem *)playerItem;
-@end
-
-@interface MLPlayer : AVPlayer
-@property(assign) float rate;
-- (instancetype)initWithVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings externalPlaybackActive:(BOOL)externalPlaybackActive;
-- (BOOL)externalPlaybackActive;
-@end
-
-@interface MLAVPlayer : MLPlayer
-@property(assign) BOOL active;
-- (GIMMe *)gimme;
-- (MLVideo *)video;
-- (MLInnerTubePlayerConfig *)config;
-- (UIView <MLPlayerViewProtocol> *)playerView;
-- (UIView <MLPlayerViewProtocol> *)renderingView;
-- (MLAVAssetPlayer *)assetPlayer;
-- (void)setRenderingView:(UIView <MLPlayerViewProtocol> *)renderingView;
-@end
-
-@interface MLHAMPlayer : AVPlayer
-- (instancetype)initWithVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings playerViewProvider:(id)playerViewProvider;
-@end
-
-@interface MLPlayerPool : NSObject
-- (void)createHamResourcesForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig;
-- (GIMMe *)gimme;
-@end
-
-@interface YTSingleVideo : NSObject
-- (MLVideo *)video;
-@end
-
-@interface YTIFormatStream : NSObject
-- (NSString *)URL;
-@end
-
-@interface MLFormat : NSObject
-@end
-
-@class YTLocalPlaybackController;
-
-@interface YTSingleVideoController : NSObject
-- (YTSingleVideo *)singleVideo;
-- (YTSingleVideo *)videoData;
-- (YTLocalPlaybackController *)delegate;
-- (NSArray <MLFormat *> *)selectableVideoFormats;
-@end
-
-@interface YTPlaybackControllerUIWrapper : NSObject
-- (YTSingleVideoController *)activeVideo;
-- (YTSingleVideoController *)contentVideo;
-@end
-
-@interface YTPlayerViewController : UIViewController
-@end
-
-@interface YTPlayerView : UIView
-@property(retain, nonatomic) MLAVPIPPlayerLayerView *pipRenderingView;
-@property(retain, nonatomic) MLAVPlayerLayerView *renderingView;
-- (YTPlaybackControllerUIWrapper *)playerViewDelegate;
-@end
-
-@interface YTPlayerPIPController : NSObject
-@property(retain, nonatomic) YTSingleVideoController *activeSingleVideo;
-- (instancetype)initWithPlayerView:(id)playerView delegate:(id)delegate;
-- (instancetype)initWithDelegate:(id)delegate;
-- (GIMMe *)gimme;
-- (BOOL)isPictureInPictureActive;
-- (BOOL)canInvokePictureInPicture;
-- (BOOL)canEnablePictureInPicture;
-- (void)maybeInvokePictureInPicture;
-- (void)maybeEnablePictureInPicture;
-- (void)play;
-- (void)pause;
-@end
-
-@interface YTBackgroundabilityPolicy : NSObject
-- (void)addBackgroundabilityPolicyObserver:(id)observer;
-@end
-
-@interface YTPlayerViewControllerConfig : NSObject
-@end
-
-@interface YTLocalPlaybackController : NSObject {
-    YTPlayerPIPController *_playerPIPController;
-}
-- (GIMMe *)gimme;
-@end
-
-@interface GIMBindingBuilder : NSObject
-- (GIMBindingBuilder *)bindType:(Class)type;
-- (GIMBindingBuilder *)initializedWith:(id (^)(id))block;
-@end
-
-@interface YTMainAppVideoPlayerOverlayView : UIView
-@end
-
-@interface YTMainAppControlsOverlayView : UIView
-@end
-
-@interface YTMainAppVideoPlayerOverlayViewController : UIViewController
-- (YTMainAppVideoPlayerOverlayView *)videoPlayerOverlayView;
-- (YTPlayerViewController *)delegate;
-@end
-
-@interface YTUIResources : NSObject
-@end
-
-@interface YTPlayerResources : NSObject
-@end
-
-@interface MLDefaultPlayerViewFactory : NSObject
-- (BOOL)canUsePlayerView:(UIView *)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)config;
-- (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)config;
-@end
 
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [hotConfig mediaHotConfig].enablePictureInPicture = YES;
@@ -263,8 +15,6 @@ static void activatePiP(YTPlayerPIPController *controller) {
         MLPIPController *pip = [controller valueForKey:@"_pipController"];
         if ([controller canEnablePictureInPicture])
             [pip activatePiPController];
-        // else
-        //     [pip deactivatePiPController];
     }
 }
 
@@ -302,63 +52,71 @@ YTHotConfig *(*InjectYTHotConfig)();
 %hook YTPlayerPIPController
 
 - (id)initWithDelegate:(id)delegate {
-    self = %orig;
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && [self valueForKey:@"_pipController"] == nil) {
+    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
+        id pipcont = [[%c(YTPlayerPIPController) alloc] init];
         MLPIPController *pip = InjectMLPIPController();
         YTBackgroundabilityPolicy *bgPolicy = InjectYTBackgroundabilityPolicy();
         YTPlayerViewControllerConfig *playerConfig = InjectYTPlayerViewControllerConfig();
         YTHotConfig *config = InjectYTHotConfig();
-        [self setValue:pip forKey:@"_pipController"];
-        [self setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
-        [self setValue:playerConfig forKey:@"_config"];
-        [self setValue:config forKey:@"_hotConfig"];
-        [self setValue:delegate forKey:@"_delegate"];
-        [bgPolicy addBackgroundabilityPolicyObserver:self];
-        [pip addPIPControllerObserver:self];
+        [pipcont setValue:pip forKey:@"_pipController"];
+        [pipcont setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
+        [pipcont setValue:playerConfig forKey:@"_config"];
+        [pipcont setValue:config forKey:@"_hotConfig"];
+        [pipcont setValue:delegate forKey:@"_delegate"];
+        [bgPolicy addBackgroundabilityPolicyObserver:pipcont];
+        [pip addPIPControllerObserver:pipcont];
+        return pipcont;
     }
-    return self;
+    return %orig;
 }
 
 %end
 
-// %hook MLPIPController
+%hook MLPIPController
 
-// - (void)activatePiPController {
-//     if (IS_IOS_OR_NEWER(iOS_14_0))
-//         %orig;
-//     else {
-//         if (![self isPictureInPictureActive]) {
-//             AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
-//             if (!pip) {
-//                 MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
-//                 if (avpip) {
-//                     AVPlayerLayer *playerLayer = [avpip playerLayer];
-//                     pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
-//                     [self setValue:pip forKey:@"_pictureInPictureController"];
-//                     pip.delegate = self;
-//                 }
-//             }
-//             [pip startPictureInPicture];
-//         }
-//     }
-// }
+- (void)activatePiPController {
+    if (IS_IOS_OR_NEWER(iOS_14_0))
+        %orig;
+    else {
+        if (![self isPictureInPictureActive]) {
+            AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
+            if (!pip) {
+                MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
+                if (avpip) {
+                    AVPlayerLayer *playerLayer = [avpip playerLayer];
+                    pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
+                    [self setValue:pip forKey:@"_pictureInPictureController"];
+                    pip.delegate = self;
+                }
+            }
+            [pip startPictureInPicture];
+        }
+    }
+}
 
-// %end
+%end
 
 #import <MediaRemote/MediaRemote.h>
 
 #pragma mark - This method is the method called to stop the playback after dismissing
-#pragma mark - the PIP view. We need to implement a new way to pause playback from here;
+#pragma mark - the PiP view. We need to implement a new way to pause playback from here;
 #pragma mark - MRMediaRemoteCommandStop doesn't actually do anything, and
 #pragma mark - MRMediaRemoteCommandPause does pause, but breaks playback unless
-#pragma mark - delayed for a little bit after PIP dismiss animation is complete.
+#pragma mark - delayed for a little bit after PiP dismiss animation is completed.
+
 %hook AVPictureInPictureController
+
 - (void)pictureInPicturePlatformAdapterPrepareToStopForDismissal:(id)arg1 {
     NSLog(@"[YOUPIP] (pictureInPicturePlatformAdapterPrepareToStopForDismissal) %@", [arg1 class]);
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.75 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         MRMediaRemoteSendCommand(MRMediaRemoteCommandPause, 0);
     });
 }
+
++ (BOOL)isPictureInPictureSupported {
+    return YES;
+}
+
 %end
 
 %hook MLHAMQueuePlayer
@@ -413,26 +171,14 @@ YTHotConfig *(*InjectYTHotConfig)();
     return r;
 }
 
-- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings {
+- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger {
     if (IS_IOS_OR_NEWER(iOS_14_0))
         return %orig;
-    MLAVPlayer *player = [(MLAVPlayer *)[[self gimme] allocOf:%c(MLAVPlayer)] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:[(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive]];
+    BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
+    MLAVPlayer *player = [(MLAVPlayer *)[[self gimme] allocOf:%c(MLAVPlayer)] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
     if (stickySettings)
         player.rate = stickySettings.rate;
     return player;
-}
-
-- (void)setActivePlayer:(MLAVPlayer *)player {
-    %orig;
-    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
-        UIView <MLPlayerViewProtocol> *renderingView = [self valueForKey:@"_renderingView"];
-        MLPIPController *pip = [self valueForKey:@"_pipController"];
-        if ([renderingView isKindOfClass:%c(MLAVPIPPlayerLayerView)]) {
-            [pip setAVPlayerView:(MLAVPIPPlayerLayerView *)renderingView];
-        } else if ([renderingView isKindOfClass:%c(MLHAMSBDLSampleBufferRenderingView)]) {
-            [pip setHAMPlayerView:(MLHAMSBDLSampleBufferRenderingView *)renderingView];
-        }
-    }
 }
 
 %end
@@ -542,36 +288,7 @@ BOOL override = NO;
 
 %end
 
-%group Compat
-
-%hook AVPictureInPictureController
-
-%new
-- (void)invalidatePlaybackState {
-
-}
-
-%new
-- (void)sampleBufferDisplayLayerDidDisappear {
-
-}
-
-%new
-- (void)sampleBufferDisplayLayerDidAppear {
-
-}
-
-%new
-- (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)size {
-
-}
-
-%end
-
-%end
-
 %ctor {
-    %init;
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
         NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
         MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
@@ -579,6 +296,6 @@ BOOL override = NO;
         InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
         InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
         InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
-        %init(Compat);
     }
+    %init;
 }
