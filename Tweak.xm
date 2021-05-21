@@ -12,7 +12,6 @@
 - (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource;
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
 - (void)sampleBufferDisplayLayerDidAppear;
-- (void)_stopPictureInPictureAndRestoreUserInterface:(BOOL)arg1;
 @end
 
 @class MLAVPlayer, MLVideo, MLInnerTubePlayerConfig;
@@ -352,34 +351,14 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 #import <MediaRemote/MediaRemote.h>
 
-#pragma mark - this functions are responsible for breaking some stuff when dismissing
-#pragma mark - PIP or using MRMediaRemoteCommandPause, so we need to find a way to pause
-#pragma mark - the playback without calling those functions in the process.
-// %hook MLPIPController
-// - (void)pause {
-// }
-// %end
-// %hook AVSampleBufferDisplayLayerPlayerController
-// - (void)setPaused:(BOOL)arg1 {
-// }
-// %end
-
 #pragma mark - This method is the method called to stop the playback after dismissing
 #pragma mark - the PIP view. We need to implement a new way to pause playback from here;
-#pragma mark - MRMediaRemoteCommandStop doesn't actually do anything,
+#pragma mark - MRMediaRemoteCommandStop doesn't actually do anything, and
 #pragma mark - MRMediaRemoteCommandPause does pause, but breaks playback unless
 #pragma mark - delayed for a little bit after PIP dismiss animation is complete.
 %hook AVPictureInPictureController
-- (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize {
-    %orig;
-    NSLog(@"[YOUPIP] sampleBufferDisplayLayerRenderSizeDidChangeToSize");
-}
-
 - (void)pictureInPicturePlatformAdapterPrepareToStopForDismissal:(id)arg1 {
     NSLog(@"[YOUPIP] (pictureInPicturePlatformAdapterPrepareToStopForDismissal) %@", [arg1 class]);
-    // dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-    //     MRMediaRemoteSendCommand(MRMediaRemoteCommandStop, 0);
-    // });
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.75 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         MRMediaRemoteSendCommand(MRMediaRemoteCommandPause, 0);
     });
