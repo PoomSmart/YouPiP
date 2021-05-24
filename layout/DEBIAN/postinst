@@ -3,3 +3,5 @@
 echo "To trigger PiP, DISMISS the app once the video started playing"
 echo "To trigger PiP, DISMISS the app once the video started playing"
 echo "To trigger PiP, DISMISS the app once the video started playing"
+
+killall -9 YouTube || true
