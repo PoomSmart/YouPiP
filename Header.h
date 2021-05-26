@@ -29,9 +29,6 @@
 - (void)setVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig;
 @end
 
-@interface MLHAMQueuePlayer : NSObject
-@end
-
 @protocol HAMPixelBufferRenderingView
 @end
 
@@ -79,7 +76,6 @@
 @end
 
 @interface MLPlayerPoolImpl : NSObject
-- (GIMMe *)gimme;
 @end
 
 @interface MLAVPlayerLayerView : UIView <MLPlayerViewProtocol, HAMPixelBufferRenderingView>
@@ -157,6 +153,9 @@
 
 @interface MLHAMPlayer : AVPlayer
 - (instancetype)initWithVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings playerViewProvider:(id)playerViewProvider;
+@end
+
+@interface MLHAMQueuePlayer : MLHAMPlayer
 @end
 
 @interface MLPlayerPool : NSObject

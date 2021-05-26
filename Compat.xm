@@ -40,6 +40,7 @@ YTHotConfig *(*InjectYTHotConfig)();
                 pip.delegate = self;
             }
         }
+        // Note: Start PiP right away when the video is played
         [pip startPictureInPicture];
     }
 }
@@ -48,13 +49,13 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 %hook MLHAMQueuePlayer
 
-- (id)initWithStickySettings:(id)stickySettings playerViewProvider:(id)playerViewProvider playerConfiguration:(id)playerConfiguration {
-    id player = %orig;
-    if ([player valueForKey:@"_pipController"] == nil) {
+- (instancetype)initWithStickySettings:(MLPlayerStickySettings *)stickySettings playerViewProvider:(MLPlayerPoolImpl *)playerViewProvider playerConfiguration:(void *)playerConfiguration {
+    self = %orig;
+    if ([self valueForKey:@"_pipController"] == nil) {
         MLPIPController *pip = InjectMLPIPController();
-        [player setValue:pip forKey:@"_pipController"];
+        [self setValue:pip forKey:@"_pipController"];
     }
-    return player;
+    return self;
 }
 
 %end
@@ -77,39 +78,34 @@ YTHotConfig *(*InjectYTHotConfig)();
     return self;
 }
 
-- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger {
+- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings {
     BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
-    MLAVPlayer *player = [(MLAVPlayer *)[[self gimme] allocOf:%c(MLAVPlayer)] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
+    MLAVPlayer *player = [[%c(MLAVPlayer) alloc] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
     if (stickySettings)
         player.rate = stickySettings.rate;
     return player;
 }
 
-%end
+- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger {
+    BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
+    MLAVPlayer *player = [[%c(MLAVPlayer) alloc] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
+    if (stickySettings)
+        player.rate = stickySettings.rate;
+    return player;
+}
 
-%hook MLModule
+- (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    MLDefaultPlayerViewFactory *factory = [self valueForKey:@"_playerViewFactory"];
+    return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
+}
 
-- (void)configureWithBinder:(GIMBindingBuilder *)binder {
-    %orig;
-    [binder bindType:%c(MLPIPController)];
+- (bool)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    return false;
 }
 
 %end
 
 %hook AVPictureInPictureController
-
-// %property(retain, nonatomic) AVPictureInPictureControllerContentSource *contentSource;
-
-// %new
-// - (AVPictureInPictureController *)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource {
-//     AVPictureInPictureController *r = [[AVPictureInPictureController alloc] init];
-//     r.contentSource = contentSource;
-//     [r _commonInitWithSource:contentSource.source];
-//     if ([[r source] isKindOfClass:[AVPlayerLayer class]]) {
-//         [r _observePlayerLayer:[r source]];
-//     }
-//     r.allowsPictureInPicturePlayback = YES;
-// }
 
 %new
 - (void)invalidatePlaybackState {
