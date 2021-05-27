@@ -1,5 +1,5 @@
 Package: com.ps.youpip
-Name: YouPIP
+Name: YouPiP
 Depends: mobilesubstrate, firmware (>= 14.0) | gsc.ipad | com.cabralcole.forceinpicture | com.ps.forceinpicture
 Version: 0.0.1
 Architecture: iphoneos-arm

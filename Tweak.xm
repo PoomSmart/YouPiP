@@ -1,44 +1,57 @@
 #import "Header.h"
+#import <version.h>
 
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [hotConfig mediaHotConfig].enablePictureInPicture = YES;
     [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig].enablePictureInPicture = YES;
 }
 
-static void activatePiP(YTLocalPlaybackController *local) {
+static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
     if (![local isKindOfClass:%c(YTLocalPlaybackController)])
         return;
     YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
+    MLPIPController *pip = [controller valueForKey:@"_pipController"];
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
     else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
         [controller maybeInvokePictureInPicture];
-    else {
-        MLPIPController *pip = [controller valueForKey:@"_pipController"];
-        if ([controller canEnablePictureInPicture])
-            [pip activatePiPController];
+    else if ([controller canEnablePictureInPicture])
+        [pip activatePiPController];
+    if (playPiP) {
+        AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
+        if ([avpip isPictureInPicturePossible])
+            [avpip startPictureInPicture];
     }
+}
+
+static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
+    YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
+    forceEnablePictureInPictureInternal(hotConfig);
+    YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
+    activatePiP(local, playPiP);
 }
 
 %hook YTPlayerViewController
 
-- (id)initWithParentResponder:(id)arg1 overlayFactory:(id)arg2 {
+- (id)initWithParentResponder:(id)parentResponder overlayFactory:(id)overlayFactory {
     self = %orig;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
-        forceEnablePictureInPictureInternal(hotConfig);
-        YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
-        activatePiP(local);
+        bootstrapPiP(self, NO);
+    });
+    return self;
+}
+
+- (id)initWithServiceRegistryScope:(id)registryScope parentResponder:(id)parentResponder overlayFactory:(id)overlayFactory {
+    self = %orig;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        bootstrapPiP(self, NO);
     });
     return self;
 }
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
-    forceEnablePictureInPictureInternal(hotConfig);
-    YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
-    activatePiP(local);
+    bootstrapPiP(self, !IS_IOS_OR_NEWER(iOS_14_0));
 }
 
 %end

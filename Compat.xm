@@ -40,8 +40,6 @@ YTHotConfig *(*InjectYTHotConfig)();
                 pip.delegate = self;
             }
         }
-        // Note: Start PiP right away when the video is played
-        [pip startPictureInPicture];
     }
 }
 
