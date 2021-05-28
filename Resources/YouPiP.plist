@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>title</key>
+        <string>YouPiP</string>
+        <key>entry</key>
+        <dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>icon</key>
+            <string>YouPiP.png</string>
+            <key>label</key>
+            <string>YouPiP</string>
+        </dict>
+        <key>items</key>
+        <array>
+            <dict>
+                <key>cell</key>
+                <string>PSGroupCell</string>
+                <key>label</key>
+                <string>Initial PiP Activation Method</string>
+                <key>footerText</key>
+                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay. Restart YouTube app for the change to take an effect.
+
+(iOS 14+) Once PiP is activated, no matter which method you choose, PiP will always be activated on app dismiss after this.</string>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSLinkListCell</string>
+                <key>defaults</key>
+                <string>com.ps.youpip</string>
+                <key>default</key>
+                <integer>0</integer>
+                <key>detail</key>
+                <string>PSListItemsController</string>
+                <key>key</key>
+                <string>PiPActivationMethodKey</string>
+                <key>label</key>
+                <string>Method</string>
+                <key>validTitles</key>
+                <array>
+                    <string>On App Dismiss</string>
+                    <string>On PiP button tap</string>
+                </array>
+                <key>validValues</key>
+                <array>
+                    <integer>0</integer>
+                    <integer>1</integer>
+                </array>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSGroupCell</string>
+                <key>footerAlignment</key>
+                <integer>1</integer>
+                <key>footerText</key>
+                <string>© 2021 PoomSmart</string>
+            </dict>
+        </array>
+    </dict>
+</plist>

@@ -98,10 +98,8 @@
 - (BOOL)isPictureInPictureSupported;
 - (BOOL)isPictureInPictureActive;
 - (BOOL)contentSourceNeedsRefresh;
-- (GIMMe *)gimme;
 - (MLAVPIPPlayerLayerView *)playerLayerView;
 - (CGSize)renderSizeForView:(MLAVPIPPlayerLayerView *)view;
-- (void)setGimme:(GIMMe *)gimme;
 - (void)initializePictureInPicture;
 - (BOOL)startPictureInPicture;
 - (void)stopPictureInPicture;
@@ -224,15 +222,24 @@
 - (GIMMe *)gimme;
 @end
 
-@interface GIMBindingBuilder : NSObject
-- (GIMBindingBuilder *)bindType:(Class)type;
-- (GIMBindingBuilder *)initializedWith:(id (^)(id))block;
+@interface QTMIcon : NSObject
++ (UIImage *)imageWithName:(NSString *)name color:(UIColor *)color;
++ (UIImage *)tintImage:(UIImage *)image color:(UIColor *)color;
+@end
+
+@interface YTQTMButton : UIButton
 @end
 
 @interface YTMainAppVideoPlayerOverlayView : UIView
 @end
 
+@interface YTColor : NSObject
++ (UIColor *)white1;
+@end
+
 @interface YTMainAppControlsOverlayView : UIView
++ (CGFloat)topButtonAdditionalPadding;
+- (YTQTMButton *)buttonWithImage:(UIImage *)image accessibilityLabel:(NSString *)accessibilityLabel verticalContentPadding:(CGFloat)verticalContentPadding;
 @end
 
 @interface YTMainAppVideoPlayerOverlayViewController : UIViewController

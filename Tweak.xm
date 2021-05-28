@@ -1,5 +1,16 @@
+#define tweakIdentifier @"com.ps.youpip"
 #import "Header.h"
+#import "../PSPrefs/PSPrefs.x"
+#import <UIKit/UIImage+Private.h>
 #import <version.h>
+
+int PiPActivationMethod;
+
+@interface YTMainAppControlsOverlayView (YP)
+@property(retain, nonatomic) YTQTMButton *pipButton;
+- (void)didPressPiP:(id)arg;
+- (UIImage *)pipImage;
+@end
 
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [hotConfig mediaHotConfig].enablePictureInPicture = YES;
@@ -19,8 +30,15 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
         [pip activatePiPController];
     if (playPiP) {
         AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
-        if ([avpip isPictureInPicturePossible])
+        if ([avpip isPictureInPicturePossible]) {
             [avpip startPictureInPicture];
+            if (PiPActivationMethod) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    [UIApplication.sharedApplication performSelector:@selector(suspend)];
+                });
+            } else
+                [UIApplication.sharedApplication performSelector:@selector(suspend)];
+        }
     }
 }
 
@@ -31,30 +49,116 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     activatePiP(local, playPiP);
 }
 
+%hook YTMainAppVideoPlayerOverlayViewController
+
+- (void)updateTopRightButtonAvailability {
+    %orig;
+    if (PiPActivationMethod) {
+        YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
+        YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
+        c.pipButton.hidden = NO;
+        [c setNeedsLayout];
+    }
+}
+
+%end
+
+%hook YTMainAppControlsOverlayView
+
+%property(retain, nonatomic) YTQTMButton *pipButton;
+
+- (id)initWithDelegate:(id)delegate {
+    self = %orig;
+    if (self && PiPActivationMethod) {
+        CGFloat padding = [[self class] topButtonAdditionalPadding];
+        UIImage *image = [self pipImage];
+        self.pipButton = [self buttonWithImage:image accessibilityLabel:@"pip" verticalContentPadding:padding];
+        self.pipButton.hidden = YES;
+        self.pipButton.alpha = 0;
+        [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:64];
+        [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
+    }
+    return self;
+}
+
+- (NSMutableArray *)topControls {
+    NSMutableArray *controls = %orig;
+    if (PiPActivationMethod)
+        [controls insertObject:self.pipButton atIndex:0];
+    return controls;
+}
+
+- (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
+    if (PiPActivationMethod) {
+        if (canceledState) {
+            if (!self.pipButton.hidden)
+                self.pipButton.alpha = 0.0;
+        } else {
+            if (!self.pipButton.hidden)
+                self.pipButton.alpha = visible ? 1.0 : 0.0;
+        }
+    }
+    %orig;
+}
+
+%new
+- (UIImage *)pipImage {
+    static UIImage *image = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        UIColor *color = [%c(YTColor) white1];
+        image = [UIImage imageWithContentsOfFile:@"/Library/Application Support/YouPiP/yt-pip-overlay.png"];
+        if ([%c(QTMIcon) respondsToSelector:@selector(tintImage:color:)])
+            image = [%c(QTMIcon) tintImage:image color:color];
+        else
+            image = [image _flatImageWithColor:color];
+        if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
+            image = [image imageFlippedForRightToLeftLayoutDirection];
+    });
+    return image;
+}
+
+%new
+- (void)didPressPiP:(id)arg {
+    YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
+    YTPlayerViewController *p = [c delegate];
+    bootstrapPiP(p, YES);
+}
+
+%end
+
 %hook YTPlayerViewController
 
 - (id)initWithParentResponder:(id)parentResponder overlayFactory:(id)overlayFactory {
     self = %orig;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        bootstrapPiP(self, NO);
-    });
+    if (PiPActivationMethod == 0) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            bootstrapPiP(self, NO);
+        });
+    }
     return self;
 }
 
 - (id)initWithServiceRegistryScope:(id)registryScope parentResponder:(id)parentResponder overlayFactory:(id)overlayFactory {
     self = %orig;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        bootstrapPiP(self, NO);
-    });
+    if (PiPActivationMethod == 0) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            bootstrapPiP(self, NO);
+        });
+    }
     return self;
 }
 
 %new
 - (void)appWillResignActive:(id)arg1 {
+    if (PiPActivationMethod)
+        return;
     bootstrapPiP(self, !IS_IOS_OR_NEWER(iOS_14_0));
 }
 
 %end
+
+%group MediaRemote
 
 #import <MediaRemote/MediaRemote.h>
 
@@ -71,6 +175,12 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
         MRMediaRemoteSendCommand(MRMediaRemoteCommandPause, 0);
     });
 }
+
+%end
+
+%end
+
+%hook AVPictureInPictureController
 
 + (BOOL)isPictureInPictureSupported {
     return YES;
@@ -191,5 +301,10 @@ BOOL override = NO;
 %end
 
 %ctor {
+    GetPrefs();
+    GetInt2(PiPActivationMethod, 0);
     %init;
+    if (IS_IOS_OR_NEWER(iOS_13_0)) {
+        %init(MediaRemote);
+    }
 }
