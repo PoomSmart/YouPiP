@@ -4,6 +4,7 @@
 #import <UIKit/UIImage+Private.h>
 #import <version.h>
 
+BOOL FromUser = NO;
 int PiPActivationMethod;
 
 @interface YTMainAppControlsOverlayView (YP)
@@ -17,11 +18,15 @@ static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig].enablePictureInPicture = YES;
 }
 
-static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
+static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL killPiP) {
     if (![local isKindOfClass:%c(YTLocalPlaybackController)])
         return;
     YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
+    if (killPiP && !FromUser) {
+        [pip deactivatePiPController];
+        return;
+    }
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
     else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
@@ -42,11 +47,11 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
     }
 }
 
-static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
+static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPiP) {
     YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
     forceEnablePictureInPictureInternal(hotConfig);
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
-    activatePiP(local, playPiP);
+    activatePiP(local, playPiP, killPiP);
 }
 
 %hook YTMainAppVideoPlayerOverlayViewController
@@ -122,7 +127,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 - (void)didPressPiP:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTPlayerViewController *p = [c delegate];
-    bootstrapPiP(p, YES);
+    FromUser = YES;
+    bootstrapPiP(p, YES, NO);
 }
 
 %end
@@ -133,7 +139,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     self = %orig;
     if (PiPActivationMethod == 0) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            bootstrapPiP(self, NO);
+            bootstrapPiP(self, NO, NO);
         });
     }
     return self;
@@ -143,7 +149,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     self = %orig;
     if (PiPActivationMethod == 0) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            bootstrapPiP(self, NO);
+            bootstrapPiP(self, NO, NO);
         });
     }
     return self;
@@ -151,9 +157,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    if (PiPActivationMethod)
-        return;
-    bootstrapPiP(self, !IS_IOS_OR_NEWER(iOS_14_0));
+    bootstrapPiP(self, !IS_IOS_OR_NEWER(iOS_14_0), PiPActivationMethod != 0);
+    FromUser = NO;
 }
 
 %end

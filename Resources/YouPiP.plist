@@ -19,11 +19,9 @@
                 <key>cell</key>
                 <string>PSGroupCell</string>
                 <key>label</key>
-                <string>Initial PiP Activation Method</string>
+                <string>PiP Activation Method</string>
                 <key>footerText</key>
-                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay. Restart YouTube app for the change to take an effect.
-
-(iOS 14+) Once PiP is activated, no matter which method you choose, PiP will always be activated on app dismiss after this.</string>
+                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay. Restart YouTube app for the change to take an effect.</string>
             </dict>
             <dict>
                 <key>cell</key>
