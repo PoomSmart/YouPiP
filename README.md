@@ -1,4 +1,4 @@
-# YouPIP
+# YouPiP
 
 Enable native Picture-in-Picture feature for videos in YouTube app.
 
