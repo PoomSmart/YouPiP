@@ -7,6 +7,9 @@
 BOOL FromUser = NO;
 int PiPActivationMethod;
 
+static NSString *PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
+static NSString *PiPVideoPath = @"/Library/Application Support/YouPiP/PlaceholderVideo.mp4";
+
 @interface YTMainAppControlsOverlayView (YP)
 @property(retain, nonatomic) YTQTMButton *pipButton;
 - (void)didPressPiP:(id)arg;
@@ -24,15 +27,27 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL kil
     YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
     if (killPiP && !FromUser) {
-        [pip deactivatePiPController];
+        if ([pip respondsToSelector:@selector(deactivatePiPController)])
+            [pip deactivatePiPController];
+        else
+            [pip stopPictureInPicture];
         return;
     }
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
     else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
         [controller maybeInvokePictureInPicture];
-    else if ([controller canEnablePictureInPicture])
-        [pip activatePiPController];
+    else {
+        BOOL canPiP = [controller respondsToSelector:@selector(canEnablePictureInPicture)] && [controller canEnablePictureInPicture];
+        if (!canPiP)
+            canPiP = [controller respondsToSelector:@selector(canInvokePictureInPicture)] && [controller canInvokePictureInPicture];
+        if (canPiP) {
+            if ([pip respondsToSelector:@selector(activatePiPController)])
+                [pip activatePiPController];
+            else
+                [pip startPictureInPicture];
+        }
+    }
     if (playPiP) {
         AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
         if ([avpip isPictureInPicturePossible]) {
@@ -81,7 +96,11 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
         self.pipButton.hidden = YES;
         self.pipButton.alpha = 0;
         [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:64];
-        [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
+        @try {
+            [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
+        } @catch (id ex) {
+            [self addSubview:self.pipButton];
+        }
     }
     return self;
 }
@@ -112,7 +131,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         UIColor *color = [%c(YTColor) white1];
-        image = [UIImage imageWithContentsOfFile:@"/Library/Application Support/YouPiP/yt-pip-overlay.png"];
+        image = [UIImage imageWithContentsOfFile:PiPIconPath];
         if ([%c(QTMIcon) respondsToSelector:@selector(tintImage:color:)])
             image = [%c(QTMIcon) tintImage:image color:color];
         else
@@ -129,6 +148,14 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
     YTPlayerViewController *p = [c delegate];
     FromUser = YES;
     bootstrapPiP(p, YES, NO);
+}
+
+%end
+
+%hook MLPIPController
+
+- (BOOL)isPictureInPictureSupported {
+    return YES;
 }
 
 %end
@@ -241,6 +268,14 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
+%hook YTIPictureInPictureSupportedRenderers
+
+- (BOOL)hasPictureInPictureRenderer {
+    return YES;
+}
+
+%end
+
 %end
 
 BOOL override = NO;
@@ -301,6 +336,43 @@ BOOL override = NO;
 + (void)initialize {
     %orig;
     %init(LateHook);
+}
+
+%end
+
+%hook YTAppModule
+
+- (void)configureWithBinder:(GIMBindingBuilder *)binder {
+    %orig;
+    [[binder bindType:%c(MLPIPController)] initializedWith:^(id a) {
+        MLPIPController *pip = [[%c(MLPIPController) alloc] initWithPlaceholderPlayerItemResourcePath:PiPVideoPath];
+        if ([pip respondsToSelector:@selector(initializePictureInPicture)])
+            [pip initializePictureInPicture];
+        return pip;
+    }];
+}
+
+%end
+
+
+#pragma mark - YouTube 15.22
+
+%hook YTIInnertubeResourcesIosRoot
+
+- (GPBExtensionRegistry *)extensionRegistry {
+    GPBExtensionRegistry *registry = %orig;
+    [registry addExtension:[%c(YTIPictureInPictureRendererRoot) pictureInPictureRenderer]];
+    return registry;
+}
+
+%end
+
+%hook GoogleGlobalExtensionRegistry
+
+- (GPBExtensionRegistry *)extensionRegistry {
+    GPBExtensionRegistry *registry = %orig;
+    [registry addExtension:[%c(YTIPictureInPictureRendererRoot) pictureInPictureRenderer]];
+    return registry;
 }
 
 %end

@@ -69,10 +69,19 @@
 @interface YTPlayerStatus : NSObject
 @end
 
-@interface GIMMe
+@interface GPBExtensionRegistry : NSObject
+- (void)addExtension:(id)extension;
+@end
+
+@interface GIMMe : NSObject
 - (instancetype)allocOf:(Class)cls;
 - (id)nullableInstanceForType:(id)type;
 - (id)instanceForType:(id)type;
+@end
+
+@interface GIMBindingBuilder : NSObject
+- (instancetype)bindType:(Class)type;
+- (instancetype)initializedWith:(id (^)(id))block;
 @end
 
 @interface MLPlayerPoolImpl : NSObject

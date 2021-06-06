@@ -21,7 +21,8 @@
                 <key>label</key>
                 <string>PiP Activation Method</string>
                 <key>footerText</key>
-                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay. Restart YouTube app for the change to take an effect.</string>
+                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay. Restart YouTube app for the change to take an effect.
+If you use YouTube 15.22 or lower, only "On PiP button tap" option will work reliably for you.</string>
             </dict>
             <dict>
                 <key>cell</key>
