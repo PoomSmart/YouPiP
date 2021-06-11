@@ -1,5 +1,4 @@
-.vscode
 .theos
 .DS_Store
-obj
+*.dylib
 packages

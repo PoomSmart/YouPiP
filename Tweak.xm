@@ -1,11 +1,14 @@
+#if !SIDELOADED
 #define tweakIdentifier @"com.ps.youpip"
-#import "Header.h"
 #import "../PSPrefs/PSPrefs.x"
+#endif
+
+#import "Header.h"
 #import <UIKit/UIImage+Private.h>
 #import <version.h>
 
 BOOL FromUser = NO;
-int PiPActivationMethod;
+int PiPActivationMethod = 0;
 
 static NSString *PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
 static NSString *PiPVideoPath = @"/Library/Application Support/YouPiP/PlaceholderVideo.mp4";
@@ -26,6 +29,7 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL kil
         return;
     YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
+#if !SIDELOADED
     if (killPiP && !FromUser) {
         if ([pip respondsToSelector:@selector(deactivatePiPController)])
             [pip deactivatePiPController];
@@ -33,6 +37,7 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL kil
             [pip stopPictureInPicture];
         return;
     }
+#endif
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
     else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
@@ -258,26 +263,6 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
-%group LateLateHook
-
-%hook YTIPictureInPictureRenderer
-
-- (BOOL)playableInPip {
-    return YES;
-}
-
-%end
-
-%hook YTIPictureInPictureSupportedRenderers
-
-- (BOOL)hasPictureInPictureRenderer {
-    return YES;
-}
-
-%end
-
-%end
-
 BOOL override = NO;
 
 %hook YTSingleVideo
@@ -303,6 +288,28 @@ BOOL override = NO;
     override = NO;
     return orig;
 }
+
+%end
+
+#pragma mark - Late Hooks
+
+%group LateLateHook
+
+%hook YTIPictureInPictureRenderer
+
+- (BOOL)playableInPip {
+    return YES;
+}
+
+%end
+
+%hook YTIPictureInPictureSupportedRenderers
+
+- (BOOL)hasPictureInPictureRenderer {
+    return YES;
+}
+
+%end
 
 %end
 
@@ -340,6 +347,8 @@ BOOL override = NO;
 
 %end
 
+#pragma mark - YouTube 15.22
+
 %hook YTAppModule
 
 - (void)configureWithBinder:(GIMBindingBuilder *)binder {
@@ -353,9 +362,6 @@ BOOL override = NO;
 }
 
 %end
-
-
-#pragma mark - YouTube 15.22
 
 %hook YTIInnertubeResourcesIosRoot
 
@@ -378,8 +384,10 @@ BOOL override = NO;
 %end
 
 %ctor {
+#if !SIDELOADED
     GetPrefs();
     GetInt2(PiPActivationMethod, 0);
+#endif
     %init;
     if (IS_IOS_OR_NEWER(iOS_13_0)) {
         %init(MediaRemote);
