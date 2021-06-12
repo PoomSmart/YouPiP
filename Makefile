@@ -1,5 +1,5 @@
-TARGET = iphone:latest:10.0
-ARCHS = armv7 arm64
+TARGET = iphone:latest:12.0
+ARCHS = arm64
 PACKAGE_VERSION = 1.2.2
 
 ifeq ($(SIDELOADED),1)
