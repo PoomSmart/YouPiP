@@ -1,7 +1,7 @@
 Package: com.ps.youpip
 Name: YouPiP
-Depends: mobilesubstrate, preferenceloader, firmware (>= 14.0) | gsc.ipad | com.cabralcole.forceinpicture | com.ps.forceinpicture
-Version: 0.0.1
+Depends: mobilesubstrate, preferenceloader, firmware (>= 11.0), firmware (>= 14.0) | gsc.ipad | com.cabralcole.forceinpicture | com.ps.forceinpicture
+Version: 1.0.0
 Architecture: iphoneos-arm
 Description: Enable native PiP in YouTube app.
 Maintainer: PoomSmart
