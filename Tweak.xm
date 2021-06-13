@@ -195,28 +195,6 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
-%group MediaRemote
-
-#import <MediaRemote/MediaRemote.h>
-
-#pragma mark - This method is the method called to stop the playback after dismissing
-#pragma mark - the PiP view. We need to implement a new way to pause playback from here;
-#pragma mark - MRMediaRemoteCommandStop doesn't actually do anything, and
-#pragma mark - MRMediaRemoteCommandPause does pause, but breaks playback unless
-#pragma mark - delayed for a little bit after PiP dismiss animation is completed.
-
-%hook AVPictureInPictureController
-
-- (void)pictureInPicturePlatformAdapterPrepareToStopForDismissal:(id)arg1 {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.75 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        MRMediaRemoteSendCommand(MRMediaRemoteCommandPause, 0);
-    });
-}
-
-%end
-
-%end
-
 %hook AVPictureInPictureController
 
 + (BOOL)isPictureInPictureSupported {
@@ -389,7 +367,4 @@ BOOL override = NO;
     GetInt2(PiPActivationMethod, 0);
 #endif
     %init;
-    if (IS_IOS_OR_NEWER(iOS_13_0)) {
-        %init(MediaRemote);
-    }
 }

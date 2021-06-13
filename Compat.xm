@@ -1,10 +1,19 @@
+#if !SIDELOADED
+#define tweakIdentifier @"com.ps.youpip"
+#import "../PSPrefs/PSPrefs.x"
+#endif
+
 #import "Header.h"
-#import <version.h>
+#import "../PSHeader/iOSVersions.h"
+
+BOOL CompatibilityMode = YES;
 
 MLPIPController *(*InjectMLPIPController)();
 YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)();
 YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)();
 YTHotConfig *(*InjectYTHotConfig)();
+
+%group WithInjection
 
 %hook YTPlayerPIPController
 
@@ -22,25 +31,6 @@ YTHotConfig *(*InjectYTHotConfig)();
     [bgPolicy addBackgroundabilityPolicyObserver:pipcont];
     [pip addPIPControllerObserver:pipcont];
     return pipcont;
-}
-
-%end
-
-%hook MLPIPController
-
-- (void)activatePiPController {
-    if (![self isPictureInPictureActive]) {
-        AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
-        if (!pip) {
-            MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
-            if (avpip) {
-                AVPlayerLayer *playerLayer = [avpip playerLayer];
-                pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
-                [self setValue:pip forKey:@"_pictureInPictureController"];
-                pip.delegate = self;
-            }
-        }
-    }
 }
 
 %end
@@ -76,6 +66,38 @@ YTHotConfig *(*InjectYTHotConfig)();
     return self;
 }
 
+%end
+
+%end
+
+%group Legacy
+
+%hook MLPIPController
+
+- (void)activatePiPController {
+    if (![self isPictureInPictureActive]) {
+        AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
+        if (!pip) {
+            MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
+            if (avpip) {
+                AVPlayerLayer *playerLayer = [avpip playerLayer];
+                pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
+                [self setValue:pip forKey:@"_pictureInPictureController"];
+                pip.delegate = self;
+            }
+        }
+    }
+}
+
+- (void)deactivatePiPController {
+    AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
+    [pip stopPictureInPicture];
+}
+
+%end
+
+%hook MLPlayerPoolImpl
+
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings {
     BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
     MLAVPlayer *player = [[%c(MLAVPlayer) alloc] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
@@ -103,6 +125,10 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 %end
 
+%end
+
+%group Compat
+
 %hook AVPictureInPictureController
 
 %new
@@ -127,14 +153,27 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 %end
 
+%end
+
 %ctor {
-    if (IS_IOS_OR_NEWER(iOS_14_0))
-        return;
-    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
-    MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
-    InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
-    InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
-    InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
-    InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
-    %init;
+    if (IS_IOS_OR_NEWER(iOS_14_0)) {
+#if !SIDELOADED
+        GetPrefs();
+        GetBool2(CompatibilityMode, NO);
+#endif
+    } else {
+        NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+        MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
+        InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
+        InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
+        InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
+        InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
+        if (InjectMLPIPController != NULL) {
+            %init(WithInjection);
+        }
+        %init(Compat);
+    }
+    if (CompatibilityMode) {
+        %init(Legacy);
+    }
 }

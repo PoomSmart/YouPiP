@@ -19,10 +19,33 @@
                 <key>cell</key>
                 <string>PSGroupCell</string>
                 <key>label</key>
+                <string>PiP Compatibility</string>
+                <key>footerText</key>
+                <string>If Legacy PiP is enabled, YouPiP will implement YouTube PiP with AVPlayerLayer where there's no issue with playback speed. However, this also removes UHD video quality options (2K/4K) from any videos, and YTUHD tweak cannot fix this.
+
+This option does nothing on iOS 13 and lower because YouPiP already uses that implementation.</string>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSSwitchCell</string>
+                <key>default</key>
+                <false/>
+                <key>defaults</key>
+                <string>com.ps.youpip</string>
+                <key>key</key>
+                <string>CompatibilityModeKey</string>
+                <key>label</key>
+                <string>Legacy PiP</string>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSGroupCell</string>
+                <key>label</key>
                 <string>PiP Activation Method</string>
                 <key>footerText</key>
-                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay. Restart YouTube app for the change to take an effect.
-If you use YouTube 15.22 or lower, only "On PiP button tap" option will work reliably for you.</string>
+                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay.
+
+If you use YouTube 15.22.4 or lower, only "On PiP button tap" option will work reliably for you.</string>
             </dict>
             <dict>
                 <key>cell</key>
@@ -54,7 +77,9 @@ If you use YouTube 15.22 or lower, only "On PiP button tap" option will work rel
                 <key>footerAlignment</key>
                 <integer>1</integer>
                 <key>footerText</key>
-                <string>© 2021 PoomSmart</string>
+                <string>Restart YouTube app for changes to take an effect.
+
+© 2021 PoomSmart</string>
             </dict>
         </array>
     </dict>
