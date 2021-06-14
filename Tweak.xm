@@ -11,7 +11,13 @@ BOOL FromUser = NO;
 int PiPActivationMethod = 0;
 
 static NSString *PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
+#if !SIDELOADED
 static NSString *PiPVideoPath = @"/Library/Application Support/YouPiP/PlaceholderVideo.mp4";
+#else
+static NSString *resourcesBundlePath = [[NSBundle mainBundle] pathForResource:@"com.ps.youpip" ofType:@"bundle"];
+static NSBundle *resourcesBundle = [NSBundle bundleWithPath:resourcesBundlePath];
+static NSString *PiPVideoPath = [resourcesBundle pathForResource:@"PlaceholderVideo" ofType:@"mp4"];
+#endif
 
 @interface YTMainAppControlsOverlayView (YP)
 @property(retain, nonatomic) YTQTMButton *pipButton;

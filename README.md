@@ -15,6 +15,5 @@ make package FINALPACKAGE=1
 ### Sideloaded
 
 ```
-make DEBUG=0 SIDELOADED=1
-cp .theos/obj/YouPiP.dylib YouPiP.dylib
+make package FINALPACKAGE=1 SIDELOADED=1
 ```
