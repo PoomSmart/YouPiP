@@ -23,6 +23,8 @@
                 <key>footerText</key>
                 <string>If Legacy PiP is enabled, YouPiP will implement YouTube PiP with AVPlayerLayer where there's no issue with playback speed. However, this also removes UHD video quality options (2K/4K) from any videos, and YTUHD tweak cannot fix this.
 
+This option does not apply to YouTube version 15.33.4 and lower.
+
 This option does nothing on iOS 13 and lower because YouPiP already uses that implementation.</string>
             </dict>
             <dict>

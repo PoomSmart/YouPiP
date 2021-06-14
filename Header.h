@@ -40,14 +40,6 @@
 + (NSBundle *)bundleForClass:(Class)c;
 @end
 
-@interface YTIHamplayerHotConfig : NSObject
-@property(assign) int renderViewType;
-@end
-
-@interface YTIHamplayerConfig : NSObject
-@property(assign) int renderViewType;
-@end
-
 @interface YTIIosMediaHotConfig : NSObject
 @property(nonatomic, assign, readwrite) BOOL enablePictureInPicture;
 @end
@@ -63,7 +55,6 @@
 @interface YTHotConfig : NSObject
 - (YTIHotConfigGroup *)hotConfigGroup;
 - (YTIIosMediaHotConfig *)mediaHotConfig;
-- (YTIHamplayerHotConfig *)hamplayerHotConfig;
 @end
 
 @interface YTPlayerStatus : NSObject
@@ -130,7 +121,6 @@
 @end
 
 @interface MLInnerTubePlayerConfig : NSObject
-- (YTIHamplayerConfig *)hamplayerConfig;
 @end
 
 @interface MLPlayerStickySettings : NSObject

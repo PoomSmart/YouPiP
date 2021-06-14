@@ -331,14 +331,18 @@ BOOL override = NO;
 
 %end
 
-#pragma mark - YouTube 15.22
+#pragma mark - Binding
 
 %hook YTAppModule
 
 - (void)configureWithBinder:(GIMBindingBuilder *)binder {
     %orig;
     [[binder bindType:%c(MLPIPController)] initializedWith:^(id a) {
-        MLPIPController *pip = [[%c(MLPIPController) alloc] initWithPlaceholderPlayerItemResourcePath:PiPVideoPath];
+        MLPIPController *pip = [%c(MLPIPController) alloc];
+        if ([pip respondsToSelector:@selector(initWithPlaceholderPlayerItemResourcePath:)])
+            pip = [pip initWithPlaceholderPlayerItemResourcePath:PiPVideoPath];
+        else if ([pip respondsToSelector:@selector(initWithPlaceholderPlayerItem:)])
+            pip = [pip initWithPlaceholderPlayerItem:[AVPlayerItem playerItemWithURL:[NSURL URLWithString:PiPVideoPath]]];
         if ([pip respondsToSelector:@selector(initializePictureInPicture)])
             [pip initializePictureInPicture];
         return pip;
