@@ -80,6 +80,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
     activatePiP(local, playPiP, killPiP);
 }
 
+#pragma mark - PiP Button
+
 %hook YTMainAppVideoPlayerOverlayViewController
 
 - (void)updateTopRightButtonAvailability {
@@ -118,8 +120,15 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 - (NSMutableArray *)topControls {
     NSMutableArray *controls = %orig;
-    if (PiPActivationMethod)
-        [controls insertObject:self.pipButton atIndex:0];
+    if (PiPActivationMethod) {
+        if ([controls respondsToSelector:@selector(insertObject:atIndex:)])
+            [controls insertObject:self.pipButton atIndex:0];
+        else {
+            NSMutableArray *mutableControls = [NSMutableArray arrayWithArray:controls];
+            [mutableControls insertObject:self.pipButton atIndex:0];
+            return mutableControls;
+        }
+    }
     return controls;
 }
 
@@ -163,13 +172,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
-%hook MLPIPController
-
-- (BOOL)isPictureInPictureSupported {
-    return YES;
-}
-
-%end
+#pragma mark - PiP Bootstrapping
 
 %hook YTPlayerViewController
 
@@ -201,9 +204,19 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
+#pragma mark - PiP Support
+
 %hook AVPictureInPictureController
 
 + (BOOL)isPictureInPictureSupported {
+    return YES;
+}
+
+%end
+
+%hook MLPIPController
+
+- (BOOL)isPictureInPictureSupported {
     return YES;
 }
 
@@ -217,6 +230,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 }
 
 %end
+
+#pragma mark - PiP Support, Backgroundable
 
 %hook YTIHamplayerConfig
 
@@ -247,6 +262,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
+#pragma mark - Hacks
+
 BOOL override = NO;
 
 %hook YTSingleVideo
@@ -275,7 +292,7 @@ BOOL override = NO;
 
 %end
 
-#pragma mark - Late Hooks
+#pragma mark - PiP Support, Late Hooks
 
 %group LateLateHook
 
@@ -331,7 +348,7 @@ BOOL override = NO;
 
 %end
 
-#pragma mark - Binding
+#pragma mark - PiP Support, Binding
 
 %hook YTAppModule
 
