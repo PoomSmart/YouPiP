@@ -16,7 +16,5 @@ make package FINALPACKAGE=1
 
 ```
 make DEBUG=0 SIDELOADED=1
-mkdir out
-cp -r .theos/obj/com.ps.youpip.bundle/ .theos/obj/YouPiP.dylib out/
-rm out/com.ps.youpip.bundle/YouPiP.plist
+cp .theos/obj/YouPiP.dylib YouPiP.dylib
 ```
