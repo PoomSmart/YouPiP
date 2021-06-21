@@ -20,8 +20,4 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 ifneq ($(SIDELOADED),1)
 internal-stage::
 	$(ECHO_NOTHING)cp Resources/$(TWEAK_NAME).plist $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences/YouPiP/YouPiP.plist$(ECHO_END)
-else
-# Create bundle for sideloaded support
-BUNDLE_NAME = com.ps.youpip
-include $(THEOS)/makefiles/bundle.mk
 endif
