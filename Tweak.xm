@@ -27,7 +27,10 @@ static NSString *PiPVideoPath = [resourcesBundle pathForResource:@"PlaceholderVi
 
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [hotConfig mediaHotConfig].enablePictureInPicture = YES;
-    [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig].enablePictureInPicture = YES;
+    YTIIosMediaHotConfig *iosMediaHotConfig = [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig];
+    iosMediaHotConfig.enablePictureInPicture = YES;
+    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
+        iosMediaHotConfig.enablePipForNonBackgroundableContent = YES;
 }
 
 static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL killPiP) {
@@ -176,26 +179,6 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %hook YTPlayerViewController
 
-- (id)initWithParentResponder:(id)parentResponder overlayFactory:(id)overlayFactory {
-    self = %orig;
-    if (PiPActivationMethod == 0) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            bootstrapPiP(self, NO, NO);
-        });
-    }
-    return self;
-}
-
-- (id)initWithServiceRegistryScope:(id)registryScope parentResponder:(id)parentResponder overlayFactory:(id)overlayFactory {
-    self = %orig;
-    if (PiPActivationMethod == 0) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            bootstrapPiP(self, NO, NO);
-        });
-    }
-    return self;
-}
-
 %new
 - (void)appWillResignActive:(id)arg1 {
     bootstrapPiP(self, !IS_IOS_OR_NEWER(iOS_14_0), PiPActivationMethod != 0);
@@ -277,17 +260,19 @@ BOOL override = NO;
 %hook YTPlayerPIPController
 
 - (BOOL)canInvokePictureInPicture {
+    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
     override = YES;
-    BOOL orig = %orig;
+    BOOL value = %orig;
     override = NO;
-    return orig;
+    return value;
 }
 
 - (BOOL)canEnablePictureInPicture {
+    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
     override = YES;
-    BOOL orig = %orig;
+    BOOL value = %orig;
     override = NO;
-    return orig;
+    return value;
 }
 
 %end

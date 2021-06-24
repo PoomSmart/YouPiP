@@ -42,6 +42,7 @@
 
 @interface YTIIosMediaHotConfig : NSObject
 @property(nonatomic, assign, readwrite) BOOL enablePictureInPicture;
+@property(nonatomic, assign, readwrite) BOOL enablePipForNonBackgroundableContent;
 @end
 
 @interface YTIMediaHotConfig : NSObject
