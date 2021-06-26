@@ -214,6 +214,14 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
+%hook YTPlayerResponse
+
+- (BOOL)isPlayableInPictureInPicture {
+    return YES;
+}
+
+%end
+
 #pragma mark - PiP Support, Backgroundable
 
 %hook YTIHamplayerConfig
@@ -260,6 +268,14 @@ BOOL override = NO;
 %hook YTPlayerPIPController
 
 - (BOOL)canInvokePictureInPicture {
+    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    override = YES;
+    BOOL value = %orig;
+    override = NO;
+    return value;
+}
+
+- (BOOL)isPictureInPicturePossible {
     forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
     override = YES;
     BOOL value = %orig;
