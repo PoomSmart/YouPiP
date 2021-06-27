@@ -38,9 +38,9 @@
 - (void)contentSourceVideoRectInWindowChanged;
 - (void)_updateEnqueuedBufferDimensions;
 - (void)_observePlayerLayer:(id <AVPictureInPictureContentSource>)playerLayerContentSource; // pre iOS 15.0b2
-- (void)_startObservingPlayerLayerContentSource:(id <AVPictureInPictureContentSource>)playerLayerContentSource;
 - (void)_startObservationsForContentSource:(AVPictureInPictureControllerContentSource *)controllerContentSource;
-- (void)_startObservingSampleBufferDisplayLayerContentSource:(id)contentSource;
+- (void)_startObservingPlayerLayerContentSource:(id <AVPictureInPictureContentSource>)playerLayerContentSource;
+- (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource;
 @end
 
 %hook AVPictureInPictureControllerContentSource
@@ -99,7 +99,7 @@
 }
 
 %new
-- (void)_startObservingSampleBufferDisplayLayerContentSource:(id)contentSource {
+- (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource {
     AVObservationController *observationController = self.observationController;
     [observationController startObservingNotificationForName:@"AVSampleBufferDisplayLayerVideoRectDidChangeNotification" object:contentSource notificationCenter:nil observationHandler:^(void) {
         [self _updateEnqueuedBufferDimensions];

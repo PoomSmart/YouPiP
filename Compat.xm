@@ -1,12 +1,5 @@
-#if !SIDELOADED
-#define tweakIdentifier @"com.ps.youpip"
-#import "../PSPrefs/PSPrefs.x"
-#endif
-
 #import "Header.h"
 #import "../PSHeader/iOSVersions.h"
-
-BOOL CompatibilityMode = YES;
 
 MLPIPController *(*InjectMLPIPController)();
 YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)();
@@ -156,24 +149,17 @@ YTHotConfig *(*InjectYTHotConfig)();
 %end
 
 %ctor {
-    if (IS_IOS_OR_NEWER(iOS_14_0)) {
-#if !SIDELOADED
-        GetPrefs();
-        GetBool2(CompatibilityMode, NO);
-#endif
-    } else {
-        NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
-        MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
-        InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
-        InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
-        InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
-        InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
-        if (InjectMLPIPController != NULL) {
-            %init(WithInjection);
-        }
-        %init(Compat);
+    if (IS_IOS_OR_NEWER(iOS_14_0))
+        return;
+    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+    MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
+    InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
+    InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
+    InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
+    InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
+    if (InjectMLPIPController != NULL) {
+        %init(WithInjection);
     }
-    if (CompatibilityMode) {
-        %init(Legacy);
-    }
+    %init(Compat);
+    %init(Legacy);
 }
