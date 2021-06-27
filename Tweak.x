@@ -10,14 +10,10 @@
 BOOL FromUser = NO;
 int PiPActivationMethod = 0;
 
-static NSString *PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
-#if !SIDELOADED
-static NSString *PiPVideoPath = @"/Library/Application Support/YouPiP/PlaceholderVideo.mp4";
-#else
-static NSString *resourcesBundlePath = [[NSBundle mainBundle] pathForResource:@"com.ps.youpip" ofType:@"bundle"];
-static NSBundle *resourcesBundle = [NSBundle bundleWithPath:resourcesBundlePath];
-static NSString *PiPVideoPath = [resourcesBundle pathForResource:@"PlaceholderVideo" ofType:@"mp4"];
-#endif
+static NSString *PiPIconPath;
+static NSString *resourcesBundlePath;
+static NSBundle *resourcesBundle;
+static NSString *PiPVideoPath;
 
 @interface YTMainAppControlsOverlayView (YP)
 @property(retain, nonatomic) YTQTMButton *pipButton;
@@ -236,7 +232,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 - (void)updateIsBackgroundableByUserSettings {
     %orig;
-    MSHookIvar<BOOL>(self, "_backgroundableByUserSettings") = YES;
+    [self setValue:@(YES) forKey:@"_backgroundableByUserSettings"];
 }
 
 %end
@@ -382,6 +378,12 @@ BOOL override = NO;
 #if !SIDELOADED
     GetPrefs();
     GetInt2(PiPActivationMethod, 0);
+    PiPVideoPath = @"/Library/Application Support/YouPiP/PlaceholderVideo.mp4";
+    PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
+#else
+    resourcesBundlePath = [[NSBundle mainBundle] pathForResource:@"com.ps.youpip" ofType:@"bundle"];
+    resourcesBundle = [NSBundle bundleWithPath:resourcesBundlePath];
+    PiPVideoPath = [resourcesBundle pathForResource:@"PlaceholderVideo" ofType:@"mp4"];
 #endif
     %init;
 }

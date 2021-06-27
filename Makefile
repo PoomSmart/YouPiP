@@ -1,6 +1,6 @@
 TARGET = iphone:clang:latest:11.0
 ARCHS = arm64
-PACKAGE_VERSION = 1.4.0
+PACKAGE_VERSION = 1.4.1
 
 ifeq ($(SIDELOADED),1)
 EXTRA_CFLAGS = -DSIDELOADED
@@ -11,7 +11,7 @@ endif
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = YouPiP
-$(TWEAK_NAME)_FILES = Tweak.xm Compat.xm SampleBufferCompat.xm
+$(TWEAK_NAME)_FILES = Tweak.x Compat.x SampleBufferCompat.x
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc $(EXTRA_CFLAGS)
 $(TWEAK_NAME)_FRAMEWORKS = AVKit
 

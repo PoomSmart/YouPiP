@@ -27,6 +27,7 @@
 
 @interface AVSampleBufferDisplayLayer (Additions)
 - (CGRect)videoRect;
+- (void)postVideoRectDidChangeNotification;
 @end
 
 @interface AVPictureInPictureController (Additions)
@@ -43,6 +44,8 @@
 - (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource;
 @end
 
+int AVObservationController_stopAllObservation_override = 0;
+
 %hook AVPictureInPictureControllerContentSource
 
 %property(assign) bool hasInitialRenderSize;
@@ -58,17 +61,22 @@
 
 %hook AVPictureInPictureController
 
-- (id)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource {
+- (id)initWithContentSource:(AVPictureInPictureControllerContentSource *)controllerContentSource {
     self = %orig;
-    if (self)
-        [self _startObservationsForContentSource:contentSource];
+    if (self) {
+        id source = controllerContentSource.source;
+        if ([source isKindOfClass:%c(AVSampleBufferDisplayLayer)])
+            [self _startObservationsForContentSource:controllerContentSource];
+    }
     return self;
 }
 
 - (void)setContentSource:(AVPictureInPictureControllerContentSource *)controllerContentSource {
+    AVObservationController_stopAllObservation_override = 2;
     %orig;
+    AVObservationController_stopAllObservation_override = 0;
     id <AVPictureInPictureContentSource> contentSource = self.source;
-    if (![contentSource isKindOfClass:[AVPlayerLayer class]])
+    if ([contentSource isKindOfClass:%c(AVSampleBufferDisplayLayer)])
         [self _startObservationsForContentSource:controllerContentSource];
 }
 
@@ -105,6 +113,34 @@
         [self _updateEnqueuedBufferDimensions];
     }];
     [self _updateEnqueuedBufferDimensions];
+}
+
+%end
+
+%hook AVObservationController
+
+- (void)stopAllObservation {
+    if (--AVObservationController_stopAllObservation_override == 1) return;
+    %orig;
+}
+
+%end
+
+%hook AVSampleBufferDisplayLayer
+
+- (void)setBounds:(CGRect)bounds {
+    %orig;
+    [self postVideoRectDidChangeNotification];
+}
+
+- (void)_updateLayerTreeGeometryWithVideoGravity:(id)videoGravity bounds:(CGRect)bounds presentationSize:(CGSize)presentationSize {
+    %orig;
+    [self postVideoRectDidChangeNotification];
+}
+
+%new
+- (void)postVideoRectDidChangeNotification {
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"AVSampleBufferDisplayLayerVideoRectDidChangeNotification" object:self];
 }
 
 %end
