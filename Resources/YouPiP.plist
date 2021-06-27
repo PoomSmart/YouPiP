@@ -19,6 +19,30 @@
                 <key>cell</key>
                 <string>PSGroupCell</string>
                 <key>label</key>
+                <string>PiP Compatibility</string>
+                <key>footerText</key>
+                <string>If Legacy PiP is enabled, YouPiP will implement YouTube PiP with AVPlayerLayer where there's no issue with playback speed. However, this also removes UHD video quality options (2K/4K) from any videos, and YTUHD tweak cannot fix this.
+
+This option does not apply to YouTube version 15.33.4 and lower.
+
+This option does nothing on iOS 13 and lower because YouPiP already uses that implementation.</string>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSSwitchCell</string>
+                <key>default</key>
+                <false/>
+                <key>defaults</key>
+                <string>com.ps.youpip</string>
+                <key>key</key>
+                <string>CompatibilityModeKey</string>
+                <key>label</key>
+                <string>Legacy PiP</string>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSGroupCell</string>
+                <key>label</key>
                 <string>PiP Activation Method</string>
                 <key>footerText</key>
                 <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay.
