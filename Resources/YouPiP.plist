@@ -79,7 +79,7 @@ If you use YouTube 15.22.4 or lower, only "On PiP button tap" option will work r
                 <key>footerAlignment</key>
                 <integer>1</integer>
                 <key>footerText</key>
-                <string>Restart YouTube app for changes to take an effect.
+                <string>Restart YouTube app to apply changes.
 
 © 2021 PoomSmart</string>
             </dict>

@@ -239,8 +239,13 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
     MSHookIvar<BOOL>(self, "_backgroundableByUserSettings") = YES;
 }
 
-- (bool)isPlayableInPictureInPictureByUserSettings {
-    return true;
+%end
+
+%hook YTSettingsSectionItemManager
+
+- (id)pictureInPictureSectionItem {
+    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    return %orig;
 }
 
 %end

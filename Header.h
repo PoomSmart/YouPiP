@@ -258,4 +258,7 @@
 - (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)config;
 @end
 
+@interface YTSettingsSectionItemManager : NSObject
+@end
+
 #endif
