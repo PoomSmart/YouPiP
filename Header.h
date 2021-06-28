@@ -216,9 +216,7 @@
 @interface YTPlayerViewControllerConfig : NSObject
 @end
 
-@interface YTLocalPlaybackController : NSObject {
-    YTPlayerPIPController *_playerPIPController;
-}
+@interface YTLocalPlaybackController : NSObject
 - (GIMMe *)gimme;
 @end
 

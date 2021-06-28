@@ -12,7 +12,7 @@
 @end
 
 @interface AVObservationController : NSObject
-- (void)startObservingNotificationForName:(NSString *)name object:(id)object notificationCenter:(id)notificationCenter observationHandler:(id)observationHandler;
+- (void)startObservingNotificationForName:(NSNotificationName)name object:(id)object notificationCenter:(id)notificationCenter observationHandler:(id)observationHandler;
 @end
 
 @interface AVSampleBufferDisplayLayerPlayerController : AVPlayerController
@@ -43,6 +43,8 @@
 - (void)_startObservingPlayerLayerContentSource:(id <AVPictureInPictureContentSource>)playerLayerContentSource;
 - (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource;
 @end
+
+static NSNotificationName AVSampleBufferDisplayLayerVideoRectDidChangeNotification = @"AVSampleBufferDisplayLayerVideoRectDidChangeNotification";
 
 int AVObservationController_stopAllObservation_override = 0;
 
@@ -109,7 +111,7 @@ int AVObservationController_stopAllObservation_override = 0;
 %new
 - (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource {
     AVObservationController *observationController = self.observationController;
-    [observationController startObservingNotificationForName:@"AVSampleBufferDisplayLayerVideoRectDidChangeNotification" object:contentSource notificationCenter:nil observationHandler:^(void) {
+    [observationController startObservingNotificationForName:AVSampleBufferDisplayLayerVideoRectDidChangeNotification object:contentSource notificationCenter:nil observationHandler:^(void) {
         [self _updateEnqueuedBufferDimensions];
     }];
     [self _updateEnqueuedBufferDimensions];
@@ -140,7 +142,7 @@ int AVObservationController_stopAllObservation_override = 0;
 
 %new
 - (void)postVideoRectDidChangeNotification {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"AVSampleBufferDisplayLayerVideoRectDidChangeNotification" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:AVSampleBufferDisplayLayerVideoRectDidChangeNotification object:self];
 }
 
 %end
