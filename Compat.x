@@ -9,6 +9,7 @@
 BOOL CompatibilityMode = YES;
 
 MLPIPController *(*InjectMLPIPController)();
+YTSystemNotifications *(*InjectYTSystemNotifications)();
 YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)();
 YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)();
 YTHotConfig *(*InjectYTHotConfig)();
@@ -18,19 +19,24 @@ YTHotConfig *(*InjectYTHotConfig)();
 %hook YTPlayerPIPController
 
 - (id)initWithDelegate:(id)delegate {
-    id pipcont = [[%c(YTPlayerPIPController) alloc] init];
-    MLPIPController *pip = InjectMLPIPController();
-    YTBackgroundabilityPolicy *bgPolicy = InjectYTBackgroundabilityPolicy();
-    YTPlayerViewControllerConfig *playerConfig = InjectYTPlayerViewControllerConfig();
-    YTHotConfig *config = InjectYTHotConfig();
-    [pipcont setValue:pip forKey:@"_pipController"];
-    [pipcont setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
-    [pipcont setValue:playerConfig forKey:@"_config"];
-    [pipcont setValue:config forKey:@"_hotConfig"];
-    [pipcont setValue:delegate forKey:@"_delegate"];
-    [bgPolicy addBackgroundabilityPolicyObserver:pipcont];
-    [pip addPIPControllerObserver:pipcont];
-    return pipcont;
+    id controller = %orig;
+    if (controller == nil) {
+        controller = [[%c(YTPlayerPIPController) alloc] init];
+        MLPIPController *pip = InjectMLPIPController();
+        YTSystemNotifications *systemNotifications = InjectYTSystemNotifications();
+        YTBackgroundabilityPolicy *bgPolicy = InjectYTBackgroundabilityPolicy();
+        YTPlayerViewControllerConfig *playerConfig = InjectYTPlayerViewControllerConfig();
+        YTHotConfig *config = InjectYTHotConfig();
+        [controller setValue:pip forKey:@"_pipController"];
+        [controller setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
+        [controller setValue:playerConfig forKey:@"_config"];
+        [controller setValue:config forKey:@"_hotConfig"];
+        [controller setValue:delegate forKey:@"_delegate"];
+        [bgPolicy addBackgroundabilityPolicyObserver:controller];
+        [pip addPIPControllerObserver:controller];
+        [systemNotifications addSystemNotificationsObserver:controller];
+    }
+    return controller;
 }
 
 %end
@@ -156,21 +162,22 @@ YTHotConfig *(*InjectYTHotConfig)();
 %end
 
 %ctor {
+    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+    MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
+    InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
+    InjectYTSystemNotifications = (YTSystemNotifications *(*)())MSFindSymbol(ref, "_InjectYTSystemNotifications");
+    InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
+    InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
+    InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
+    if (InjectMLPIPController != NULL) {
+        %init(WithInjection);
+    }
     if (IS_IOS_OR_NEWER(iOS_14_0)) {
 #if !SIDELOADED
         GetPrefs();
         GetBool2(CompatibilityMode, NO);
 #endif
-    } else {
-        NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
-        MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
-        InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
-        InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
-        InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
-        InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
-        if (InjectMLPIPController != NULL) {
-            %init(WithInjection);
-        }
+    } else  {
         %init(Compat);
     }
     if (CompatibilityMode) {

@@ -65,7 +65,7 @@ int AVObservationController_stopAllObservation_override = 0;
     self = %orig;
     if (self) {
         id source = controllerContentSource.source;
-        if ([source isKindOfClass:%c(AVSampleBufferDisplayLayer)])
+        if ([source isKindOfClass:[AVSampleBufferDisplayLayer class]])
             [self _startObservationsForContentSource:controllerContentSource];
     }
     return self;
@@ -76,7 +76,7 @@ int AVObservationController_stopAllObservation_override = 0;
     %orig;
     AVObservationController_stopAllObservation_override = 0;
     id <AVPictureInPictureContentSource> contentSource = self.source;
-    if ([contentSource isKindOfClass:%c(AVSampleBufferDisplayLayer)])
+    if ([contentSource isKindOfClass:[AVSampleBufferDisplayLayer class]])
         [self _startObservationsForContentSource:controllerContentSource];
 }
 
@@ -102,7 +102,7 @@ int AVObservationController_stopAllObservation_override = 0;
     id source = controllerContentSource.source;
     if ([source isKindOfClass:[AVPlayerLayer class]])
         [self _startObservingPlayerLayerContentSource:source];
-    else if ([source isKindOfClass:%c(AVSampleBufferDisplayLayer)] && ![controllerContentSource hasInitialRenderSize])
+    else if ([source isKindOfClass:[AVSampleBufferDisplayLayer class]] && ![controllerContentSource hasInitialRenderSize])
         [self _startObservingSampleBufferDisplayLayerContentSource:source];
 }
 

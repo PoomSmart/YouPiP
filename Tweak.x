@@ -11,7 +11,6 @@ BOOL FromUser = NO;
 int PiPActivationMethod = 0;
 
 static NSString *PiPIconPath;
-static NSString *resourcesBundlePath;
 static NSBundle *resourcesBundle;
 static NSString *PiPVideoPath;
 
@@ -25,8 +24,8 @@ static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     [hotConfig mediaHotConfig].enablePictureInPicture = YES;
     YTIIosMediaHotConfig *iosMediaHotConfig = [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig];
     iosMediaHotConfig.enablePictureInPicture = YES;
-    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
-        iosMediaHotConfig.enablePipForNonBackgroundableContent = YES;
+    // if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
+    //     iosMediaHotConfig.enablePipForNonBackgroundableContent = YES;
 }
 
 static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL killPiP) {
@@ -378,12 +377,11 @@ BOOL override = NO;
 #if !SIDELOADED
     GetPrefs();
     GetInt2(PiPActivationMethod, 0);
-    PiPVideoPath = @"/Library/Application Support/YouPiP/PlaceholderVideo.mp4";
+    PiPVideoPath = @"/Library/Application Support/YouPiP/PiPPlaceholderAsset.mp4";
     PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
 #else
-    resourcesBundlePath = [[NSBundle mainBundle] pathForResource:@"com.ps.youpip" ofType:@"bundle"];
-    resourcesBundle = [NSBundle bundleWithPath:resourcesBundlePath];
-    PiPVideoPath = [resourcesBundle pathForResource:@"PlaceholderVideo" ofType:@"mp4"];
+    resourcesBundle = [NSBundle bundleForClass:%c(MLDefaultPlayerViewFactory)];
+    PiPVideoPath = [resourcesBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
 #endif
     %init;
 }

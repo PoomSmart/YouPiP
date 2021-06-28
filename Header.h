@@ -261,4 +261,8 @@
 @interface YTSettingsSectionItemManager : NSObject
 @end
 
+@interface YTSystemNotifications : NSObject
+- (void)addSystemNotificationsObserver:(id)observer;
+@end
+
 #endif
