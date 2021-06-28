@@ -87,7 +87,7 @@ int AVObservationController_stopAllObservation_override = 0;
     AVPictureInPictureControllerContentSource *controllerContentSource = self.contentSource;
     AVSampleBufferDisplayLayer *displayLayer = controllerContentSource.sampleBufferDisplayLayer;
     if (displayLayer) {
-        CGRect videoRect = [displayLayer videoRect];
+        CGRect videoRect = [displayLayer respondsToSelector:@selector(videoRect)] ? [displayLayer videoRect] : displayLayer.bounds;
         AVSampleBufferDisplayLayerPlayerController *sbdlPlayerController = [self _sbdlPlayerController];
         sbdlPlayerController.enqueuedBufferDimensions = videoRect.size;
         [self contentSourceVideoRectInWindowChanged];

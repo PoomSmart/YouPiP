@@ -7,6 +7,7 @@
 #import "../PSHeader/iOSVersions.h"
 
 BOOL CompatibilityMode = YES;
+static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
 MLPIPController *(*InjectMLPIPController)();
 YTSystemNotifications *(*InjectYTSystemNotifications)();
@@ -18,7 +19,7 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 %hook YTPlayerPIPController
 
-- (id)initWithDelegate:(id)delegate {
+- (instancetype)initWithDelegate:(id)delegate {
     id controller = %orig;
     if (controller == nil) {
         controller = [[%c(YTPlayerPIPController) alloc] init];
@@ -65,7 +66,7 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 %hook MLPlayerPoolImpl
 
-- (id)init {
+- (instancetype)init {
     self = %orig;
     MLPIPController *pip = InjectMLPIPController();
     [self setValue:pip forKey:@"_pipController"];
@@ -162,14 +163,26 @@ YTHotConfig *(*InjectYTHotConfig)();
 %end
 
 %ctor {
-    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (![defaults boolForKey:YouPiPWarnVersionKey]) {
+        NSString *currentVersion = [bundle infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
+        if ([currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedAscending) {
+            UIAlertController *warning = [UIAlertController alertControllerWithTitle:@"YouPiP" message:[NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)] preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+            [warning addAction:action];
+            [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:warning animated:YES completion:nil];
+            [defaults setBool:YES forKey:YouPiPWarnVersionKey];
+        }
+    }
+    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", bundle.bundlePath];
     MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
     InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
-    InjectYTSystemNotifications = (YTSystemNotifications *(*)())MSFindSymbol(ref, "_InjectYTSystemNotifications");
-    InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
-    InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
-    InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
     if (InjectMLPIPController != NULL) {
+        InjectYTSystemNotifications = (YTSystemNotifications *(*)())MSFindSymbol(ref, "_InjectYTSystemNotifications");
+        InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
+        InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
+        InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(WithInjection);
     }
     if (IS_IOS_OR_NEWER(iOS_14_0)) {

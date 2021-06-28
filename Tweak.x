@@ -209,6 +209,14 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %end
 
+// %hook YTHotConfig
+
+// - (bool)iosReleasePipControllerOnMain {
+//     return true;
+// }
+
+// %end
+
 #pragma mark - PiP Support, Backgroundable
 
 %hook YTIHamplayerConfig
@@ -247,12 +255,12 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 #pragma mark - Hacks
 
-BOOL override = NO;
+BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 %hook YTSingleVideo
 
 - (BOOL)isLivePlayback {
-    return override ? NO : %orig;
+    return YTSingleVideo_isLivePlayback_override ? NO : %orig;
 }
 
 %end
@@ -261,17 +269,17 @@ BOOL override = NO;
 
 - (BOOL)canInvokePictureInPicture {
     forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
-    override = YES;
+    YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
-    override = NO;
+    YTSingleVideo_isLivePlayback_override = NO;
     return value;
 }
 
 - (BOOL)canEnablePictureInPicture {
     forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
-    override = YES;
+    YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
-    override = NO;
+    YTSingleVideo_isLivePlayback_override = NO;
     return value;
 }
 
