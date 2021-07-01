@@ -1,3 +1,8 @@
+#if !SIDELOADED
+#define tweakIdentifier @"com.ps.youpip"
+#import "../PSPrefs/PSPrefs.x"
+#endif
+
 #import <AVKit/AVKit.h>
 #import <Foundation/Foundation.h>
 #import "../PSHeader/iOSVersions.h"
@@ -43,6 +48,8 @@
 - (void)_startObservingPlayerLayerContentSource:(id <AVPictureInPictureContentSource>)playerLayerContentSource;
 - (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource;
 @end
+
+BOOL SampleBufferWork = YES;
 
 static NSNotificationName AVSampleBufferDisplayLayerVideoRectDidChangeNotification = @"AVSampleBufferDisplayLayerVideoRectDidChangeNotification";
 
@@ -150,5 +157,11 @@ int AVObservationController_stopAllObservation_override = 0;
 %ctor {
     if (!IS_IOS_OR_NEWER(iOS_14_0) || IS_IOS_OR_NEWER(iOS_15_0))
         return;
-    %init;
+#if !SIDELOADED
+        GetPrefs();
+        GetBool2(SampleBufferWork, YES);
+#endif
+    if (SampleBufferWork) {
+        %init;
+    }
 }

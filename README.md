@@ -14,7 +14,13 @@ make package FINALPACKAGE=1
 
 ### Sideloaded
 
+#### Normal
+
 ```
-make DEBUG=0 SIDELOADED=1
-cp .theos/obj/YouPiP.dylib YouPiP.dylib
+make SIDELOADED=1 && cp .theos/obj/YouPiP.dylib YouPiP.dylib
+```
+
+#### Without Sample Buffer Hack
+```
+make SIDELOADED=1 SAMPLE_BUFFER_HACK=0 && cp .theos/obj/YouPiP.dylib YouPiP.dylib
 ```

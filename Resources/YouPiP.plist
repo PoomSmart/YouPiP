@@ -17,15 +17,29 @@
         <array>
             <dict>
                 <key>cell</key>
+                <string>PSStaticTextCell</string>
+                <key>label</key>
+                <string>Nothing here.</string>
+                <key>pl_filter</key>
+                <dict>
+                    <key>CoreFoundationVersion</key>
+                    <array>
+                        <string>1443.00</string>
+                        <string>1751.108</string>
+                    </array>
+                </dict>
+            </dict>
+            <dict>
+                <key>cell</key>
                 <string>PSGroupCell</string>
                 <key>label</key>
                 <string>PiP Compatibility</string>
                 <key>footerText</key>
                 <string>If Legacy PiP is enabled, YouPiP will implement YouTube PiP with AVPlayerLayer where there's no issue with playback speed. However, this also removes UHD video quality options (2K/4K) from any videos, and YTUHD tweak cannot fix this.
 
-This option does not apply to YouTube version 15.33.4 and lower.
+Legacy PiP does not apply to YouTube version 15.33.4 and lower.
 
-This option does nothing on iOS 13 and lower because YouPiP already uses that implementation.</string>
+Sample Buffer Hack imitates the implementation of sample buffering based PiP present on iOS 15.0b2, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues around PiP.</string>
             </dict>
             <dict>
                 <key>cell</key>
@@ -38,6 +52,33 @@ This option does nothing on iOS 13 and lower because YouPiP already uses that im
                 <string>CompatibilityModeKey</string>
                 <key>label</key>
                 <string>Legacy PiP</string>
+                <key>pl_filter</key>
+                <dict>
+                    <key>CoreFoundationVersion</key>
+                    <array>
+                        <string>1751.108</string>
+                    </array>
+                </dict>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSSwitchCell</string>
+                <key>default</key>
+                <true/>
+                <key>defaults</key>
+                <string>com.ps.youpip</string>
+                <key>key</key>
+                <string>SampleBufferWorkKey</string>
+                <key>label</key>
+                <string>Sample Buffer Hack</string>
+                <key>pl_filter</key>
+                <dict>
+                    <key>CoreFoundationVersion</key>
+                    <array>
+                        <string>1751.108</string>
+                        <string>1835.100</string>
+                    </array>
+                </dict>
             </dict>
             <dict>
                 <key>cell</key>
