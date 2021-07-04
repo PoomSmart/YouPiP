@@ -1,21 +1,7 @@
 #ifndef YOUPIP_H_
 #define YOUPIP_H_
 
-#import <AVFoundation/AVFoundation.h>
-#import <AVKit/AVKit.h>
-#import <UIKit/UIKit.h>
-
-@interface AVPictureInPictureControllerContentSource : NSObject
-- (AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer;
-@end
-
-@interface AVPictureInPictureController (Private)
-@property(nonatomic, retain) AVPictureInPictureControllerContentSource *contentSource;
-@property(nonatomic, retain) id prerollDelegate;
-- (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource;
-- (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
-- (void)sampleBufferDisplayLayerDidAppear;
-@end
+#import "AVKit-Header.h"
 
 @class MLAVPlayer, MLVideo, MLInnerTubePlayerConfig;
 
@@ -80,6 +66,10 @@
 @interface MLPlayerPoolImpl : NSObject
 @end
 
+@interface HAMSBDLSampleBufferRenderingView : UIView
+@property(retain, nonatomic, readonly) AVSampleBufferDisplayLayer *displayLayer;
+@end
+
 @interface MLAVPlayerLayerView : UIView <MLPlayerViewProtocol, HAMPixelBufferRenderingView>
 @end
 
@@ -88,10 +78,10 @@
 - (MLAVPlayer *)delegate;
 @end
 
-@interface MLHAMSBDLSampleBufferRenderingView : MLAVPIPPlayerLayerView
+@interface MLHAMSBDLSampleBufferRenderingView : HAMSBDLSampleBufferRenderingView
 @end
 
-@interface MLPIPController : NSObject <AVPictureInPictureControllerDelegate>
+@interface MLPIPController : NSObject <AVPictureInPictureControllerDelegate, AVPictureInPictureSampleBufferPlaybackDelegate>
 @property(retain, nonatomic) MLAVPIPPlayerLayerView *AVPlayerView;
 @property(retain, nonatomic) MLHAMSBDLSampleBufferRenderingView *HAMPlayerView;
 - (id)initWithPlaceholderPlayerItem:(AVPlayerItem *)playerItem;

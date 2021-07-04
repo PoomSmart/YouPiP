@@ -3,57 +3,16 @@
 #import "../PSPrefs/PSPrefs.x"
 #endif
 
-#import <AVKit/AVKit.h>
-#import <Foundation/Foundation.h>
+#import "Header.h"
 #import "../PSHeader/iOSVersions.h"
-
-@protocol AVPictureInPictureContentSource <NSObject>
-@end
-
-@protocol AVPictureInPictureSampleBufferPlaybackDelegate <NSObject>
-@end
-
-@interface AVPlayerController : UIResponder
-@end
-
-@interface AVObservationController : NSObject
-- (void)startObservingNotificationForName:(NSNotificationName)name object:(id)object notificationCenter:(id)notificationCenter observationHandler:(id)observationHandler;
-@end
-
-@interface AVSampleBufferDisplayLayerPlayerController : AVPlayerController
-@property(assign, nonatomic) CGSize enqueuedBufferDimensions;
-@end
-
-@interface AVPictureInPictureControllerContentSource : NSObject
-@property(nonatomic, readonly) id <AVPictureInPictureContentSource> source;
-@property(nonatomic, readonly) AVSampleBufferDisplayLayer *sampleBufferDisplayLayer;
-@property(assign) bool hasInitialRenderSize;
-@end
-
-@interface AVSampleBufferDisplayLayer (Additions)
-- (CGRect)videoRect;
-- (void)postVideoRectDidChangeNotification;
-@end
-
-@interface AVPictureInPictureController (Additions)
-@property(nonatomic, readonly) id <AVPictureInPictureContentSource> source;
-@property(nonatomic, nullable, readonly) AVSampleBufferDisplayLayer *sampleBufferDisplayLayer;
-@property(nonatomic, retain, nullable) AVPictureInPictureControllerContentSource *contentSource; // retain -> strong on iOS 15
-@property(nonatomic, readonly) AVObservationController *observationController;
-- (AVSampleBufferDisplayLayerPlayerController *)_sbdlPlayerController;
-- (void)contentSourceVideoRectInWindowChanged;
-- (void)_updateEnqueuedBufferDimensions;
-- (void)_observePlayerLayer:(id <AVPictureInPictureContentSource>)playerLayerContentSource; // pre iOS 15.0b2
-- (void)_startObservationsForContentSource:(AVPictureInPictureControllerContentSource *)controllerContentSource;
-- (void)_startObservingPlayerLayerContentSource:(id <AVPictureInPictureContentSource>)playerLayerContentSource;
-- (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource;
-@end
 
 BOOL SampleBufferWork = YES;
 
 static NSNotificationName AVSampleBufferDisplayLayerVideoRectDidChangeNotification = @"AVSampleBufferDisplayLayerVideoRectDidChangeNotification";
 
 int AVObservationController_stopAllObservation_override = 0;
+
+%group AVKit_iOS14_2_Up
 
 %hook AVPictureInPictureControllerContentSource
 
@@ -65,6 +24,32 @@ int AVObservationController_stopAllObservation_override = 0;
         self.hasInitialRenderSize = true;
     return self;
 }
+
+%end
+
+%end
+
+%group AVKit_preiOS14_2
+
+%hook AVPictureInPictureControllerContentSource
+
+%property(assign) bool hasInitialRenderSize;
+
+%new
+- (instancetype)initWithSampleBufferDisplayLayer:(AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer initialRenderSize:(CGSize)initialRenderSize playbackDelegate:(id <AVPictureInPictureSampleBufferPlaybackDelegate>)playbackDelegate {
+    return [self initWithSampleBufferDisplayLayer:sampleBufferDisplayLayer playbackDelegate:playbackDelegate];
+}
+
+%end
+
+%hook AVPictureInPictureController
+
+%new
+- (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
+
+}
+
+%end
 
 %end
 
@@ -161,6 +146,11 @@ int AVObservationController_stopAllObservation_override = 0;
         GetPrefs();
         GetBool2(SampleBufferWork, YES);
 #endif
+    if (IS_IOS_OR_NEWER(iOS_14_2)) {
+        %init(AVKit_iOS14_2_Up);
+    } else {
+        %init(AVKit_preiOS14_2);
+    }
     if (SampleBufferWork) {
         %init;
     }
