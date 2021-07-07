@@ -178,6 +178,7 @@
 @end
 
 @interface YTPlayerViewController : UIViewController
+- (GIMMe *)gimme;
 @end
 
 @interface YTPlayerView : UIView

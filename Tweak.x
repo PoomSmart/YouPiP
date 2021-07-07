@@ -72,7 +72,12 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL kil
 }
 
 static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPiP) {
-    YTHotConfig *hotConfig = [self valueForKey:@"_hotConfig"];
+    YTHotConfig *hotConfig;
+    @try {
+        hotConfig = [self valueForKey:@"_hotConfig"];
+    } @catch (id ex) {
+        hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
+    }
     forceEnablePictureInPictureInternal(hotConfig);
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
     activatePiP(local, playPiP, killPiP);
@@ -265,10 +270,18 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 %end
 
+static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
+    @try {
+        return [self valueForKey:@"_hotConfig"];
+    } @catch (id ex) {
+        return [[self valueForKey:@"_config"] valueForKey:@"_hotConfig"];
+    }
+}
+
 %hook YTPlayerPIPController
 
 - (BOOL)canInvokePictureInPicture {
-    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    forceEnablePictureInPictureInternal(getHotConfig(self));
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
@@ -276,7 +289,7 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 }
 
 - (BOOL)canEnablePictureInPicture {
-    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    forceEnablePictureInPictureInternal(getHotConfig(self));
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
