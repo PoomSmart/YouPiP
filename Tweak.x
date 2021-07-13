@@ -7,7 +7,6 @@
 #import <UIKit/UIImage+Private.h>
 #import <version.h>
 
-BOOL FromUser = NO;
 int PiPActivationMethod = 0;
 
 static NSString *PiPIconPath;
@@ -28,20 +27,11 @@ static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
         iosMediaHotConfig.enablePipForNonBackgroundableContent = YES;
 }
 
-static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL killPiP) {
+static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
     if (![local isKindOfClass:%c(YTLocalPlaybackController)])
         return;
     YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
-#if !SIDELOADED
-    if (killPiP && !FromUser) {
-        if ([pip respondsToSelector:@selector(deactivatePiPController)])
-            [pip deactivatePiPController];
-        else
-            [pip stopPictureInPicture];
-        return;
-    }
-#endif
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
     else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
@@ -64,7 +54,7 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL kil
     }
 }
 
-static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPiP) {
+static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     YTHotConfig *hotConfig;
     @try {
         hotConfig = [self valueForKey:@"_hotConfig"];
@@ -73,7 +63,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
     }
     forceEnablePictureInPictureInternal(hotConfig);
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
-    activatePiP(local, playPiP, killPiP);
+    activatePiP(local, playPiP);
 }
 
 #pragma mark - PiP Button
@@ -162,8 +152,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 - (void)didPressPiP:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTPlayerViewController *p = [c delegate];
-    FromUser = YES;
-    bootstrapPiP(p, YES, NO);
+    bootstrapPiP(p, YES);
 }
 
 %end
@@ -174,8 +163,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    bootstrapPiP(self, !IS_IOS_OR_NEWER(iOS_14_0), PiPActivationMethod != 0);
-    FromUser = NO;
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && PiPActivationMethod == 0)
+        bootstrapPiP(self, YES);
 }
 
 %end
@@ -186,6 +175,10 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 + (BOOL)isPictureInPictureSupported {
     return YES;
+}
+
+- (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
+    %orig(PiPActivationMethod != 0 ? NO : canStartFromInline);
 }
 
 %end
@@ -291,6 +284,12 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
     return value;
+}
+
+- (void)appWillResignActive:(id)arg1 {
+    if (PiPActivationMethod != 0)
+        return;
+    %orig;
 }
 
 %end

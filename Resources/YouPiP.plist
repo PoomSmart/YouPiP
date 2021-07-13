@@ -17,29 +17,20 @@
         <array>
             <dict>
                 <key>cell</key>
-                <string>PSStaticTextCell</string>
+                <string>PSGroupCell</string>
                 <key>label</key>
-                <string>Nothing here.</string>
+                <string>PiP Compatibility</string>
                 <key>pl_filter</key>
                 <dict>
                     <key>CoreFoundationVersion</key>
                     <array>
-                        <string>1443.00</string>
                         <string>1751.108</string>
                     </array>
                 </dict>
-            </dict>
-            <dict>
-                <key>cell</key>
-                <string>PSGroupCell</string>
-                <key>label</key>
-                <string>PiP Compatibility</string>
                 <key>footerText</key>
                 <string>If Legacy PiP is enabled, YouPiP will implement YouTube PiP with AVPlayerLayer where there's no issue with playback speed. However, this also removes UHD video quality options (2K/4K) from any videos, and YTUHD tweak cannot fix this.
 
-Legacy PiP does not apply to YouTube version 15.33.4 and lower.
-
-Sample Buffer Hack imitates the implementation of sample buffering based PiP present on iOS 15.0b2, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues around PiP.</string>
+Legacy PiP does not apply to YouTube version 15.33.4 and lower.</string>
             </dict>
             <dict>
                 <key>cell</key>
@@ -57,8 +48,24 @@ Sample Buffer Hack imitates the implementation of sample buffering based PiP pre
                     <key>CoreFoundationVersion</key>
                     <array>
                         <string>1751.108</string>
+                        <string>1835.100</string>
                     </array>
                 </dict>
+            </dict>
+            <dict>
+                <key>cell</key>
+                <string>PSGroupCell</string>
+                <key>label</key>
+                <string>Hacks</string>
+                <key>pl_filter</key>
+                <dict>
+                    <key>CoreFoundationVersion</key>
+                    <array>
+                        <string>1751.108</string>
+                    </array>
+                </dict>
+                <key>footerText</key>
+                <string>Sample Buffer Hack imitates the implementation of sample buffering based PiP present on iOS 15.0b2, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues around PiP.</string>
             </dict>
             <dict>
                 <key>cell</key>
@@ -86,9 +93,7 @@ Sample Buffer Hack imitates the implementation of sample buffering based PiP pre
                 <key>label</key>
                 <string>PiP Activation Method</string>
                 <key>footerText</key>
-                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay.
-
-If you use YouTube 15.22.4 or lower, only "On PiP button tap" option will work reliably for you.</string>
+                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay.</string>
             </dict>
             <dict>
                 <key>cell</key>
