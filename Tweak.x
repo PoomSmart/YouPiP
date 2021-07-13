@@ -59,15 +59,8 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP, BOOL kil
     }
     if (playPiP) {
         AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
-        if ([avpip isPictureInPicturePossible]) {
+        if ([avpip isPictureInPicturePossible])
             [avpip startPictureInPicture];
-            if (PiPActivationMethod) {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                    [UIApplication.sharedApplication performSelector:@selector(suspend)];
-                });
-            } else
-                [UIApplication.sharedApplication performSelector:@selector(suspend)];
-        }
     }
 }
 
@@ -218,6 +211,10 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP, BOOL killPi
 
 // - (bool)iosReleasePipControllerOnMain {
 //     return true;
+// }
+
+// - (bool)iosDontReleasePipController {
+//     return false;
 // }
 
 // %end
