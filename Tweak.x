@@ -7,6 +7,8 @@
 #import <UIKit/UIImage+Private.h>
 #import <version.h>
 
+BOOL FromUser = NO;
+BOOL ForceDisablePiP = NO;
 int PiPActivationMethod = 0;
 
 static NSString *PiPIconPath;
@@ -19,12 +21,18 @@ static NSString *PiPVideoPath;
 - (UIImage *)pipImage;
 @end
 
-static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
-    [hotConfig mediaHotConfig].enablePictureInPicture = YES;
+static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
+    [hotConfig mediaHotConfig].enablePictureInPicture = value;
     YTIIosMediaHotConfig *iosMediaHotConfig = [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig];
-    iosMediaHotConfig.enablePictureInPicture = YES;
+    iosMediaHotConfig.enablePictureInPicture = value;
     if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
-        iosMediaHotConfig.enablePipForNonBackgroundableContent = YES;
+        iosMediaHotConfig.enablePipForNonBackgroundableContent = value;
+}
+
+static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
+    if (ForceDisablePiP && !FromUser)
+        return;
+    forcePictureInPictureInternal(hotConfig, YES);
 }
 
 static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
@@ -152,6 +160,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 - (void)didPressPiP:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTPlayerViewController *p = [c delegate];
+    FromUser = YES;
     bootstrapPiP(p, YES);
 }
 
@@ -287,9 +296,10 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (void)appWillResignActive:(id)arg1 {
-    if (PiPActivationMethod != 0)
-        return;
+    forcePictureInPictureInternal(getHotConfig(self), PiPActivationMethod == 0);
+    ForceDisablePiP = YES;
     %orig;
+    ForceDisablePiP = FromUser = NO;
 }
 
 %end
