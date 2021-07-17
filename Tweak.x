@@ -90,12 +90,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 %end
 
-%hook YTMainAppControlsOverlayView
-
-%property(retain, nonatomic) YTQTMButton *pipButton;
-
-- (id)initWithDelegate:(id)delegate {
-    self = %orig;
+static void createPiPButton(YTMainAppControlsOverlayView *self) {
     if (self && PiPActivationMethod) {
         CGFloat padding = [[self class] topButtonAdditionalPadding];
         UIImage *image = [self pipImage];
@@ -109,11 +104,9 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
             [self addSubview:self.pipButton];
         }
     }
-    return self;
 }
 
-- (NSMutableArray *)topControls {
-    NSMutableArray *controls = %orig;
+static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
     if (PiPActivationMethod) {
         if ([controls respondsToSelector:@selector(insertObject:atIndex:)])
             [controls insertObject:self.pipButton atIndex:0];
@@ -124,6 +117,30 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
         }
     }
     return controls;
+}
+
+%hook YTMainAppControlsOverlayView
+
+%property(retain, nonatomic) YTQTMButton *pipButton;
+
+- (id)initWithDelegate:(id)delegate {
+    self = %orig;
+    createPiPButton(self);
+    return self;
+}
+
+- (id)initWithDelegate:(id)delegate autoplaySwitchEnabled:(BOOL)autoplaySwitchEnabled {
+    self = %orig;
+    createPiPButton(self);
+    return self;
+}
+
+- (NSMutableArray *)topButtonControls {
+    return topControls(self, %orig);
+}
+
+- (NSMutableArray *)topControls {
+    return topControls(self, %orig);
 }
 
 - (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
@@ -159,9 +176,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 %new
 - (void)didPressPiP:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
-    YTPlayerViewController *p = [c delegate];
     FromUser = YES;
-    bootstrapPiP(p, YES);
+    bootstrapPiP([c delegate], YES);
 }
 
 %end
@@ -306,25 +322,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 
 #pragma mark - PiP Support, Late Hooks
 
-%group LateLateHook
-
-%hook YTIPictureInPictureRenderer
-
-- (BOOL)playableInPip {
-    return YES;
-}
-
-%end
-
-%hook YTIPictureInPictureSupportedRenderers
-
-- (BOOL)hasPictureInPictureRenderer {
-    return YES;
-}
-
-%end
-
-%end
+BOOL DidInitLateLateHook = NO;
 
 %group LateHook
 
@@ -335,15 +333,14 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (BOOL)isPlayableInPictureInPicture {
-    %init(LateLateHook);
-    return %orig;
+    return YES;
 }
 
 - (BOOL)hasPictureInPicture {
     return YES;
 }
 
-- (void)setHasPictureInPicture:(BOOL)arg {
+- (void)setHasPictureInPicture:(BOOL)hasPictureInPicture {
     %orig(YES);
 }
 
@@ -355,7 +352,10 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 
 + (void)initialize {
     %orig;
-    %init(LateHook);
+    if (!DidInitLateLateHook) {
+        %init(LateHook);
+        DidInitLateLateHook = YES;
+    }
 }
 
 %end

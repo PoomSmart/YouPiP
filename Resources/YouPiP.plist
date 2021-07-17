@@ -93,7 +93,7 @@ Legacy PiP does not apply to YouTube version 15.33.4 and lower.</string>
                 <key>label</key>
                 <string>PiP Activation Method</string>
                 <key>footerText</key>
-                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay.</string>
+                <string>Choose how you want to activate PiP for your video. If you choose "On PiP button tap", a PiP button will appear in the video control overlay - use this option if the former doesn't work for you.</string>
             </dict>
             <dict>
                 <key>cell</key>
