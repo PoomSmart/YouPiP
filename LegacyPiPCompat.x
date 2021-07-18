@@ -6,7 +6,7 @@
 #import "Header.h"
 #import "../PSHeader/iOSVersions.h"
 
-BOOL CompatibilityMode = YES;
+BOOL CompatibilityMode = NO;
 static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
 MLPIPController *(*InjectMLPIPController)();
