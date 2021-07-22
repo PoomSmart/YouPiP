@@ -1,5 +1,4 @@
 #import "Header.h"
-#import <UIKit/UIImage+Private.h>
 #import <version.h>
 
 BOOL FromUser = NO;
@@ -14,7 +13,6 @@ BOOL NonBackgroundable() {
 }
 
 static NSString *PiPIconPath;
-static NSBundle *resourcesBundle;
 static NSString *PiPVideoPath;
 
 @interface YTMainAppControlsOverlayView (YP)
@@ -165,10 +163,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     dispatch_once(&onceToken, ^{
         UIColor *color = [%c(YTColor) white1];
         image = [UIImage imageWithContentsOfFile:PiPIconPath];
-        if ([%c(QTMIcon) respondsToSelector:@selector(tintImage:color:)])
-            image = [%c(QTMIcon) tintImage:image color:color];
-        else
-            image = [image _flatImageWithColor:color];
+        image = [%c(QTMIcon) tintImage:image color:color];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
     });
@@ -342,10 +337,6 @@ BOOL DidInitLateLateHook = NO;
     return YES;
 }
 
-- (void)setHasPictureInPicture:(BOOL)hasPictureInPicture {
-    %orig(YES);
-}
-
 %end
 
 %end
@@ -403,12 +394,7 @@ BOOL DidInitLateLateHook = NO;
 %end
 
 %ctor {
-#if !SIDELOADED
-    PiPVideoPath = @"/Library/Application Support/YouPiP/PiPPlaceholderAsset.mp4";
-    PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
-#else
-    resourcesBundle = [NSBundle bundleForClass:%c(MLDefaultPlayerViewFactory)];
-    PiPVideoPath = [resourcesBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
-#endif
+    PiPVideoPath = @"/Library/Application Support/YouPiP.bundle/PiPPlaceholderAsset.mp4";
+    PiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-overlay.png";
     %init;
 }
