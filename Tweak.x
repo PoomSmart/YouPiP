@@ -27,8 +27,8 @@ static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
     [hotConfig mediaHotConfig].enablePictureInPicture = value;
     YTIIosMediaHotConfig *iosMediaHotConfig = [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig];
     iosMediaHotConfig.enablePictureInPicture = value;
-    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)] && NonBackgroundable())
-        iosMediaHotConfig.enablePipForNonBackgroundableContent = value;
+    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
+        iosMediaHotConfig.enablePipForNonBackgroundableContent = value && NonBackgroundable();
 }
 
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
