@@ -248,11 +248,34 @@
 - (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)config;
 @end
 
-@interface YTSettingsSectionItemManager : NSObject
-@end
-
 @interface YTSystemNotifications : NSObject
 - (void)addSystemNotificationsObserver:(id)observer;
 @end
+
+@interface YTSettingsSectionItemManager : NSObject
+@end
+
+@interface YTCollectionViewCell : UICollectionViewCell
+@end
+
+@interface YTSettingsCell : YTCollectionViewCell
+@end
+
+@interface YTSettingsSectionItem : NSObject
+@property (nonatomic, assign, readwrite) BOOL hasSwitch;
+@property (nonatomic, assign, readwrite) BOOL switchVisible;
+@property (nonatomic, assign, readwrite) BOOL on;
+@property (nonatomic, assign, readwrite) int settingItemId;
+@property (nonatomic, copy, readwrite) BOOL (^switchBlock)(YTSettingsCell *, BOOL);
+- (instancetype)initWithTitle:(NSString *)title titleDescription:(NSString *)titleDescription;
+@end
+
+@interface YTSettingsViewController : UIViewController
+@end
+
+#define CompatibilityModeKey @"CompatibilityModeKey"
+#define PiPActivationMethodKey @"PiPActivationMethodKey"
+#define SampleBufferWorkKey @"SampleBufferWorkKey"
+#define NonBackgroundableKey @"NonBackgroundableKey"
 
 #endif

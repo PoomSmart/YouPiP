@@ -1,15 +1,17 @@
-#if !SIDELOADED
-#define tweakIdentifier @"com.ps.youpip"
-#import "../PSPrefs/PSPrefs.x"
-#endif
-
 #import "Header.h"
 #import <UIKit/UIImage+Private.h>
 #import <version.h>
 
 BOOL FromUser = NO;
 BOOL ForceDisablePiP = NO;
-int PiPActivationMethod = 0;
+
+BOOL PiPActivationMethod() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
+}
+
+BOOL NonBackgroundable() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:NonBackgroundableKey];
+}
 
 static NSString *PiPIconPath;
 static NSBundle *resourcesBundle;
@@ -25,7 +27,7 @@ static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
     [hotConfig mediaHotConfig].enablePictureInPicture = value;
     YTIIosMediaHotConfig *iosMediaHotConfig = [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig];
     iosMediaHotConfig.enablePictureInPicture = value;
-    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
+    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)] && NonBackgroundable())
         iosMediaHotConfig.enablePipForNonBackgroundableContent = value;
 }
 
@@ -80,7 +82,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 - (void)updateTopRightButtonAvailability {
     %orig;
-    if (PiPActivationMethod) {
+    if (PiPActivationMethod()) {
         YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
         YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
         c.pipButton.hidden = NO;
@@ -91,7 +93,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 %end
 
 static void createPiPButton(YTMainAppControlsOverlayView *self) {
-    if (self && PiPActivationMethod) {
+    if (self && PiPActivationMethod()) {
         CGFloat padding = [[self class] topButtonAdditionalPadding];
         UIImage *image = [self pipImage];
         self.pipButton = [self buttonWithImage:image accessibilityLabel:@"pip" verticalContentPadding:padding];
@@ -107,7 +109,7 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
 }
 
 static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
-    if (PiPActivationMethod) {
+    if (PiPActivationMethod()) {
         if ([controls respondsToSelector:@selector(insertObject:atIndex:)])
             [controls insertObject:self.pipButton atIndex:0];
         else {
@@ -144,7 +146,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
-    if (PiPActivationMethod) {
+    if (PiPActivationMethod()) {
         if (canceledState) {
             if (!self.pipButton.hidden)
                 self.pipButton.alpha = 0.0;
@@ -188,7 +190,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && PiPActivationMethod == 0)
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && PiPActivationMethod() == 0)
         bootstrapPiP(self, YES);
 }
 
@@ -203,7 +205,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
-    %orig(PiPActivationMethod != 0 ? NO : canStartFromInline);
+    %orig(PiPActivationMethod() != 0 ? NO : canStartFromInline);
 }
 
 %end
@@ -266,7 +268,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %hook YTSettingsSectionItemManager
 
-- (id)pictureInPictureSectionItem {
+- (YTSettingsSectionItem *)pictureInPictureSectionItem {
     forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
     return %orig;
 }
@@ -312,7 +314,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (void)appWillResignActive:(id)arg1 {
-    forcePictureInPictureInternal(getHotConfig(self), PiPActivationMethod == 0);
+    forcePictureInPictureInternal(getHotConfig(self), PiPActivationMethod() == 0);
     ForceDisablePiP = YES;
     %orig;
     ForceDisablePiP = FromUser = NO;
@@ -402,8 +404,6 @@ BOOL DidInitLateLateHook = NO;
 
 %ctor {
 #if !SIDELOADED
-    GetPrefs();
-    GetInt2(PiPActivationMethod, 0);
     PiPVideoPath = @"/Library/Application Support/YouPiP/PiPPlaceholderAsset.mp4";
     PiPIconPath = @"/Library/Application Support/YouPiP/yt-pip-overlay.png";
 #else

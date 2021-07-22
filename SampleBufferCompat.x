@@ -1,12 +1,9 @@
-#if !SIDELOADED
-#define tweakIdentifier @"com.ps.youpip"
-#import "../PSPrefs/PSPrefs.x"
-#endif
-
 #import "Header.h"
 #import "../PSHeader/iOSVersions.h"
 
-BOOL SampleBufferWork = YES;
+BOOL SampleBufferWork() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:SampleBufferWorkKey];
+}
 
 static NSNotificationName AVSampleBufferDisplayLayerVideoRectDidChangeNotification = @"AVSampleBufferDisplayLayerVideoRectDidChangeNotification";
 
@@ -142,16 +139,12 @@ int AVObservationController_stopAllObservation_override = 0;
 %ctor {
     if (!IS_IOS_OR_NEWER(iOS_14_0) || IS_IOS_OR_NEWER(iOS_15_0))
         return;
-#if !SIDELOADED
-        GetPrefs();
-        GetBool2(SampleBufferWork, YES);
-#endif
-    if (IS_IOS_OR_NEWER(iOS_14_2)) {
-        %init(AVKit_iOS14_2_Up);
-    } else {
-        %init(AVKit_preiOS14_2);
-    }
-    if (SampleBufferWork) {
+    if (SampleBufferWork()) {
+        if (IS_IOS_OR_NEWER(iOS_14_2)) {
+            %init(AVKit_iOS14_2_Up);
+        } else {
+            %init(AVKit_preiOS14_2);
+        }
         %init;
     }
 }

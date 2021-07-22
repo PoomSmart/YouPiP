@@ -1,13 +1,9 @@
-#if !SIDELOADED
-#define tweakIdentifier @"com.ps.youpip"
-#import "../PSPrefs/PSPrefs.x"
-#endif
-
 #import "Header.h"
 #import "../PSHeader/iOSVersions.h"
 
-BOOL CompatibilityMode = NO;
-static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
+BOOL CompatibilityMode() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
+}
 
 MLPIPController *(*InjectMLPIPController)();
 YTSystemNotifications *(*InjectYTSystemNotifications)();
@@ -163,19 +159,7 @@ YTHotConfig *(*InjectYTHotConfig)();
 %end
 
 %ctor {
-    NSBundle *bundle = [NSBundle mainBundle];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if (![defaults boolForKey:YouPiPWarnVersionKey]) {
-        NSString *currentVersion = [bundle infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
-        if ([currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedAscending) {
-            UIAlertController *warning = [UIAlertController alertControllerWithTitle:@"YouPiP" message:[NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)] preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
-            [warning addAction:action];
-            [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:warning animated:YES completion:nil];
-            [defaults setBool:YES forKey:YouPiPWarnVersionKey];
-        }
-    }
-    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", bundle.bundlePath];
+    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
     MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
     InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
     if (InjectMLPIPController != NULL) {
@@ -185,15 +169,10 @@ YTHotConfig *(*InjectYTHotConfig)();
         InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(WithInjection);
     }
-    if (IS_IOS_OR_NEWER(iOS_14_0)) {
-#if !SIDELOADED
-        GetPrefs();
-        GetBool2(CompatibilityMode, NO);
-#endif
-    } else  {
+    if (!IS_IOS_OR_NEWER(iOS_14_0)) {
         %init(Compat);
     }
-    if (CompatibilityMode) {
+    if (CompatibilityMode()) {
         %init(Legacy);
     }
 }
