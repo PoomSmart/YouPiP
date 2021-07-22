@@ -139,12 +139,12 @@ int AVObservationController_stopAllObservation_override = 0;
 %ctor {
     if (!IS_IOS_OR_NEWER(iOS_14_0) || IS_IOS_OR_NEWER(iOS_15_0))
         return;
+    if (IS_IOS_OR_NEWER(iOS_14_2)) {
+        %init(AVKit_iOS14_2_Up);
+    } else {
+        %init(AVKit_preiOS14_2);
+    }
     if (SampleBufferWork()) {
-        if (IS_IOS_OR_NEWER(iOS_14_2)) {
-            %init(AVKit_iOS14_2_Up);
-        } else {
-            %init(AVKit_preiOS14_2);
-        }
         %init;
     }
 }
