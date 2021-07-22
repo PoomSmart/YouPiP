@@ -394,7 +394,14 @@ BOOL DidInitLateLateHook = NO;
 %end
 
 %ctor {
-    PiPVideoPath = @"/Library/Application Support/YouPiP.bundle/PiPPlaceholderAsset.mp4";
-    PiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-overlay.png";
+    NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
+    if (tweakBundlePath) {
+        NSBundle *tweakBundle = [NSBundle bundleWithPath:tweakBundlePath];
+        PiPVideoPath = [tweakBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
+        PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
+    } else {
+        PiPVideoPath = @"/Library/Application Support/YouPiP.bundle/PiPPlaceholderAsset.mp4";
+        PiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-overlay.png";
+    }
     %init;
 }
