@@ -1,5 +1,15 @@
 #import "Header.h"
 #import "../PSHeader/iOSVersions.h"
+#import "../YouTubeHeader/MLAVPlayer.h"
+#import "../YouTubeHeader/MLHAMQueuePlayer.h"
+#import "../YouTubeHeader/MLPIPController.h"
+#import "../YouTubeHeader/MLPlayerPoolImpl.h"
+#import "../YouTubeHeader/MLDefaultPlayerViewFactory.h"
+#import "../YouTubeHeader/YTHotConfig.h"
+#import "../YouTubeHeader/YTPlayerPIPController.h"
+#import "../YouTubeHeader/YTBackgroundabilityPolicy.h"
+#import "../YouTubeHeader/YTPlayerViewControllerConfig.h"
+#import "../YouTubeHeader/YTSystemNotifications.h"
 
 BOOL CompatibilityMode() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];

@@ -1,5 +1,7 @@
 #import "../PSHeader/iOSVersions.h"
 #import "Header.h"
+#import "../YouTubeHeader/YTSettingsViewController.h"
+#import "../YouTubeHeader/YTSettingsSectionItem.h"
 
 extern BOOL PiPActivationMethod();
 extern BOOL CompatibilityMode();

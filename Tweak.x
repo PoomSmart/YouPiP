@@ -1,5 +1,20 @@
-#import "Header.h"
 #import <version.h>
+#import "Header.h"
+#import "../YouTubeHeader/GIMBindingBuilder.h"
+#import "../YouTubeHeader/GPBExtensionRegistry.h"
+#import "../YouTubeHeader/MLPIPController.h"
+#import "../YouTubeHeader/MLDefaultPlayerViewFactory.h"
+#import "../YouTubeHeader/YTBackgroundabilityPolicy.h"
+#import "../YouTubeHeader/YTMainAppControlsOverlayView.h"
+#import "../YouTubeHeader/YTMainAppVideoPlayerOverlayViewController.h"
+#import "../YouTubeHeader/YTHotConfig.h"
+#import "../YouTubeHeader/YTLocalPlaybackController.h"
+#import "../YouTubeHeader/YTPlayerPIPController.h"
+#import "../YouTubeHeader/YTSettingsSectionItem.h"
+#import "../YouTubeHeader/YTSettingsSectionItemManager.h"
+#import "../YouTubeHeader/YTIPictureInPictureRendererRoot.h"
+#import "../YouTubeHeader/YTColor.h"
+#import "../YouTubeHeader/QTMIcon.h"
 
 BOOL FromUser = NO;
 BOOL ForceDisablePiP = NO;
