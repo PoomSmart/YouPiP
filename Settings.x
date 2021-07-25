@@ -10,7 +10,6 @@ extern BOOL PiPActivationMethod();
 extern BOOL CompatibilityMode();
 extern BOOL SampleBufferWork();
 extern BOOL NonBackgroundable();
-extern BOOL ShouldUseButton();
 // extern BOOL PiPStartPaused();
 
 NSString *currentVersion;
@@ -28,8 +27,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         if (defaultPiPIndex != NSNotFound) {
             YTSettingsSectionItem *activationMethod = [[%c(YTSettingsSectionItem) alloc] initWithTitle:@"Use PiP Button" titleDescription:@"Adds a PiP button over the video control overlay to activate PiP instead of dismissing the app."];
             activationMethod.hasSwitch = activationMethod.switchVisible = YES;
-            activationMethod.on = ShouldUseButton();
-            activationMethod.enabled = !CompatibilityMode();
+            activationMethod.on = PiPActivationMethod();
             activationMethod.switchBlock = ^BOOL (YTSettingsCell *cell, BOOL enabled) {
                 [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:PiPActivationMethodKey];
                 return YES;

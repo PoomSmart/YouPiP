@@ -33,10 +33,6 @@ BOOL NonBackgroundable() {
 //     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPStartPausedKey];
 // }
 
-BOOL ShouldUseButton() {
-    return PiPActivationMethod() || CompatibilityMode();
-}
-
 static NSString *PiPIconPath;
 static NSString *PiPVideoPath;
 
@@ -60,10 +56,7 @@ static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
     forcePictureInPictureInternal(hotConfig, YES);
 }
 
-static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
-    if (![local isKindOfClass:%c(YTLocalPlaybackController)])
-        return;
-    YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
+static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
@@ -80,11 +73,23 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
                 [pip startPictureInPicture];
         }
     }
+    AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
     if (playPiP) {
-        AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
         if ([avpip isPictureInPicturePossible])
             [avpip startPictureInPicture];
+    } else if (![pip isPictureInPictureActive]) {
+        if ([pip respondsToSelector:@selector(deactivatePiPController)])
+            [pip deactivatePiPController];
+        else
+            [avpip stopPictureInPicture];
     }
+}
+
+static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
+    if (![local isKindOfClass:%c(YTLocalPlaybackController)])
+        return;
+    YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
+    activatePiPBase(controller, playPiP);
 }
 
 static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
@@ -107,7 +112,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     %orig;
     YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
     YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
-    c.pipButton.hidden = !ShouldUseButton();
+    c.pipButton.hidden = !PiPActivationMethod();
     [c setNeedsLayout];
 }
 
@@ -130,7 +135,7 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
 }
 
 static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
-    if (ShouldUseButton())
+    if (PiPActivationMethod())
         [controls insertObject:self.pipButton atIndex:0];
     return controls;
 }
@@ -160,7 +165,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
-    if (ShouldUseButton()) {
+    if (PiPActivationMethod()) {
         if (canceledState) {
             if (!self.pipButton.hidden)
                 self.pipButton.alpha = 0.0;
@@ -200,7 +205,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && !ShouldUseButton())
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && !PiPActivationMethod())
         bootstrapPiP(self, YES);
 }
 
@@ -215,7 +220,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
-    %orig(ShouldUseButton() ? NO : canStartFromInline);
+    %orig(PiPActivationMethod() ? NO : canStartFromInline);
 }
 
 %end
@@ -326,6 +331,8 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 - (void)appWillResignActive:(id)arg1 {
     forcePictureInPictureInternal(getHotConfig(self), !PiPActivationMethod());
     ForceDisablePiP = YES;
+    if (PiPActivationMethod())
+        activatePiPBase(self, NO);
     %orig;
     ForceDisablePiP = FromUser = NO;
 }

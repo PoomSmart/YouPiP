@@ -105,6 +105,7 @@ YTHotConfig *(*InjectYTHotConfig)();
 - (void)deactivatePiPController {
     AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
     [pip stopPictureInPicture];
+    [self setValue:nil forKey:@"_pictureInPictureController"];
 }
 
 %end
