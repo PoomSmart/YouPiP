@@ -3,10 +3,6 @@
 
 #import "AVKit-Header.h"
 
-#define CompatibilityModeKey @"CompatibilityModeKey"
 #define PiPActivationMethodKey @"PiPActivationMethodKey"
-#define SampleBufferWorkKey @"SampleBufferWorkKey"
-#define NonBackgroundableKey @"NonBackgroundableKey"
-#define PiPStartPausedKey @"PiPStartPausedKey"
 
 #endif

@@ -1,3 +1,4 @@
+#define LEGACY
 #import <version.h>
 #import "Header.h"
 #import "../YouTubeHeader/GIMBindingBuilder.h"
@@ -19,19 +20,9 @@
 BOOL FromUser = NO;
 BOOL ForceDisablePiP = NO;
 
-extern BOOL CompatibilityMode();
-
 BOOL PiPActivationMethod() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
 }
-
-BOOL NonBackgroundable() {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:NonBackgroundableKey];
-}
-
-// BOOL PiPStartPaused() {
-//     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPStartPausedKey];
-// }
 
 static NSString *PiPIconPath;
 static NSString *PiPVideoPath;
@@ -42,12 +33,14 @@ static NSString *PiPVideoPath;
 - (UIImage *)pipImage;
 @end
 
+static YTHotConfig *getHotConfig(id object) {
+    return [[object valueForKey:@"_config"] valueForKey:@"_hotConfig"];
+}
+
 static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
     [hotConfig mediaHotConfig].enablePictureInPicture = value;
     YTIIosMediaHotConfig *iosMediaHotConfig = [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig];
     iosMediaHotConfig.enablePictureInPicture = value;
-    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
-        iosMediaHotConfig.enablePipForNonBackgroundableContent = value && NonBackgroundable();
 }
 
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
@@ -58,31 +51,15 @@ static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
 
 static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
-    if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
-        [controller maybeEnablePictureInPicture];
-    else if ([controller respondsToSelector:@selector(maybeInvokePictureInPicture)])
-        [controller maybeInvokePictureInPicture];
-    else {
-        BOOL canPiP = [controller respondsToSelector:@selector(canEnablePictureInPicture)] && [controller canEnablePictureInPicture];
-        if (!canPiP)
-            canPiP = [controller respondsToSelector:@selector(canInvokePictureInPicture)] && [controller canInvokePictureInPicture];
-        if (canPiP) {
-            if ([pip respondsToSelector:@selector(activatePiPController)])
-                [pip activatePiPController];
-            else
-                [pip startPictureInPicture];
-        }
-    }
+    BOOL canPiP = [controller canInvokePictureInPicture];
+    if (canPiP)
+        [pip startPictureInPicture];
     AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
     if (playPiP) {
         if ([avpip isPictureInPicturePossible])
             [avpip startPictureInPicture];
-    } else if (![pip isPictureInPictureActive]) {
-        if ([pip respondsToSelector:@selector(deactivatePiPController)])
-            [pip deactivatePiPController];
-        else
-            [avpip stopPictureInPicture];
-    }
+    } else if (![pip isPictureInPictureActive])
+        [avpip stopPictureInPicture];
 }
 
 static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
@@ -93,12 +70,7 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
 }
 
 static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
-    YTHotConfig *hotConfig;
-    @try {
-        hotConfig = [self valueForKey:@"_hotConfig"];
-    } @catch (id ex) {
-        hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
-    }
+    YTHotConfig *hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
     forceEnablePictureInPictureInternal(hotConfig);
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
     activatePiP(local, playPiP);
@@ -126,11 +98,7 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
         self.pipButton.hidden = YES;
         self.pipButton.alpha = 0;
         [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:64];
-        @try {
-            [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
-        } @catch (id ex) {
-            [self addSubview:self.pipButton];
-        }
+        [self addSubview:self.pipButton];
     }
 }
 
@@ -140,7 +108,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     return controls;
 }
 
-%hook YTMainAppControlsOverlayView
+%hook YTMainAppPlayerOverlayView
 
 %property(retain, nonatomic) YTQTMButton *pipButton;
 
@@ -205,7 +173,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && !PiPActivationMethod())
+    if (!PiPActivationMethod())
         bootstrapPiP(self, YES);
 }
 
@@ -217,10 +185,6 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 + (BOOL)isPictureInPictureSupported {
     return YES;
-}
-
-- (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
-    %orig(PiPActivationMethod() ? NO : canStartFromInline);
 }
 
 %end
@@ -236,56 +200,19 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 %hook MLDefaultPlayerViewFactory
 
 - (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    forceEnablePictureInPictureInternal(getHotConfig(self));
     return %orig;
 }
 
 %end
 
-// %hook YTHotConfig
-
-// - (BOOL)iosReleasePipControllerOnMain {
-//     return NO;
-// }
-
-// - (BOOL)iosDontReleasePipController {
-//     return NO;
-// }
-
-// %end
-
 #pragma mark - PiP Support, Backgroundable
-
-%hook YTIHamplayerConfig
-
-- (BOOL)enableBackgroundable {
-    return YES;
-}
-
-%end
-
-%hook YTIBackgroundOfflineSettingCategoryEntryRenderer
-
-- (BOOL)isBackgroundEnabled {
-    return YES;
-}
-
-%end
 
 %hook YTBackgroundabilityPolicy
 
 - (void)updateIsBackgroundableByUserSettings {
     %orig;
     [self setValue:@(YES) forKey:@"_backgroundableByUserSettings"];
-}
-
-%end
-
-%hook YTSettingsSectionItemManager
-
-- (YTSettingsSectionItem *)pictureInPictureSectionItem {
-    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
-    return %orig;
 }
 
 %end
@@ -302,25 +229,9 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 %end
 
-static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
-    @try {
-        return [self valueForKey:@"_hotConfig"];
-    } @catch (id ex) {
-        return [[self valueForKey:@"_config"] valueForKey:@"_hotConfig"];
-    }
-}
-
 %hook YTPlayerPIPController
 
 - (BOOL)canInvokePictureInPicture {
-    forceEnablePictureInPictureInternal(getHotConfig(self));
-    YTSingleVideo_isLivePlayback_override = YES;
-    BOOL value = %orig;
-    YTSingleVideo_isLivePlayback_override = NO;
-    return value;
-}
-
-- (BOOL)canEnablePictureInPicture {
     forceEnablePictureInPictureInternal(getHotConfig(self));
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
@@ -339,12 +250,6 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 
 %end
 
-#pragma mark - PiP Support, Late Hooks
-
-BOOL DidInitLateLateHook = NO;
-
-%group LateHook
-
 %hook YTIPlayabilityStatus
 
 - (BOOL)isPlayableInBackground {
@@ -357,20 +262,6 @@ BOOL DidInitLateLateHook = NO;
 
 - (BOOL)hasPictureInPicture {
     return YES;
-}
-
-%end
-
-%end
-
-%hook YTBaseInnerTubeService
-
-+ (void)initialize {
-    %orig;
-    if (!DidInitLateLateHook) {
-        %init(LateHook);
-        DidInitLateLateHook = YES;
-    }
 }
 
 %end
@@ -395,35 +286,8 @@ BOOL DidInitLateLateHook = NO;
 
 %end
 
-%hook YTIInnertubeResourcesIosRoot
-
-- (GPBExtensionRegistry *)extensionRegistry {
-    GPBExtensionRegistry *registry = %orig;
-    [registry addExtension:[%c(YTIPictureInPictureRendererRoot) pictureInPictureRenderer]];
-    return registry;
-}
-
-%end
-
-%hook GoogleGlobalExtensionRegistry
-
-- (GPBExtensionRegistry *)extensionRegistry {
-    GPBExtensionRegistry *registry = %orig;
-    [registry addExtension:[%c(YTIPictureInPictureRendererRoot) pictureInPictureRenderer]];
-    return registry;
-}
-
-%end
-
 %ctor {
-    NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
-    if (tweakBundlePath) {
-        NSBundle *tweakBundle = [NSBundle bundleWithPath:tweakBundlePath];
-        PiPVideoPath = [tweakBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
-        PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
-    } else {
-        PiPVideoPath = @"/Library/Application Support/YouPiP.bundle/PiPPlaceholderAsset.mp4";
-        PiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-overlay.png";
-    }
+    PiPVideoPath = @"/Library/Application Support/YouPiP.bundle/PiPPlaceholderAsset.mp4";
+    PiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-overlay.png";
     %init;
 }
