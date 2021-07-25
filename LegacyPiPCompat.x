@@ -132,8 +132,8 @@ YTHotConfig *(*InjectYTHotConfig)();
     return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
 }
 
-- (bool)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    return false;
+- (BOOL)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    return NO;
 }
 
 %end

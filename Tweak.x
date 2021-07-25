@@ -19,12 +19,22 @@
 BOOL FromUser = NO;
 BOOL ForceDisablePiP = NO;
 
+extern BOOL CompatibilityMode();
+
 BOOL PiPActivationMethod() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
 }
 
 BOOL NonBackgroundable() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:NonBackgroundableKey];
+}
+
+// BOOL PiPStartPaused() {
+//     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPStartPausedKey];
+// }
+
+BOOL ShouldUseButton() {
+    return PiPActivationMethod() || CompatibilityMode();
 }
 
 static NSString *PiPIconPath;
@@ -95,18 +105,16 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 - (void)updateTopRightButtonAvailability {
     %orig;
-    if (PiPActivationMethod()) {
-        YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
-        YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
-        c.pipButton.hidden = NO;
-        [c setNeedsLayout];
-    }
+    YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
+    YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
+    c.pipButton.hidden = !ShouldUseButton();
+    [c setNeedsLayout];
 }
 
 %end
 
 static void createPiPButton(YTMainAppControlsOverlayView *self) {
-    if (self && PiPActivationMethod()) {
+    if (self) {
         CGFloat padding = [[self class] topButtonAdditionalPadding];
         UIImage *image = [self pipImage];
         self.pipButton = [self buttonWithImage:image accessibilityLabel:@"pip" verticalContentPadding:padding];
@@ -122,15 +130,8 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
 }
 
 static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
-    if (PiPActivationMethod()) {
-        if ([controls respondsToSelector:@selector(insertObject:atIndex:)])
-            [controls insertObject:self.pipButton atIndex:0];
-        else {
-            NSMutableArray *mutableControls = [NSMutableArray arrayWithArray:controls];
-            [mutableControls insertObject:self.pipButton atIndex:0];
-            return mutableControls;
-        }
-    }
+    if (ShouldUseButton())
+        [controls insertObject:self.pipButton atIndex:0];
     return controls;
 }
 
@@ -159,7 +160,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
-    if (PiPActivationMethod()) {
+    if (ShouldUseButton()) {
         if (canceledState) {
             if (!self.pipButton.hidden)
                 self.pipButton.alpha = 0.0;
@@ -177,8 +178,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         UIColor *color = [%c(YTColor) white1];
-        image = [UIImage imageWithContentsOfFile:PiPIconPath];
-        image = [%c(QTMIcon) tintImage:image color:color];
+        image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:color];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
     });
@@ -200,7 +200,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && PiPActivationMethod() == 0)
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && !ShouldUseButton())
         bootstrapPiP(self, YES);
 }
 
@@ -215,7 +215,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
-    %orig(PiPActivationMethod() != 0 ? NO : canStartFromInline);
+    %orig(ShouldUseButton() ? NO : canStartFromInline);
 }
 
 %end
@@ -239,12 +239,12 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 // %hook YTHotConfig
 
-// - (bool)iosReleasePipControllerOnMain {
-//     return true;
+// - (BOOL)iosReleasePipControllerOnMain {
+//     return NO;
 // }
 
-// - (bool)iosDontReleasePipController {
-//     return false;
+// - (BOOL)iosDontReleasePipController {
+//     return NO;
 // }
 
 // %end
@@ -324,7 +324,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (void)appWillResignActive:(id)arg1 {
-    forcePictureInPictureInternal(getHotConfig(self), PiPActivationMethod() == 0);
+    forcePictureInPictureInternal(getHotConfig(self), !PiPActivationMethod());
     ForceDisablePiP = YES;
     %orig;
     ForceDisablePiP = FromUser = NO;
