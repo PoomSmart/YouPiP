@@ -11,6 +11,8 @@
 #import "../YouTubeHeader/YTPlayerViewControllerConfig.h"
 #import "../YouTubeHeader/YTSystemNotifications.h"
 
+extern BOOL isPictureInPictureActive(MLPIPController *);
+
 BOOL CompatibilityMode() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
 }
@@ -65,7 +67,7 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 - (bool)isPictureInPictureActive {
     MLPIPController *pip = InjectMLPIPController();
-    return [pip isPictureInPictureActive];
+    return isPictureInPictureActive(pip);
 }
 
 %end
@@ -88,7 +90,7 @@ YTHotConfig *(*InjectYTHotConfig)();
 %hook MLPIPController
 
 - (void)activatePiPController {
-    if (![self isPictureInPictureActive]) {
+    if (!isPictureInPictureActive(self)) {
         AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
         if (!pip) {
             MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];

@@ -33,6 +33,10 @@ BOOL NonBackgroundable() {
 //     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPStartPausedKey];
 // }
 
+BOOL isPictureInPictureActive(MLPIPController *pip) {
+    return [pip respondsToSelector:@selector(pictureInPictureActive)] ? [pip pictureInPictureActive] : [pip isPictureInPictureActive];
+}
+
 static NSString *PiPIconPath;
 static NSString *PiPVideoPath;
 
@@ -78,8 +82,7 @@ static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
         if ([avpip isPictureInPicturePossible])
             [avpip startPictureInPicture];
     } else {
-        BOOL isPictureInPictureActive = [pip respondsToSelector:@selector(pictureInPictureActive)] ? [pip pictureInPictureActive] : [pip isPictureInPictureActive];
-        if (!isPictureInPictureActive) {
+        if (!isPictureInPictureActive(pip)) {
             if ([pip respondsToSelector:@selector(deactivatePiPController)])
                 [pip deactivatePiPController];
             else
