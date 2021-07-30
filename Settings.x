@@ -22,8 +22,13 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 - (void)setSectionItems:(NSMutableArray <YTSettingsSectionItem *> *)sectionItems forCategory:(NSInteger)category title:(NSString *)title titleDescription:(NSString *)titleDescription headerHidden:(BOOL)headerHidden {
     if (category == 1) {
         NSUInteger defaultPiPIndex = [sectionItems indexOfObjectPassingTest:^BOOL (YTSettingsSectionItem *item, NSUInteger idx, BOOL *stop) { 
-            return [[item valueForKey:@"_accessibilityIdentifier"] isEqualToString:@"id.settings.restricted_mode.switch"];
+            return item.settingItemId == 366;
         }];
+        if (defaultPiPIndex == NSNotFound) {
+            defaultPiPIndex = [sectionItems indexOfObjectPassingTest:^BOOL (YTSettingsSectionItem *item, NSUInteger idx, BOOL *stop) { 
+                return [[item valueForKey:@"_accessibilityIdentifier"] isEqualToString:@"id.settings.restricted_mode.switch"];
+            }];
+        }
         if (defaultPiPIndex != NSNotFound) {
             YTSettingsSectionItem *activationMethod = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Use PiP Button"
                 titleDescription:@"Adds a PiP button over the video control overlay to activate PiP instead of dismissing the app."
