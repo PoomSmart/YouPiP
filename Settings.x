@@ -54,7 +54,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             }
             if ([currentVersion compare:@"15.33.4" options:NSNumericSearch] == NSOrderedDescending) {
                 YTSettingsSectionItem *legacyPiP = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Legacy PiP"
-                    titleDescription:@"Uses AVPlayerLayer where there's no playback speed bug. This also removes UHD video quality options (2K/4K) from any videos and YTUHD tweak cannot fix this. PiP button will be forcefully enabled. App restart is required."
+                    titleDescription:@"Uses AVPlayerLayer where there's no playback speed bug. This also removes UHD video quality options (2K/4K) from any videos. App restart is required."
                     accessibilityIdentifier:nil
                     switchOn:CompatibilityMode()
                     switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {

@@ -81,13 +81,11 @@ static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
     if (playPiP) {
         if ([avpip isPictureInPicturePossible])
             [avpip startPictureInPicture];
-    } else {
-        if (!isPictureInPictureActive(pip)) {
-            if ([pip respondsToSelector:@selector(deactivatePiPController)])
-                [pip deactivatePiPController];
-            else
-                [avpip stopPictureInPicture];
-        }
+    } else if (!isPictureInPictureActive(pip)) {
+        if ([pip respondsToSelector:@selector(deactivatePiPController)])
+            [pip deactivatePiPController];
+        else
+            [avpip stopPictureInPicture];
     }
 }
 
