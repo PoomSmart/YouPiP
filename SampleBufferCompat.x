@@ -6,6 +6,7 @@ BOOL SampleBufferWork() {
 }
 
 static NSNotificationName AVSampleBufferDisplayLayerVideoRectDidChangeNotification = @"AVSampleBufferDisplayLayerVideoRectDidChangeNotification";
+static NSNotificationName AVSampleBufferDisplayLayerVisibilityDidChangeNotification = @"AVSampleBufferDisplayLayerVisibilityDidChangeNotification";
 
 int AVObservationController_stopAllObservation_override = 0;
 
@@ -102,6 +103,9 @@ int AVObservationController_stopAllObservation_override = 0;
     AVObservationController *observationController = self.observationController;
     [observationController startObservingNotificationForName:AVSampleBufferDisplayLayerVideoRectDidChangeNotification object:contentSource notificationCenter:nil observationHandler:^(void) {
         [self _updateEnqueuedBufferDimensions];
+    }];
+    [observationController startObservingNotificationForName:AVSampleBufferDisplayLayerVisibilityDidChangeNotification object:contentSource notificationCenter:nil observationHandler:^(void) {
+        [self contentSourceVideoRectInWindowChanged];
     }];
     [self _updateEnqueuedBufferDimensions];
 }

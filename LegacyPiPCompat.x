@@ -13,7 +13,7 @@
 
 extern BOOL isPictureInPictureActive(MLPIPController *);
 
-BOOL CompatibilityMode() {
+BOOL LegacyPiP() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
 }
 
@@ -185,7 +185,7 @@ YTHotConfig *(*InjectYTHotConfig)();
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
         %init(Compat);
     }
-    if (CompatibilityMode()) {
+    if (LegacyPiP()) {
         %init(Legacy);
     }
 }

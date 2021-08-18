@@ -19,9 +19,9 @@
 BOOL FromUser = NO;
 BOOL ForceDisablePiP = NO;
 
-extern BOOL CompatibilityMode();
+extern BOOL LegacyPiP();
 
-BOOL PiPActivationMethod() {
+BOOL UsePiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
 }
 
@@ -41,7 +41,7 @@ static NSString *PiPIconPath;
 static NSString *PiPVideoPath;
 
 @interface YTMainAppControlsOverlayView (YP)
-@property(retain, nonatomic) YTQTMButton *pipButton;
+@property (retain, nonatomic) YTQTMButton *pipButton;
 - (void)didPressPiP:(id)arg;
 - (UIImage *)pipImage;
 @end
@@ -116,7 +116,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     %orig;
     YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
     YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
-    c.pipButton.hidden = !PiPActivationMethod();
+    c.pipButton.hidden = !UsePiPButton();
     [c setNeedsLayout];
 }
 
@@ -139,7 +139,7 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
 }
 
 static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
-    if (PiPActivationMethod())
+    if (UsePiPButton())
         [controls insertObject:self.pipButton atIndex:0];
     return controls;
 }
@@ -169,7 +169,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
-    if (PiPActivationMethod()) {
+    if (UsePiPButton()) {
         if (canceledState) {
             if (!self.pipButton.hidden)
                 self.pipButton.alpha = 0.0;
@@ -209,7 +209,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && !PiPActivationMethod())
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && !UsePiPButton())
         bootstrapPiP(self, YES);
 }
 
@@ -224,7 +224,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
-    %orig(PiPActivationMethod() ? NO : canStartFromInline);
+    %orig(UsePiPButton() ? NO : canStartFromInline);
 }
 
 %end
@@ -333,21 +333,15 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (void)appWillResignActive:(id)arg1 {
-    forcePictureInPictureInternal(getHotConfig(self), !PiPActivationMethod());
+    forcePictureInPictureInternal(getHotConfig(self), !UsePiPButton());
     ForceDisablePiP = YES;
-    if (PiPActivationMethod())
+    if (UsePiPButton())
         activatePiPBase(self, NO);
     %orig;
     ForceDisablePiP = FromUser = NO;
 }
 
 %end
-
-#pragma mark - PiP Support, Late Hooks
-
-BOOL DidInitLateLateHook = NO;
-
-%group LateHook
 
 %hook YTIPlayabilityStatus
 
@@ -361,20 +355,6 @@ BOOL DidInitLateLateHook = NO;
 
 - (BOOL)hasPictureInPicture {
     return YES;
-}
-
-%end
-
-%end
-
-%hook YTBaseInnerTubeService
-
-+ (void)initialize {
-    %orig;
-    if (!DidInitLateLateHook) {
-        %init(LateHook);
-        DidInitLateLateHook = YES;
-    }
 }
 
 %end

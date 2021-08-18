@@ -6,8 +6,8 @@
 #import "../YouTubeHeader/YTSettingsSectionItemManager.h"
 #import "../YouTubeHeader/YTAppSettingsSectionItemActionController.h"
 
-extern BOOL PiPActivationMethod();
-extern BOOL CompatibilityMode();
+extern BOOL UsePiPButton();
+extern BOOL LegacyPiP();
 extern BOOL SampleBufferWork();
 extern BOOL NonBackgroundable();
 // extern BOOL PiPStartPaused();
@@ -33,7 +33,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             YTSettingsSectionItem *activationMethod = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Use PiP Button"
                 titleDescription:@"Adds a PiP button over the video control overlay to activate PiP instead of dismissing the app."
                 accessibilityIdentifier:nil
-                switchOn:PiPActivationMethod()
+                switchOn:UsePiPButton()
                 switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
                     [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:PiPActivationMethodKey];
                     return YES;
@@ -42,7 +42,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             [sectionItems insertObject:activationMethod atIndex:defaultPiPIndex + 1];
             if (IS_IOS_BETWEEN_EEX(iOS_14_0, iOS_15_0)) {
                 YTSettingsSectionItem *sampleBuffer = [%c(YTSettingsSectionItem) switchItemWithTitle:@"PiP Sample Buffer Hack"
-                    titleDescription:@"Implements PiP sample buffering based on iOS 15.0b2, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues. App restart is required."
+                    titleDescription:@"Implements PiP sample buffering based on iOS 15.0b5, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues. App restart is required."
                     accessibilityIdentifier:nil
                     switchOn:SampleBufferWork()
                     switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
@@ -56,7 +56,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
                 YTSettingsSectionItem *legacyPiP = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Legacy PiP"
                     titleDescription:@"Uses AVPlayerLayer where there's no playback speed bug. This also removes UHD video quality options (2K/4K) from any videos. App restart is required."
                     accessibilityIdentifier:nil
-                    switchOn:CompatibilityMode()
+                    switchOn:LegacyPiP()
                     switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
                         [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:CompatibilityModeKey];
                         return YES;
