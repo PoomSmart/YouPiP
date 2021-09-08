@@ -54,10 +54,8 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 - (instancetype)initWithStickySettings:(MLPlayerStickySettings *)stickySettings playerViewProvider:(MLPlayerPoolImpl *)playerViewProvider playerConfiguration:(void *)playerConfiguration {
     self = %orig;
-    if ([self valueForKey:@"_pipController"] == nil) {
-        MLPIPController *pip = InjectMLPIPController();
-        [self setValue:pip forKey:@"_pipController"];
-    }
+    if ([self valueForKey:@"_pipController"] == nil)
+        [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
 
@@ -66,8 +64,7 @@ YTHotConfig *(*InjectYTHotConfig)();
 %hook MLAVPlayer
 
 - (bool)isPictureInPictureActive {
-    MLPIPController *pip = InjectMLPIPController();
-    return isPictureInPictureActive(pip);
+    return isPictureInPictureActive(InjectMLPIPController());
 }
 
 %end
@@ -76,8 +73,18 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 - (instancetype)init {
     self = %orig;
-    MLPIPController *pip = InjectMLPIPController();
-    [self setValue:pip forKey:@"_pipController"];
+    [self setValue:InjectMLPIPController() forKey:@"_pipController"];
+    return self;
+}
+
+%end
+
+%hook MLAVPIPPlayerLayerView
+
+- (id)initWithPlaceholderPlayerItem:(AVPlayerItem *)playerItem {
+    self = %orig;
+    if ([self valueForKey:@"_pipController"] == nil)
+        [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
 

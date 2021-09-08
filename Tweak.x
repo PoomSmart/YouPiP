@@ -48,7 +48,7 @@ static NSString *PiPVideoPath;
 
 static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
     [hotConfig mediaHotConfig].enablePictureInPicture = value;
-    YTIIosMediaHotConfig *iosMediaHotConfig = [[[hotConfig hotConfigGroup] mediaHotConfig] iosMediaHotConfig];
+    YTIIosMediaHotConfig *iosMediaHotConfig = [hotConfig hotConfigGroup].mediaHotConfig.iosMediaHotConfig;
     iosMediaHotConfig.enablePictureInPicture = value;
     if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
         iosMediaHotConfig.enablePipForNonBackgroundableContent = value && NonBackgroundable();
