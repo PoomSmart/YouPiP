@@ -1,6 +1,9 @@
 #import "Header.h"
 #import "../PSHeader/iOSVersions.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+
 BOOL SampleBufferWork() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:SampleBufferWorkKey];
 }
@@ -152,3 +155,5 @@ int AVObservationController_stopAllObservation_override = 0;
         %init;
     }
 }
+
+#pragma clang diagnostic pop

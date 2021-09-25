@@ -10,6 +10,7 @@
 #import "../YouTubeHeader/YTBackgroundabilityPolicy.h"
 #import "../YouTubeHeader/YTPlayerViewControllerConfig.h"
 #import "../YouTubeHeader/YTSystemNotifications.h"
+#import "../YouTubeHeader/YTAutonavEndscreenController.h"
 
 extern BOOL isPictureInPictureActive(MLPIPController *);
 
@@ -46,6 +47,17 @@ YTHotConfig *(*InjectYTHotConfig)();
         [systemNotifications addSystemNotificationsObserver:controller];
     }
     return controller;
+}
+
+%end
+
+%hook YTAutonavEndscreenController
+
+- (instancetype)initWithParentResponder:(id)arg1 config:(id)arg2 imageService:(id)arg3 lastActionController:(id)arg4 reachabilityController:(id)arg5 endscreenDelegate:(id)arg6 {
+    self = %orig;
+    if ([self valueForKey:@"_pipController"] == nil)
+        [self setValue:InjectMLPIPController() forKey:@"_pipController"];
+    return self;
 }
 
 %end

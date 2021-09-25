@@ -2,11 +2,6 @@
 #import <AVKit/AVKit.h>
 #import <UIKit/UIKit.h>
 
-// TODO: Remove when using iOS 15 SDK
-@protocol AVPictureInPictureSampleBufferPlaybackDelegate <NSObject>
-@end
-
-// TODO: Remove when using iOS 15 SDK
 @protocol AVPictureInPictureContentSource <NSObject>
 @end
 
@@ -21,35 +16,30 @@
 @property(assign, nonatomic) CGSize enqueuedBufferDimensions;
 @end
 
-@interface AVSampleBufferDisplayLayer (Additions)
+@interface AVSampleBufferDisplayLayer (Private)
 - (CGRect)videoRect;
 - (void)postVideoRectDidChangeNotification;
 @end
 
-// TODO: Remove when using iOS 15 SDK
-@interface AVPictureInPictureControllerContentSource : NSObject
+@interface AVPictureInPictureControllerContentSource (Private)
 @property(nonatomic, readonly) id <AVPictureInPictureContentSource> source;
-@property(nonatomic, readonly) AVSampleBufferDisplayLayer *sampleBufferDisplayLayer;
 @property(assign) bool hasInitialRenderSize;
-- (instancetype)initWithSampleBufferDisplayLayer:(AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer playbackDelegate:(id <AVPictureInPictureSampleBufferPlaybackDelegate>)playbackDelegate;
-- (instancetype)initWithPlayerLayer:(AVPlayerLayer *)playerLayer;
 @end
 
-// TODO: Remove when using iOS 15 SDK
-@interface AVPictureInPictureController (Additions)
+@interface AVPictureInPictureController (Private)
 @property(nonatomic, readonly) id <AVPictureInPictureContentSource> source;
-@property(nonatomic, retain) AVPictureInPictureControllerContentSource *contentSource; // retain -> strong on iOS 15
+@property(nonatomic, retain) AVPictureInPictureControllerContentSource *contentSource API_AVAILABLE(ios(15.0)); // retain -> strong on iOS 15
 @property(nonatomic, retain) id prerollDelegate;
 @property(nonatomic, readonly) AVSampleBufferDisplayLayer *sampleBufferDisplayLayer;
 @property(nonatomic, readonly) AVObservationController *observationController;
-- (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource;
+- (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource API_AVAILABLE(ios(15.0));
 - (AVSampleBufferDisplayLayerPlayerController *)_sbdlPlayerController;
 - (void)contentSourceVideoRectInWindowChanged;
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
 - (void)sampleBufferDisplayLayerDidAppear;
 - (void)_updateEnqueuedBufferDimensions;
 - (void)_observePlayerLayer:(id <AVPictureInPictureContentSource>)playerLayerContentSource; // pre iOS 15.0b2
-- (void)_startObservationsForContentSource:(AVPictureInPictureControllerContentSource *)controllerContentSource;
+- (void)_startObservationsForContentSource:(AVPictureInPictureControllerContentSource *)controllerContentSource API_AVAILABLE(ios(15.0));
 - (void)_startObservingPlayerLayerContentSource:(id <AVPictureInPictureContentSource>)playerLayerContentSource;
 - (void)_startObservingSampleBufferDisplayLayerContentSource:(id <AVPictureInPictureContentSource>)contentSource;
 @end
