@@ -146,7 +146,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %hook YTMainAppControlsOverlayView
 
-%property(retain, nonatomic) YTQTMButton *pipButton;
+%property (retain, nonatomic) YTQTMButton *pipButton;
 
 - (id)initWithDelegate:(id)delegate {
     self = %orig;

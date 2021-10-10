@@ -17,7 +17,7 @@ int AVObservationController_stopAllObservation_override = 0;
 
 %hook AVPictureInPictureControllerContentSource
 
-%property(assign) bool hasInitialRenderSize;
+%property (assign) bool hasInitialRenderSize;
 
 - (id)initWithSampleBufferDisplayLayer:(AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer initialRenderSize:(CGSize)initialRenderSize playbackDelegate:(id)playbackDelegate {
     self = %orig;

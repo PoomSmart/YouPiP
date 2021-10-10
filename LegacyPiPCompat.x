@@ -4,6 +4,7 @@
 #import "../YouTubeHeader/MLHAMQueuePlayer.h"
 #import "../YouTubeHeader/MLPIPController.h"
 #import "../YouTubeHeader/MLPlayerPoolImpl.h"
+#import "../YouTubeHeader/MLVideoDecoderFactory.h"
 #import "../YouTubeHeader/MLDefaultPlayerViewFactory.h"
 #import "../YouTubeHeader/YTHotConfig.h"
 #import "../YouTubeHeader/YTPlayerPIPController.h"
@@ -16,6 +17,21 @@ extern BOOL isPictureInPictureActive(MLPIPController *);
 
 BOOL LegacyPiP() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
+}
+
+static void forceRenderViewTypeBase(YTIHamplayerConfig *hamplayerConfig) {
+    if (!LegacyPiP()) return;
+    hamplayerConfig.renderViewType = 2;
+}
+
+static void forceRenderViewTypeHot(YTIHamplayerHotConfig *hamplayerHotConfig) {
+    if (!LegacyPiP()) return;
+    hamplayerHotConfig.renderViewType = 2;
+}
+
+static void forceRenderViewType(YTHotConfig *hotConfig) {
+    YTIHamplayerHotConfig *hamplayerHotConfig = [hotConfig hamplayerHotConfig];
+    forceRenderViewTypeHot(hamplayerHotConfig);
 }
 
 MLPIPController *(*InjectMLPIPController)();
@@ -36,11 +52,13 @@ YTHotConfig *(*InjectYTHotConfig)();
         YTSystemNotifications *systemNotifications = InjectYTSystemNotifications();
         YTBackgroundabilityPolicy *bgPolicy = InjectYTBackgroundabilityPolicy();
         YTPlayerViewControllerConfig *playerConfig = InjectYTPlayerViewControllerConfig();
-        YTHotConfig *config = InjectYTHotConfig();
         [controller setValue:pip forKey:@"_pipController"];
         [controller setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
         [controller setValue:playerConfig forKey:@"_config"];
-        [controller setValue:config forKey:@"_hotConfig"];
+        @try {
+            YTHotConfig *config = InjectYTHotConfig();
+            [controller setValue:config forKey:@"_hotConfig"];
+        } @catch (id ex) {}
         [controller setValue:delegate forKey:@"_delegate"];
         [bgPolicy addBackgroundabilityPolicyObserver:controller];
         [pip addPIPControllerObserver:controller];
@@ -154,8 +172,28 @@ YTHotConfig *(*InjectYTHotConfig)();
     return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
 }
 
+- (id)hamPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    forceRenderViewType([self valueForKey:@"_hotConfig"]);
+    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
+    return %orig;
+}
+
+- (BOOL)canUsePlayerView:(id)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
+    return %orig;
+}
+
 - (BOOL)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     return NO;
+}
+
+%end
+
+%hook MLVideoDecoderFactory
+
+- (void)prepareDecoderForFormatDescription:(id)formatDescription delegateQueue:(id)delegateQueue {
+    forceRenderViewTypeHot([self valueForKey:@"_hotConfig"]);
+    %orig;
 }
 
 %end
@@ -193,12 +231,12 @@ YTHotConfig *(*InjectYTHotConfig)();
 %ctor {
     NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
     MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
-    InjectMLPIPController = (MLPIPController *(*)())MSFindSymbol(ref, "_InjectMLPIPController");
+    InjectMLPIPController = MSFindSymbol(ref, "_InjectMLPIPController");
     if (InjectMLPIPController != NULL) {
-        InjectYTSystemNotifications = (YTSystemNotifications *(*)())MSFindSymbol(ref, "_InjectYTSystemNotifications");
-        InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)())MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
-        InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)())MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
-        InjectYTHotConfig = (YTHotConfig *(*)())MSFindSymbol(ref, "_InjectYTHotConfig");
+        InjectYTSystemNotifications = MSFindSymbol(ref, "_InjectYTSystemNotifications");
+        InjectYTBackgroundabilityPolicy = MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
+        InjectYTPlayerViewControllerConfig = MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
+        InjectYTHotConfig = MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(WithInjection);
     }
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
