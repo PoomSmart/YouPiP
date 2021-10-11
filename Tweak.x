@@ -52,6 +52,8 @@ static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
     iosMediaHotConfig.enablePictureInPicture = value;
     if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
         iosMediaHotConfig.enablePipForNonBackgroundableContent = value && NonBackgroundable();
+    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonPremiumUsers:)])
+        iosMediaHotConfig.enablePipForNonPremiumUsers = value;
 }
 
 static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
@@ -288,6 +290,11 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 %hook YTSettingsSectionItemManager
 
 - (YTSettingsSectionItem *)pictureInPictureSectionItem {
+    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    return %orig;
+}
+
+- (YTSettingsSectionItem *)pictureInPictureSectionItem:(id)arg1 {
     forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
     return %orig;
 }
