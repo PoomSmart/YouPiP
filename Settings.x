@@ -52,7 +52,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
                     settingItemId:0];
                 [sectionItems insertObject:sampleBuffer atIndex:defaultPiPIndex + 1];
             }
-            if ([currentVersion compare:@"15.33.4" options:NSNumericSearch] == NSOrderedDescending) {
+            if (!IS_IOS_OR_NEWER(iOS_13_0) || [currentVersion compare:@"15.33.4" options:NSNumericSearch] == NSOrderedDescending) {
                 YTSettingsSectionItem *legacyPiP = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Legacy PiP"
                     titleDescription:@"Uses AVPlayerLayer where there's no playback speed bug. This also removes UHD video quality options (2K/4K) from any videos. App restart is required."
                     accessibilityIdentifier:nil
@@ -105,9 +105,8 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 %end
 
 %ctor {
-    NSBundle *bundle = [NSBundle mainBundle];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    currentVersion = [bundle infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
+    currentVersion = [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
     PiPActivationMethods = @[@"On App Dismiss", @"On PiP button tap"];
     if (![defaults boolForKey:YouPiPWarnVersionKey]) {
         if ([currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedAscending) {

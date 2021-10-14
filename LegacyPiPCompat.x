@@ -3,6 +3,7 @@
 #import "../YouTubeHeader/MLAVPlayer.h"
 #import "../YouTubeHeader/MLHAMQueuePlayer.h"
 #import "../YouTubeHeader/MLPIPController.h"
+#import "../YouTubeHeader/MLPlayerPool.h"
 #import "../YouTubeHeader/MLPlayerPoolImpl.h"
 #import "../YouTubeHeader/MLVideoDecoderFactory.h"
 #import "../YouTubeHeader/MLDefaultPlayerViewFactory.h"
@@ -15,8 +16,13 @@
 
 extern BOOL isPictureInPictureActive(MLPIPController *);
 
+BOOL hasSampleBufferPiP;
+BOOL isLegacyVersion;
+
 BOOL LegacyPiP() {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
+    if (hasSampleBufferPiP)
+        return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
+    return YES;
 }
 
 static void forceRenderViewTypeBase(YTIHamplayerConfig *hamplayerConfig) {
@@ -124,6 +130,15 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 %group Legacy
 
+static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig *playerConfig, MLPlayerStickySettings *stickySettings, BOOL gimmeAlloc) {
+    BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
+    MLAVPlayer *player = gimmeAlloc ? [((MLPlayerPool *)self).gimme allocOf:%c(MLAVPlayer)] : [%c(MLAVPlayer) alloc];
+    player = [player initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
+    if (stickySettings)
+        player.rate = stickySettings.rate;
+    return player;
+}
+
 %hook MLPIPController
 
 - (void)activatePiPController {
@@ -152,19 +167,11 @@ YTHotConfig *(*InjectYTHotConfig)();
 %hook MLPlayerPoolImpl
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings {
-    BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
-    MLAVPlayer *player = [[%c(MLAVPlayer) alloc] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
-    if (stickySettings)
-        player.rate = stickySettings.rate;
-    return player;
+    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
 }
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger {
-    BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
-    MLAVPlayer *player = [[%c(MLAVPlayer) alloc] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
-    if (stickySettings)
-        player.rate = stickySettings.rate;
-    return player;
+    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
 }
 
 - (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
@@ -185,6 +192,43 @@ YTHotConfig *(*InjectYTHotConfig)();
 
 - (BOOL)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     return NO;
+}
+
+%end
+
+%hook MLPlayerPool
+
+- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings {
+    return makeAVPlayer(self, video, playerConfig, stickySettings, YES);
+}
+
+- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger {
+    return makeAVPlayer(self, video, playerConfig, stickySettings, YES);
+}
+
+- (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    MLDefaultPlayerViewFactory *factory = [self valueForKey:@"_playerViewFactory"];
+    return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
+}
+
+- (BOOL)canUsePlayerView:(id)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
+    return %orig;
+}
+
+- (BOOL)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    return NO;
+}
+
+%end
+
+%hook MLDefaultPlayerViewFactory
+
+- (id)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    if (hasSampleBufferPiP || !isLegacyVersion)
+        return %orig;
+    MLPIPController *pip = [self.gimme instanceForType:%c(MLPIPController)];
+    return [pip valueForKey:@"_pipPlayerLayerView"];
 }
 
 %end
@@ -238,6 +282,10 @@ YTHotConfig *(*InjectYTHotConfig)();
         InjectYTPlayerViewControllerConfig = MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
         InjectYTHotConfig = MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(WithInjection);
+    } else {
+        NSString *currentVersion = [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
+        hasSampleBufferPiP = isLegacyVersion = [currentVersion compare:@"15.33.4" options:NSNumericSearch] == NSOrderedDescending;
+        hasSampleBufferPiP &= IS_IOS_OR_NEWER(iOS_13_0);
     }
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
         %init(Compat);
