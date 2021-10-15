@@ -20,9 +20,7 @@ BOOL hasSampleBufferPiP;
 BOOL isLegacyVersion;
 
 BOOL LegacyPiP() {
-    if (hasSampleBufferPiP)
-        return [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
-    return YES;
+    return isLegacyVersion ? YES : [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
 }
 
 static void forceRenderViewTypeBase(YTIHamplayerConfig *hamplayerConfig) {
