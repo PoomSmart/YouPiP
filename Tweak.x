@@ -378,8 +378,6 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
             pip = [pip initWithPlaceholderPlayerItemResourcePath:PiPVideoPath];
         else if ([pip respondsToSelector:@selector(initWithPlaceholderPlayerItem:)])
             pip = [pip initWithPlaceholderPlayerItem:[AVPlayerItem playerItemWithURL:[NSURL URLWithString:PiPVideoPath]]];
-        if ([pip respondsToSelector:@selector(initializePictureInPicture)])
-            [pip initializePictureInPicture];
         return pip;
     }];
 }

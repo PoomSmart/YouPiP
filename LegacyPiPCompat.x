@@ -177,12 +177,6 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
 }
 
-- (id)hamPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    forceRenderViewType([self valueForKey:@"_hotConfig"]);
-    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
-    return %orig;
-}
-
 - (BOOL)canUsePlayerView:(id)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     forceRenderViewTypeBase([playerConfig hamplayerConfig]);
     return %orig;
@@ -221,6 +215,12 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %end
 
 %hook MLDefaultPlayerViewFactory
+
+- (id)hamPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    forceRenderViewType([self valueForKey:@"_hotConfig"]);
+    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
+    return %orig;
+}
 
 - (id)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     if (hasSampleBufferPiP || !isLegacyVersion)
