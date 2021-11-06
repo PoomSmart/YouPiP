@@ -141,8 +141,12 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
 }
 
 static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
-    if (UsePiPButton())
+    if (UsePiPButton()) {
+        // TODO: Remove this mutable copying when iSponsorBlock fixed the data type
+        if (![controls respondsToSelector:@selector(insertObject:atIndex:)])
+            controls = [controls mutableCopy];
         [controls insertObject:self.pipButton atIndex:0];
+    }
     return controls;
 }
 
@@ -231,6 +235,14 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %end
 
+%hook AVPlayerController
+
+- (BOOL)isPictureInPictureSupported {
+    return YES;
+}
+
+%end
+
 %hook MLPIPController
 
 - (BOOL)isPictureInPictureSupported {
@@ -247,18 +259,6 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 %end
-
-// %hook YTHotConfig
-
-// - (BOOL)iosReleasePipControllerOnMain {
-//     return NO;
-// }
-
-// - (BOOL)iosDontReleasePipController {
-//     return NO;
-// }
-
-// %end
 
 #pragma mark - PiP Support, Backgroundable
 

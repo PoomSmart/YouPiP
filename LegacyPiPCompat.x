@@ -154,11 +154,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     }
 }
 
-- (void)deactivatePiPController {
-    AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
-    [pip stopPictureInPicture];
-    [self setValue:nil forKey:@"_pictureInPictureController"];
-}
+- (void)deactivatePiPController {}
 
 %end
 
@@ -175,11 +171,6 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 - (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     MLDefaultPlayerViewFactory *factory = [self valueForKey:@"_playerViewFactory"];
     return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
-}
-
-- (BOOL)canUsePlayerView:(id)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
-    return %orig;
 }
 
 - (BOOL)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
@@ -222,12 +213,17 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     return %orig;
 }
 
-- (id)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    if (hasSampleBufferPiP || !isLegacyVersion)
-        return %orig;
-    MLPIPController *pip = [self.gimme instanceForType:%c(MLPIPController)];
-    return [pip valueForKey:@"_pipPlayerLayerView"];
+- (BOOL)canUsePlayerView:(id)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
+    return %orig;
 }
+
+// - (id)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+//     if (hasSampleBufferPiP || !isLegacyVersion)
+//         return %orig;
+//     MLPIPController *pip = [self.gimme instanceForType:%c(MLPIPController)];
+//     return [pip valueForKey:@"_pipPlayerLayerView"];
+// }
 
 %end
 
