@@ -116,7 +116,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 #pragma mark - PiP Button
 
 %hook YTIIcon
-- (id)iconImageWithColor:(UIColor *)arg1 {
+
+- (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == 007) {
         static UIImage *image = nil;
         static dispatch_once_t onceToken;
