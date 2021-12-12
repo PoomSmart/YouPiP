@@ -20,9 +20,16 @@
 #import "../YouTubeHeader/YTSlimVideoScrollableActionBarCellController.h"
 #import "../YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h"
 #import "../YouTubeHeader/YTSlimVideoDetailsActionView.h"
+#import "../YouTubeHeader/YTPageStyleController.h"
 
 @interface YTSlimVideoScrollableDetailsActionsView ()
 - (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)IconType BrowseId:(NSString *)browseid;
+@end
+
+@interface YTMainAppControlsOverlayView (YP)
+@property (retain, nonatomic) YTQTMButton *pipButton;
+- (void)didPressPiP:(id)arg;
+- (UIImage *)pipImage;
 @end
 
 BOOL FromUser = NO;
@@ -32,6 +39,10 @@ extern BOOL LegacyPiP();
 
 BOOL UsePiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
+}
+
+BOOL UseTabBarPiPButton() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethod2Key];
 }
 
 BOOL NonBackgroundable() {
@@ -113,20 +124,16 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     activatePiP(local, playPiP);
 }
 
-#pragma mark - PiP Button
+#pragma mark - Video tab bar PiP Button
 
 %hook YTIIcon
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == 007) {
-        static UIImage *image = nil;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            UIColor *color = [%c(YTColor) white1];
-            image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:color];
-            if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
-                image = [image imageFlippedForRightToLeftLayoutDirection];
-        });
+        YTColorPalette *colorPalette = [%c(YTPageStyleController) currentColorPalette];
+        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:colorPalette.textPrimary];
+        if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
+            image = [image imageFlippedForRightToLeftLayoutDirection];
         return image;
     } else {
         return %orig;
@@ -136,18 +143,22 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 %hook YTSlimVideoScrollableDetailsActionsView
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
-    %orig;
-    if (UsePiPButton()) {
+    if (UseTabBarPiPButton()) {
         YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 BrowseId:@"YouPiP.pip.command"];
-        [renderers insertObject:PiPButton atIndex:4];
+        if (![renderers containsObject:PiPButton]) {
+            [renderers addObject:PiPButton];
+        }
     }
+    %orig;
 }
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
-    %orig;
-    if (UsePiPButton()) {
+    if (UseTabBarPiPButton()) {
         YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 BrowseId:@"YouPiP.pip.command"];
-        [renderers insertObject:PiPButton atIndex:4];
+        if (![renderers containsObject:PiPButton]) {
+            [renderers addObject:PiPButton];
+        }
     }
+    %orig;
 }
 %new - (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)IconType BrowseId:(NSString *)browseid {
     YTISlimMetadataButtonSupportedRenderers *SupportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
@@ -162,6 +173,10 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     [command setBrowseEndpoint:endPoint];
     [icon setIconType:IconType];
     
+    [button setStyle:8]; // Opacity style
+    [button setTooltip:title];
+    [button setSize:1]; // Defualt size
+    [button setIsDisabled:false];
     [button setText:[%c(YTIFormattedString) formattedStringWithString:title]];
     [button setIcon:icon];
     [button setNavigationEndpoint:command];
@@ -176,7 +191,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 %hook YTSlimVideoDetailsActionView
 - (void)didTapButton:(id)arg1 {
-    if ([self.label.attributedText.string containsString:@"PiP"]) {
+    if ([self.label.attributedText.string isEqualToString:@"PiP"]) {
         YTSlimVideoScrollableActionBarCellController *_delegate = self.delegate;
         @try {
             if ([[_delegate valueForKey:@"_metadataPanelStateProvider"] isKindOfClass:%c(YTWatchController)]) {
@@ -202,6 +217,106 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     }
 }
 %end
+
+#pragma mark - Overlay PiP Button
+
+%hook YTMainAppVideoPlayerOverlayViewController
+
+- (void)updateTopRightButtonAvailability {
+    %orig;
+    YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
+    YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
+    c.pipButton.hidden = !UsePiPButton();
+    [c setNeedsLayout];
+}
+
+%end
+
+static void createPiPButton(YTMainAppControlsOverlayView *self) {
+    if (self) {
+        CGFloat padding = [[self class] topButtonAdditionalPadding];
+        UIImage *image = [self pipImage];
+        self.pipButton = [self buttonWithImage:image accessibilityLabel:@"pip" verticalContentPadding:padding];
+        self.pipButton.hidden = YES;
+        self.pipButton.alpha = 0;
+        [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:64];
+        @try {
+            [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
+        } @catch (id ex) {
+            [self addSubview:self.pipButton];
+        }
+    }
+}
+
+static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
+    if (UsePiPButton()) {
+        // TODO: Remove this mutable copying when iSponsorBlock fixed the data type
+        if (![controls respondsToSelector:@selector(insertObject:atIndex:)])
+            controls = [controls mutableCopy];
+        [controls insertObject:self.pipButton atIndex:0];
+    }
+    return controls;
+}
+
+%hook YTMainAppControlsOverlayView
+
+%property (retain, nonatomic) YTQTMButton *pipButton;
+
+- (id)initWithDelegate:(id)delegate {
+    self = %orig;
+    createPiPButton(self);
+    return self;
+}
+
+- (id)initWithDelegate:(id)delegate autoplaySwitchEnabled:(BOOL)autoplaySwitchEnabled {
+    self = %orig;
+    createPiPButton(self);
+    return self;
+}
+
+- (NSMutableArray *)topButtonControls {
+    return topControls(self, %orig);
+}
+
+- (NSMutableArray *)topControls {
+    return topControls(self, %orig);
+}
+
+- (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
+    if (UsePiPButton()) {
+        if (canceledState) {
+            if (!self.pipButton.hidden)
+                self.pipButton.alpha = 0.0;
+        } else {
+            if (!self.pipButton.hidden)
+                self.pipButton.alpha = visible ? 1.0 : 0.0;
+        }
+    }
+    %orig;
+}
+
+%new
+- (UIImage *)pipImage {
+    static UIImage *image = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        UIColor *color = [%c(YTColor) white1];
+        image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:color];
+        if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
+            image = [image imageFlippedForRightToLeftLayoutDirection];
+    });
+    return image;
+}
+
+%new
+- (void)didPressPiP:(id)arg {
+    YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
+    FromUser = YES;
+    bootstrapPiP([c delegate], YES);
+}
+
+%end
+
 
 #pragma mark - PiP Bootstrapping
 
