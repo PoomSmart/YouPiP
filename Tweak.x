@@ -117,7 +117,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     @try {
         hotConfig = [self valueForKey:@"_hotConfig"];
     } @catch (id ex) {
- //       hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
+        hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
     }
     forceEnablePictureInPictureInternal(hotConfig);
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
