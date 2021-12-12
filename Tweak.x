@@ -165,7 +165,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 %new
 - (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId {
     YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
-    YTISlimMetadataButtonRenderer *MetadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
+    YTISlimMetadataButtonRenderer *metadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
     YTIButtonSupportedRenderers *ButtonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
     YTIBrowseEndpoint *endPoint = [[%c(YTIBrowseEndpoint) alloc] init];
     YTICommand *command = [[%c(YTICommand) alloc] init];
