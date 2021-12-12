@@ -142,6 +142,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 %end
 
 %hook YTSlimVideoScrollableDetailsActionsView
+
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
     if (UseTabBarPiPButton()) {
         YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 BrowseId:@"YouPiP.pip.command"];
