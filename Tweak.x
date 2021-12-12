@@ -323,7 +323,6 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %end
 
-
 #pragma mark - PiP Bootstrapping
 
 %hook YTPlayerViewController
