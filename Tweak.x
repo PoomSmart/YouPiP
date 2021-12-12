@@ -218,7 +218,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
             }
         }
     } else {
-        return %orig;
+        %orig;
     }
 }
 %end
