@@ -178,7 +178,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     
     [button setStyle:8]; // Opacity style
     [button setTooltip:title];
-    [button setSize:1]; // Defualt size
+    [button setSize:1]; // Default size
     [button setIsDisabled:false];
     [button setText:[%c(YTIFormattedString) formattedStringWithString:title]];
     [button setIcon:icon];
