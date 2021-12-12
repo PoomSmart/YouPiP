@@ -152,6 +152,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     }
     %orig;
 }
+
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
     if (UseTabBarPiPButton()) {
         YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 BrowseId:@"YouPiP.pip.command"];
