@@ -221,6 +221,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
         %orig;
     }
 }
+
 %end
 
 #pragma mark - Overlay PiP Button
