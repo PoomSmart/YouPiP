@@ -172,7 +172,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     YTIButtonRenderer *button = [[%c(YTIButtonRenderer) alloc] init];
     YTIIcon *icon = [[%c(YTIIcon) alloc] init];
 
-    [endPoint setBrowseId:browseid];
+    endPoint.browseId = browseId;
     [command setBrowseEndpoint:endPoint];
     [icon setIconType:IconType];
     
