@@ -23,7 +23,7 @@
 #import "../YouTubeHeader/YTPageStyleController.h"
 
 @interface YTSlimVideoScrollableDetailsActionsView ()
-- (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)IconType BrowseId:(NSString *)browseid;
+- (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId;
 @end
 
 @interface YTMainAppControlsOverlayView (YP)
