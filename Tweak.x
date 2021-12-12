@@ -194,6 +194,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 %end
 
 %hook YTSlimVideoDetailsActionView
+
 - (void)didTapButton:(id)arg1 {
     if ([self.label.attributedText.string isEqualToString:@"PiP"]) {
         YTSlimVideoScrollableActionBarCellController *_delegate = self.delegate;
