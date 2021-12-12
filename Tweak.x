@@ -190,6 +190,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     
     return SupportedRenderer;
 }
+
 %end
 
 %hook YTSlimVideoDetailsActionView
