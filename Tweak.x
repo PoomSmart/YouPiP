@@ -145,7 +145,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 BrowseId:@"YouPiP.pip.command"];
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
         if (![renderers containsObject:PiPButton]) {
             [renderers addObject:PiPButton];
         }
@@ -155,7 +155,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 BrowseId:@"YouPiP.pip.command"];
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
         if (![renderers containsObject:PiPButton]) {
             [renderers addObject:PiPButton];
         }
@@ -166,7 +166,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 - (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId {
     YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
     YTISlimMetadataButtonRenderer *metadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
-    YTIButtonSupportedRenderers *ButtonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
+    YTIButtonSupportedRenderers *buttonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
     YTIBrowseEndpoint *endPoint = [[%c(YTIBrowseEndpoint) alloc] init];
     YTICommand *command = [[%c(YTICommand) alloc] init];
     YTIButtonRenderer *button = [[%c(YTIButtonRenderer) alloc] init];
@@ -174,7 +174,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
     endPoint.browseId = browseId;
     [command setBrowseEndpoint:endPoint];
-    [icon setIconType:IconType];
+    [icon setIconType:iconType];
     
     [button setStyle:8]; // Opacity style
     [button setTooltip:title];
@@ -184,11 +184,11 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     [button setIcon:icon];
     [button setNavigationEndpoint:command];
     
-    [ButtonSupportedRenderer setButtonRenderer:button];
-    [MetadataButtonRenderer setButton:ButtonSupportedRenderer];
-    [SupportedRenderer setSlimMetadataButtonRenderer:MetadataButtonRenderer];
+    [buttonSupportedRenderer setButtonRenderer:button];
+    [metadataButtonRenderer setButton:buttonSupportedRenderer];
+    [supportedRenderer setSlimMetadataButtonRenderer:metadataButtonRenderer];
     
-    return SupportedRenderer;
+    return supportedRenderer;
 }
 
 %end
