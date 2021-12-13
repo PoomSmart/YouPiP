@@ -113,7 +113,8 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             UIAlertController *warning = [UIAlertController alertControllerWithTitle:@"YouPiP" message:[NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)] preferredStyle:UIAlertControllerStyleAlert];
             UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
             [warning addAction:action];
-            [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:warning animated:YES completion:nil];
+            UIWindow * currentwindow = [[UIApplication sharedApplication] delegate].window;
+            [currentwindow.rootViewController presentViewController:warning animated:YES completion:nil];
             [defaults setBool:YES forKey:YouPiPWarnVersionKey];
         }
     }
