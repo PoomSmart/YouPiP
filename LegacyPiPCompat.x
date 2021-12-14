@@ -243,24 +243,16 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %hook AVPictureInPictureController
 
 %new
-- (void)invalidatePlaybackState {
-
-}
+- (void)invalidatePlaybackState {}
 
 %new
-- (void)sampleBufferDisplayLayerDidDisappear {
-
-}
+- (void)sampleBufferDisplayLayerDidDisappear {}
 
 %new
-- (void)sampleBufferDisplayLayerDidAppear {
-
-}
+- (void)sampleBufferDisplayLayerDidAppear {}
 
 %new
-- (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)size {
-
-}
+- (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)size {}
 
 %end
 

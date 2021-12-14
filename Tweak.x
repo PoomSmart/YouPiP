@@ -135,9 +135,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
         return image;
-    } else {
-        return %orig;
     }
+    return %orig;
 }
 %end
 
@@ -162,6 +161,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     }
     %orig;
 }
+
 %new
 - (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId {
     YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
@@ -329,7 +329,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %new
 - (void)appWillResignActive:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && !UsePiPButton())
+    if (!IS_IOS_OR_NEWER(iOS_14_0) && !(UsePiPButton() || UseTabBarPiPButton()))
         bootstrapPiP(self, YES);
 }
 
@@ -344,7 +344,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
-    %orig(UsePiPButton() ? NO : canStartFromInline);
+    %orig(UsePiPButton() || UseTabBarPiPButton() ? NO : canStartFromInline);
 }
 
 %end
@@ -454,9 +454,10 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (void)appWillResignActive:(id)arg1 {
-    forcePictureInPictureInternal(getHotConfig(self), !UsePiPButton());
+    BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
+    forcePictureInPictureInternal(getHotConfig(self), !hasPiPButton);
     ForceDisablePiP = YES;
-    if (UsePiPButton())
+    if (hasPiPButton)
         activatePiPBase(self, NO);
     %orig;
     ForceDisablePiP = FromUser = NO;
