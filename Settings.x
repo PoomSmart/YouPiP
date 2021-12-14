@@ -7,6 +7,7 @@
 #import "../YouTubeHeader/YTAppSettingsSectionItemActionController.h"
 
 extern BOOL UsePiPButton();
+extern BOOL UseTabBarPiPButton();
 extern BOOL LegacyPiP();
 extern BOOL SampleBufferWork();
 extern BOOL NonBackgroundable();
@@ -40,6 +41,16 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
                 }
                 settingItemId:0];
             [sectionItems insertObject:activationMethod atIndex:defaultPiPIndex + 1];
+            YTSettingsSectionItem *activationMethod2 = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Use Video Tab Bar PiP Button"
+                titleDescription:@"Adds a PiP button in video tab bar to activate PiP instead of dismissing the app. App restart is required."
+                accessibilityIdentifier:nil
+                switchOn:UseTabBarPiPButton()
+                switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
+                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:PiPActivationMethod2Key];
+                    return YES;
+                }
+                settingItemId:0];
+            [sectionItems insertObject:activationMethod2 atIndex:defaultPiPIndex + 1];
             if (IS_IOS_BETWEEN_EEX(iOS_14_0, iOS_15_0)) {
                 YTSettingsSectionItem *sampleBuffer = [%c(YTSettingsSectionItem) switchItemWithTitle:@"PiP Sample Buffer Hack"
                     titleDescription:@"Implements PiP sample buffering based on iOS 15.0b5, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues. App restart is required."

@@ -15,6 +15,22 @@
 #import "../YouTubeHeader/YTIPictureInPictureRendererRoot.h"
 #import "../YouTubeHeader/YTColor.h"
 #import "../YouTubeHeader/QTMIcon.h"
+#import "../YouTubeHeader/YTWatchController.h"
+#import "../YouTubeHeader/YTNGWatchController.h"
+#import "../YouTubeHeader/YTSlimVideoScrollableActionBarCellController.h"
+#import "../YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h"
+#import "../YouTubeHeader/YTSlimVideoDetailsActionView.h"
+#import "../YouTubeHeader/YTPageStyleController.h"
+
+@interface YTSlimVideoScrollableDetailsActionsView ()
+- (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId;
+@end
+
+@interface YTMainAppControlsOverlayView (YP)
+@property (retain, nonatomic) YTQTMButton *pipButton;
+- (void)didPressPiP:(id)arg;
+- (UIImage *)pipImage;
+@end
 
 BOOL FromUser = NO;
 BOOL ForceDisablePiP = NO;
@@ -23,6 +39,10 @@ extern BOOL LegacyPiP();
 
 BOOL UsePiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
+}
+
+BOOL UseTabBarPiPButton() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethod2Key];
 }
 
 BOOL NonBackgroundable() {
@@ -39,12 +59,6 @@ BOOL isPictureInPictureActive(MLPIPController *pip) {
 
 static NSString *PiPIconPath;
 static NSString *PiPVideoPath;
-
-@interface YTMainAppControlsOverlayView (YP)
-@property (retain, nonatomic) YTQTMButton *pipButton;
-- (void)didPressPiP:(id)arg;
-- (UIImage *)pipImage;
-@end
 
 static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
     [hotConfig mediaHotConfig].enablePictureInPicture = value;
@@ -110,7 +124,107 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     activatePiP(local, playPiP);
 }
 
-#pragma mark - PiP Button
+#pragma mark - Video tab bar PiP Button
+
+%hook YTIIcon
+
+- (UIImage *)iconImageWithColor:(UIColor *)color {
+    if (self.iconType == 007) {
+        YTColorPalette *colorPalette = [%c(YTPageStyleController) currentColorPalette];
+        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:colorPalette.textPrimary];
+        if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
+            image = [image imageFlippedForRightToLeftLayoutDirection];
+        return image;
+    } else {
+        return %orig;
+    }
+}
+%end
+
+%hook YTSlimVideoScrollableDetailsActionsView
+
+- (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
+    if (UseTabBarPiPButton()) {
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
+        if (![renderers containsObject:PiPButton]) {
+            [renderers addObject:PiPButton];
+        }
+    }
+    %orig;
+}
+
+- (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
+    if (UseTabBarPiPButton()) {
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
+        if (![renderers containsObject:PiPButton]) {
+            [renderers addObject:PiPButton];
+        }
+    }
+    %orig;
+}
+%new
+- (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId {
+    YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
+    YTISlimMetadataButtonRenderer *metadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
+    YTIButtonSupportedRenderers *buttonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
+    YTIBrowseEndpoint *endPoint = [[%c(YTIBrowseEndpoint) alloc] init];
+    YTICommand *command = [[%c(YTICommand) alloc] init];
+    YTIButtonRenderer *button = [[%c(YTIButtonRenderer) alloc] init];
+    YTIIcon *icon = [[%c(YTIIcon) alloc] init];
+
+    endPoint.browseId = browseId;
+    [command setBrowseEndpoint:endPoint];
+    [icon setIconType:iconType];
+    
+    [button setStyle:8]; // Opacity style
+    [button setTooltip:title];
+    [button setSize:1]; // Default size
+    [button setIsDisabled:false];
+    [button setText:[%c(YTIFormattedString) formattedStringWithString:title]];
+    [button setIcon:icon];
+    [button setNavigationEndpoint:command];
+    
+    [buttonSupportedRenderer setButtonRenderer:button];
+    [metadataButtonRenderer setButton:buttonSupportedRenderer];
+    [supportedRenderer setSlimMetadataButtonRenderer:metadataButtonRenderer];
+    
+    return supportedRenderer;
+}
+
+%end
+
+%hook YTSlimVideoDetailsActionView
+
+- (void)didTapButton:(id)arg1 {
+    if ([self.label.attributedText.string isEqualToString:@"PiP"]) {
+        YTSlimVideoScrollableActionBarCellController *_delegate = self.delegate;
+        @try {
+            if ([[_delegate valueForKey:@"_metadataPanelStateProvider"] isKindOfClass:%c(YTWatchController)]) {
+                YTWatchController *metadataPanelStateProvider = [_delegate valueForKey:@"_metadataPanelStateProvider"];
+                if ([[metadataPanelStateProvider valueForKey:@"_playerViewController"] isKindOfClass:%c(YTPlayerViewController)]) {
+                    YTPlayerViewController *playerViewController = [metadataPanelStateProvider valueForKey:@"_playerViewController"];
+                    FromUser = YES;
+                    bootstrapPiP(playerViewController, YES);
+                }
+            }
+        } @catch (id ex) { // for old YouTube version
+            if ([[_delegate valueForKey:@"_ngwMetadataPanelStateProvider"] isKindOfClass:%c(YTNGWatchController)]) {
+                YTNGWatchController *NGWMetadataPanelStateProvider = [_delegate valueForKey:@"_ngwMetadataPanelStateProvider"];
+                if ([[NGWMetadataPanelStateProvider valueForKey:@"_playerViewController"] isKindOfClass:%c(YTPlayerViewController)]) {
+                    YTPlayerViewController *playerViewController = [NGWMetadataPanelStateProvider valueForKey:@"_playerViewController"];
+                    FromUser = YES;
+                    bootstrapPiP(playerViewController, YES);
+                }
+            }
+        }
+    } else {
+        %orig;
+    }
+}
+
+%end
+
+#pragma mark - Overlay PiP Button
 
 %hook YTMainAppVideoPlayerOverlayViewController
 
