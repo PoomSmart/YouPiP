@@ -1,5 +1,6 @@
 #import "../PSHeader/iOSVersions.h"
 #import "Header.h"
+#import "../YouTubeHeader/YTUIUtils.h"
 #import "../YouTubeHeader/YTHotConfig.h"
 #import "../YouTubeHeader/YTSettingsViewController.h"
 #import "../YouTubeHeader/YTSettingsSectionItem.h"
@@ -14,7 +15,6 @@ extern BOOL NonBackgroundable();
 // extern BOOL PiPStartPaused();
 
 NSString *currentVersion;
-NSArray <NSString *> *PiPActivationMethods;
 
 static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
@@ -118,14 +118,16 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 %ctor {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     currentVersion = [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
-    PiPActivationMethods = @[@"On App Dismiss", @"On PiP button tap"];
     if (![defaults boolForKey:YouPiPWarnVersionKey]) {
         if ([currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedAscending) {
-            UIAlertController *warning = [UIAlertController alertControllerWithTitle:@"YouPiP" message:[NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)] preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
-            [warning addAction:action];
-            [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:warning animated:YES completion:nil];
-            [defaults setBool:YES forKey:YouPiPWarnVersionKey];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                UIAlertController *warning = [UIAlertController alertControllerWithTitle:@"YouPiP" message:[NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)] preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+                [warning addAction:action];
+                UIViewController *rootViewController = [%c(YTUIUtils) topViewControllerForPresenting];
+                [rootViewController presentViewController:warning animated:YES completion:nil];
+                [defaults setBool:YES forKey:YouPiPWarnVersionKey];
+            });
         }
     }
     %init;

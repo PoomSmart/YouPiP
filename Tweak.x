@@ -145,9 +145,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
     if (UseTabBarPiPButton()) {
         YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
-        if (![renderers containsObject:PiPButton]) {
+        if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
-        }
     }
     %orig;
 }
@@ -155,9 +154,8 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
     if (UseTabBarPiPButton()) {
         YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
-        if (![renderers containsObject:PiPButton]) {
+        if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
-        }
     }
     %orig;
 }
