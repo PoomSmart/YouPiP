@@ -275,6 +275,8 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     }
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
         %init(Compat);
+        if (!IS_IOS_OR_NEWER(iOS_13_0))
+            isLegacyVersion = YES;
     }
     if (LegacyPiP()) {
         %init(Legacy);
