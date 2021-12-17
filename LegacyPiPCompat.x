@@ -257,6 +257,9 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %new
 - (void)setRequiresLinearPlayback:(BOOL)linear {}
 
+%new
+- (void)reloadPrerollAttributes {}
+
 %end
 
 %end
