@@ -15,16 +15,13 @@
 #import "../YouTubeHeader/YTIPictureInPictureRendererRoot.h"
 #import "../YouTubeHeader/YTColor.h"
 #import "../YouTubeHeader/QTMIcon.h"
-#import "../YouTubeHeader/YTWatchController.h"
-#import "../YouTubeHeader/YTNGWatchController.h"
 #import "../YouTubeHeader/YTSlimVideoScrollableActionBarCellController.h"
 #import "../YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h"
 #import "../YouTubeHeader/YTSlimVideoDetailsActionView.h"
+#import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
 #import "../YouTubeHeader/YTPageStyleController.h"
 
-@interface YTSlimVideoScrollableDetailsActionsView ()
-- (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId;
-@end
+#define PiPButtonType 801
 
 @interface YTMainAppControlsOverlayView (YP)
 @property (retain, nonatomic) YTQTMButton *pipButton;
@@ -126,10 +123,34 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 #pragma mark - Video tab bar PiP Button
 
+static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *title, int iconType, NSString *browseId) {
+    YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
+    YTISlimMetadataButtonRenderer *metadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
+    YTIButtonSupportedRenderers *buttonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
+    YTIBrowseEndpoint *endPoint = [[%c(YTIBrowseEndpoint) alloc] init];
+    YTICommand *command = [[%c(YTICommand) alloc] init];
+    YTIButtonRenderer *button = [[%c(YTIButtonRenderer) alloc] init];
+    YTIIcon *icon = [[%c(YTIIcon) alloc] init];
+    endPoint.browseId = browseId;
+    command.browseEndpoint = endPoint;
+    icon.iconType = iconType;
+    button.style = 8; // Opacity style
+    button.tooltip = title;
+    button.size = 1; // Default size
+    button.isDisabled = NO;
+    button.text = [%c(YTIFormattedString) formattedStringWithString:title];
+    button.icon = icon;
+    button.navigationEndpoint = command;
+    buttonSupportedRenderer.buttonRenderer = button;
+    metadataButtonRenderer.button = buttonSupportedRenderer;
+    supportedRenderer.slimMetadataButtonRenderer = metadataButtonRenderer;
+    return supportedRenderer;
+}
+
 %hook YTIIcon
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
-    if (self.iconType == 007) {
+    if (self.iconType == PiPButtonType) {
         YTColorPalette *colorPalette = [%c(YTPageStyleController) currentColorPalette];
         UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:colorPalette.textPrimary];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
@@ -144,7 +165,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
         if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
     }
@@ -153,40 +174,11 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = [self makeNewButtonWithTitle:@"PiP" iconType:007 browseId:@"YouPiP.pip.command"];
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
         if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
     }
     %orig;
-}
-
-%new
-- (YTISlimMetadataButtonSupportedRenderers *)makeNewButtonWithTitle:(NSString *)title iconType:(int)iconType browseId:(NSString *)browseId {
-    YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
-    YTISlimMetadataButtonRenderer *metadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
-    YTIButtonSupportedRenderers *buttonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
-    YTIBrowseEndpoint *endPoint = [[%c(YTIBrowseEndpoint) alloc] init];
-    YTICommand *command = [[%c(YTICommand) alloc] init];
-    YTIButtonRenderer *button = [[%c(YTIButtonRenderer) alloc] init];
-    YTIIcon *icon = [[%c(YTIIcon) alloc] init];
-
-    endPoint.browseId = browseId;
-    [command setBrowseEndpoint:endPoint];
-    [icon setIconType:iconType];
-    
-    [button setStyle:8]; // Opacity style
-    [button setTooltip:title];
-    [button setSize:1]; // Default size
-    [button setIsDisabled:false];
-    [button setText:[%c(YTIFormattedString) formattedStringWithString:title]];
-    [button setIcon:icon];
-    [button setNavigationEndpoint:command];
-    
-    [buttonSupportedRenderer setButtonRenderer:button];
-    [metadataButtonRenderer setButton:buttonSupportedRenderer];
-    [supportedRenderer setSlimMetadataButtonRenderer:metadataButtonRenderer];
-    
-    return supportedRenderer;
 }
 
 %end
@@ -196,28 +188,25 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
 - (void)didTapButton:(id)arg1 {
     if ([self.label.attributedText.string isEqualToString:@"PiP"]) {
         YTSlimVideoScrollableActionBarCellController *_delegate = self.delegate;
+        YTPlayerViewController *playerViewController = nil;
         @try {
             if ([[_delegate valueForKey:@"_metadataPanelStateProvider"] isKindOfClass:%c(YTWatchController)]) {
-                YTWatchController *metadataPanelStateProvider = [_delegate valueForKey:@"_metadataPanelStateProvider"];
-                if ([[metadataPanelStateProvider valueForKey:@"_playerViewController"] isKindOfClass:%c(YTPlayerViewController)]) {
-                    YTPlayerViewController *playerViewController = [metadataPanelStateProvider valueForKey:@"_playerViewController"];
-                    FromUser = YES;
-                    bootstrapPiP(playerViewController, YES);
-                }
+                id provider = [_delegate valueForKey:@"_metadataPanelStateProvider"];
+                playerViewController = [provider valueForKey:@"_playerViewController"];
             }
         } @catch (id ex) { // for old YouTube version
             if ([[_delegate valueForKey:@"_ngwMetadataPanelStateProvider"] isKindOfClass:%c(YTNGWatchController)]) {
-                YTNGWatchController *NGWMetadataPanelStateProvider = [_delegate valueForKey:@"_ngwMetadataPanelStateProvider"];
-                if ([[NGWMetadataPanelStateProvider valueForKey:@"_playerViewController"] isKindOfClass:%c(YTPlayerViewController)]) {
-                    YTPlayerViewController *playerViewController = [NGWMetadataPanelStateProvider valueForKey:@"_playerViewController"];
-                    FromUser = YES;
-                    bootstrapPiP(playerViewController, YES);
-                }
+                id provider = [_delegate valueForKey:@"_ngwMetadataPanelStateProvider"];
+                playerViewController = [provider valueForKey:@"_playerViewController"];
             }
         }
-    } else {
-        %orig;
+        if (playerViewController && [playerViewController isKindOfClass:%c(YTPlayerViewController)]) {
+            FromUser = YES;
+            bootstrapPiP(playerViewController, YES);
+        }
+        return;
     }
+    %orig;
 }
 
 %end
@@ -287,15 +276,8 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 - (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
-    if (UsePiPButton()) {
-        if (canceledState) {
-            if (!self.pipButton.hidden)
-                self.pipButton.alpha = 0.0;
-        } else {
-            if (!self.pipButton.hidden)
-                self.pipButton.alpha = visible ? 1.0 : 0.0;
-        }
-    }
+    if (UsePiPButton())
+        self.pipButton.alpha = canceledState || !visible ? 0.0 : 1.0;
     %orig;
 }
 
