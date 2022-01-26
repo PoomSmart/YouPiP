@@ -168,6 +168,10 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
 }
 
+- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger reloadContext:(id)reloadContext {
+    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
+}
+
 - (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     MLDefaultPlayerViewFactory *factory = [self valueForKey:@"_playerViewFactory"];
     return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
