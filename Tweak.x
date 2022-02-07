@@ -439,7 +439,8 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
     ForceDisablePiP = YES;
     if (hasPiPButton)
         activatePiPBase(self, NO);
-    %orig;
+    else
+        %orig;
     ForceDisablePiP = FromUser = NO;
 }
 
