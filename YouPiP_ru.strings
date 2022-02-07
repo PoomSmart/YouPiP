@@ -1,0 +1,21 @@
+/* Russian for YouPiP */
+
+"Non-backgroundable PiP" = "Принудительный PiP";
+"Enables PiP for non-backgroundable content." = "Активирует PiP (Картинка в Картинке) для контента, не поддерживающего PiP изначально.";
+
+"Legacy PiP" = "Оригинальный PiP";
+"Uses AVPlayerLayer where there's no playback speed bug. This also removes UHD video quality options (2K/4K) from any videos. App restart is required." = "На основе AVPlayerLayer, в котором нет багов со скоростью воспроизведения. Данный режим отключает воспроизведение видео в ультра высоком разрешении (2K/4K). Потребуется перезапуск YouTube.";
+
+"PiP Sample Buffer Hack" = "Режим буферизации PiP";
+"Implements PiP sample buffering based on iOS 15.0b5, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues. App restart is required." = "Реализует буферизацию образцов PiP на основе iOS 15 бета 5, тем самым уменьшает возможность багов со скоростью воспроизведения. Отключите данную опцию при наличии странных багов. Потребуется перезапуск YouTube.";
+
+"Use PiP Button" = "Активировать PiP вручную";
+"Adds a PiP button over the video control overlay to activate PiP instead of dismissing the app. Enable this feature to prevent AutoPiP." = "Добавляет кнопку PiP (Картинка в Картинке) в панель навигации для активации PiP вручную. Включите данную опцию, чтобы PiP не срабатывал автоматически.";
+
+"Use Video Tab Bar PiP Button" = "Использовать кнопку PiP под плеером";
+"Adds a PiP button in tab bar to activate PiP instead of dismissing the app. App restart is required." = "Добавляет кнопку PiP (Картинка в Картинке) в панель под видео для активации PiP вручную. Включите данную опцию, чтобы PiP не срабатывал автоматически. Потребуется перезапуск YouTube.";
+
+"PiP starts paused" = "Запуск PiP приостановлен";
+"When PiP is activated, it's paused by default." = "Если PiP активирован, функция приостановлена по умолчанию.";
+
+"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s" = "Данная версия YouTube (%@) еще не протестирована и, возможно, неподдерживается YouPiP. Понизьте YouTube, как минимум, до версии %s";
