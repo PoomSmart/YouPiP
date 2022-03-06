@@ -38,11 +38,11 @@ static void forceRenderViewType(YTHotConfig *hotConfig) {
     forceRenderViewTypeHot(hamplayerHotConfig);
 }
 
-MLPIPController *(*InjectMLPIPController)();
-YTSystemNotifications *(*InjectYTSystemNotifications)();
-YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)();
-YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)();
-YTHotConfig *(*InjectYTHotConfig)();
+static MLPIPController *(*InjectMLPIPController)(void);
+static YTSystemNotifications *(*InjectYTSystemNotifications)(void);
+static YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)(void);
+static YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)(void);
+static YTHotConfig *(*InjectYTHotConfig)(void);
 
 %group WithInjection
 
@@ -154,7 +154,10 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     }
 }
 
-- (void)deactivatePiPController {}
+- (void)deactivatePiPController {
+    AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
+    [pip stopPictureInPicture];
+}
 
 %end
 

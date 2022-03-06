@@ -30,7 +30,6 @@
 @end
 
 BOOL FromUser = NO;
-BOOL ForceDisablePiP = NO;
 
 extern BOOL LegacyPiP();
 
@@ -57,7 +56,7 @@ BOOL isPictureInPictureActive(MLPIPController *pip) {
 static NSString *PiPIconPath;
 static NSString *PiPVideoPath;
 
-static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
+static void forcePictureInPicture(YTHotConfig *hotConfig, BOOL value) {
     [hotConfig mediaHotConfig].enablePictureInPicture = value;
     YTIIosMediaHotConfig *iosMediaHotConfig = [hotConfig hotConfigGroup].mediaHotConfig.iosMediaHotConfig;
     iosMediaHotConfig.enablePictureInPicture = value;
@@ -65,12 +64,6 @@ static void forcePictureInPictureInternal(YTHotConfig *hotConfig, BOOL value) {
         iosMediaHotConfig.enablePipForNonBackgroundableContent = value && NonBackgroundable();
     if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonPremiumUsers:)])
         iosMediaHotConfig.enablePipForNonPremiumUsers = value;
-}
-
-static void forceEnablePictureInPictureInternal(YTHotConfig *hotConfig) {
-    if (ForceDisablePiP && !FromUser)
-        return;
-    forcePictureInPictureInternal(hotConfig, YES);
 }
 
 static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
@@ -94,7 +87,7 @@ static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
     if (playPiP) {
         if ([avpip isPictureInPicturePossible])
             [avpip startPictureInPicture];
-    } else if (!isPictureInPictureActive(pip)) {
+    } else {
         if ([pip respondsToSelector:@selector(deactivatePiPController)])
             [pip deactivatePiPController];
         else
@@ -116,7 +109,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     } @catch (id ex) {
         hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
     }
-    forceEnablePictureInPictureInternal(hotConfig);
+    forcePictureInPicture(hotConfig, YES);
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
     activatePiP(local, playPiP);
 }
@@ -303,18 +296,6 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %end
 
-#pragma mark - PiP Bootstrapping
-
-%hook YTPlayerViewController
-
-%new
-- (void)appWillResignActive:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_14_0) && !(UsePiPButton() || UseTabBarPiPButton()))
-        bootstrapPiP(self, YES);
-}
-
-%end
-
 #pragma mark - PiP Support
 
 %hook AVPictureInPictureController
@@ -348,7 +329,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 %hook MLDefaultPlayerViewFactory
 
 - (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    forcePictureInPicture([self valueForKey:@"_hotConfig"], YES);
     return %orig;
 }
 
@@ -384,12 +365,12 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 %hook YTSettingsSectionItemManager
 
 - (YTSettingsSectionItem *)pictureInPictureSectionItem {
-    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    forcePictureInPicture([self valueForKey:@"_hotConfig"], YES);
     return %orig;
 }
 
 - (YTSettingsSectionItem *)pictureInPictureSectionItem:(id)arg1 {
-    forceEnablePictureInPictureInternal([self valueForKey:@"_hotConfig"]);
+    forcePictureInPicture([self valueForKey:@"_hotConfig"], YES);
     return %orig;
 }
 
@@ -418,7 +399,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 %hook YTPlayerPIPController
 
 - (BOOL)canInvokePictureInPicture {
-    forceEnablePictureInPictureInternal(getHotConfig(self));
+    forcePictureInPicture(getHotConfig(self), YES);
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
@@ -426,7 +407,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (BOOL)canEnablePictureInPicture {
-    forceEnablePictureInPictureInternal(getHotConfig(self));
+    forcePictureInPicture(getHotConfig(self), YES);
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
@@ -435,13 +416,19 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 
 - (void)appWillResignActive:(id)arg1 {
     BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
-    forcePictureInPictureInternal(getHotConfig(self), !hasPiPButton);
-    ForceDisablePiP = YES;
-    if (hasPiPButton)
+    BOOL shouldActivatePiP = FromUser || !hasPiPButton;
+    forcePictureInPicture(getHotConfig(self), shouldActivatePiP);
+    if (!shouldActivatePiP)
         activatePiPBase(self, NO);
-    else
+    else {
+        if (LegacyPiP()) {
+            // Don't ask me why
+            for (int i = 0; i < 5; ++i)
+                activatePiPBase(self, YES);
+        }
         %orig;
-    ForceDisablePiP = FromUser = NO;
+    }
+    FromUser = NO;
 }
 
 %end
