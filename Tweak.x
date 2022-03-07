@@ -414,14 +414,21 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
     return value;
 }
 
+- (void)didStopPictureInPicture {
+    FromUser = NO;
+    %orig;
+}
+
 - (void)appWillResignActive:(id)arg1 {
+    // If PiP button on, PiP doesn't activate on app resign unless it's from user
     BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
-    BOOL shouldActivatePiP = FromUser || !hasPiPButton;
-    forcePictureInPicture(getHotConfig(self), shouldActivatePiP);
-    if (!shouldActivatePiP)
-        activatePiPBase(self, NO);
-    else {
+    BOOL disablePiP = hasPiPButton && !FromUser;
+    if (disablePiP) {
+        MLPIPController *pip = [self valueForKey:@"_pipController"];
+        [pip setValue:nil forKey:@"_pictureInPictureController"];
+    } else {
         if (LegacyPiP()) {
+            // FIXME: Don't do this
             // Don't ask me why
             for (int i = 0; i < 5; ++i)
                 activatePiPBase(self, YES);
