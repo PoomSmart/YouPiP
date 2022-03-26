@@ -54,6 +54,7 @@ BOOL isPictureInPictureActive(MLPIPController *pip) {
 }
 
 static NSString *PiPIconPath;
+static NSString *TabBarPiPIconPath;
 static NSString *PiPVideoPath;
 
 static void forcePictureInPicture(YTHotConfig *hotConfig, BOOL value) {
@@ -145,7 +146,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *
 - (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == PiPButtonType) {
         YTColorPalette *colorPalette = [%c(YTPageStyleController) currentColorPalette];
-        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:colorPalette.textPrimary];
+        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:colorPalette.textPrimary];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
         return image;
@@ -500,9 +501,11 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
         NSBundle *tweakBundle = [NSBundle bundleWithPath:tweakBundlePath];
         PiPVideoPath = [tweakBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
         PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
+        TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
     } else {
         PiPVideoPath = @"/Library/Application Support/YouPiP.bundle/PiPPlaceholderAsset.mp4";
         PiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-overlay.png";
+        TabBarPiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-tabbar.png";
     }
     %init;
 }
