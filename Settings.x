@@ -1,3 +1,5 @@
+// clang-format off
+
 #import "../PSHeader/iOSVersions.h"
 #import "Header.h"
 #import "../YouTubeHeader/YTUIUtils.h"
@@ -9,6 +11,7 @@
 
 extern BOOL UsePiPButton();
 extern BOOL UseTabBarPiPButton();
+extern BOOL NoMiniPlayerPiP();
 extern BOOL LegacyPiP();
 extern BOOL SampleBufferWork();
 extern BOOL NonBackgroundable();
@@ -51,6 +54,16 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
                 }
                 settingItemId:0];
             [sectionItems insertObject:activationMethod2 atIndex:defaultPiPIndex + 1];
+            YTSettingsSectionItem *miniPlayer = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Disable PiP for Mini Player"
+                titleDescription:@"Disables PiP while playing a video in the mini player."
+                accessibilityIdentifier:nil
+                switchOn:NoMiniPlayerPiP()
+                switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
+                    [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:NoMiniPlayerPiPKey];
+                    return YES;
+                }
+                settingItemId:0];
+            [sectionItems insertObject:miniPlayer atIndex:defaultPiPIndex + 1];
             if (IS_IOS_BETWEEN_EEX(iOS_14_0, iOS_15_0)) {
                 YTSettingsSectionItem *sampleBuffer = [%c(YTSettingsSectionItem) switchItemWithTitle:@"PiP Sample Buffer Hack"
                     titleDescription:@"Implements PiP sample buffering based on iOS 15.0b5, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues. App restart is required."
