@@ -321,8 +321,48 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %hook MLPIPController
 
+- (void)activatePiPController {
+    %orig;
+    if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
+        MLHAMSBDLSampleBufferRenderingView *view = [self valueForKey:@"_HAMPlayerView"];
+        CGSize size = [self renderSizeForView:view];
+        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+        [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
+        [avpip sampleBufferDisplayLayerDidAppear];
+    }
+}
+
 - (BOOL)isPictureInPictureSupported {
     return YES;
+}
+
+%new
+- (BOOL)pictureInPictureControllerPlaybackPaused:(AVPictureInPictureController *)pictureInPictureController {
+    return [self pictureInPictureControllerIsPlaybackPaused:pictureInPictureController];
+}
+
+%new
+- (void)renderingViewSampleBufferFrameSizeDidChange:(CGSize)size {
+    if (!IS_IOS_OR_NEWER(iOS_15_0) && size.width && size.height) {
+        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+        [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
+    }
+}
+
+%new
+- (void)appWillEnterForeground:(id)arg1 {
+    if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
+        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+        [avpip sampleBufferDisplayLayerDidAppear];
+    }
+}
+
+%new
+- (void)appWillEnterBackground:(id)arg1 {
+    if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
+        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+        [avpip sampleBufferDisplayLayerDidDisappear];
+    }
 }
 
 %end

@@ -37,6 +37,7 @@
 - (void)contentSourceVideoRectInWindowChanged;
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
 - (void)sampleBufferDisplayLayerDidAppear;
+- (void)sampleBufferDisplayLayerDidDisappear;
 - (void)_updateEnqueuedBufferDimensions;
 - (void)_observePlayerLayer:(id <AVPictureInPictureContentSource>)playerLayerContentSource; // pre iOS 15.0b2
 - (void)_startObservationsForContentSource:(AVPictureInPictureControllerContentSource *)controllerContentSource API_AVAILABLE(ios(15.0));
