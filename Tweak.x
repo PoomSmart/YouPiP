@@ -1,3 +1,5 @@
+// clang-format off
+
 #import <version.h>
 #import "Header.h"
 #import "../YouTubeHeader/GIMBindingBuilder.h"
@@ -35,6 +37,10 @@ extern BOOL LegacyPiP();
 
 BOOL UsePiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
+}
+
+BOOL NoMiniPlayerPiP() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:NoMiniPlayerPiPKey];
 }
 
 BOOL UseTabBarPiPButton() {
@@ -473,7 +479,8 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 - (void)appWillResignActive:(id)arg1 {
     // If PiP button on, PiP doesn't activate on app resign unless it's from user
     BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
-    BOOL disablePiP = hasPiPButton && !FromUser;
+    BOOL isMiniPlayer = [(YTLocalPlaybackController *)[self valueForKey:@"_delegate"] playerVisibility] == 1;
+    BOOL disablePiP = (NoMiniPlayerPiP() && isMiniPlayer) || (hasPiPButton && !FromUser);
     if (disablePiP) {
         MLPIPController *pip = [self valueForKey:@"_pipController"];
         [pip setValue:nil forKey:@"_pictureInPictureController"];
