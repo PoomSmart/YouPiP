@@ -342,6 +342,16 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 }
 
 %new
+- (void)pictureInPictureControllerStartPlayback:(id)arg1 {
+    [self pictureInPictureControllerStartPlayback];
+}
+
+%new
+- (void)pictureInPictureControllerStopPlayback:(id)arg1 {
+    [self pictureInPictureControllerStopPlayback];
+}
+
+%new
 - (void)renderingViewSampleBufferFrameSizeDidChange:(CGSize)size {
     if (!IS_IOS_OR_NEWER(iOS_15_0) && size.width && size.height) {
         AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
