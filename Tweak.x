@@ -51,9 +51,9 @@ BOOL NonBackgroundable() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:NonBackgroundableKey];
 }
 
-// BOOL PiPStartPaused() {
-//     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPStartPausedKey];
-// }
+BOOL FakeVersion() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:FakeVersionKey];
+}
 
 BOOL isPictureInPictureActive(MLPIPController *pip) {
     return [pip respondsToSelector:@selector(pictureInPictureActive)] ? [pip pictureInPictureActive] : [pip isPictureInPictureActive];
@@ -486,8 +486,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
         [pip setValue:nil forKey:@"_pictureInPictureController"];
     } else {
         if (LegacyPiP()) {
-            // FIXME: Don't do this
-            // Don't ask me why
+            // FIXME: Don't do this and don't ask me why
             for (int i = 0; i < 5; ++i)
                 activatePiPBase(self, YES);
         }

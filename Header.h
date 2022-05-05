@@ -9,6 +9,6 @@
 #define NoMiniPlayerPiPKey @"NoMiniPlayerPiPKey"
 #define SampleBufferWorkKey @"SampleBufferWorkKey"
 #define NonBackgroundableKey @"NonBackgroundableKey"
-#define PiPStartPausedKey @"PiPStartPausedKey"
+#define FakeVersionKey @"FakeVersionKey"
 
 #endif
