@@ -151,8 +151,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == PiPButtonType) {
-        YTColorPalette *colorPalette = [%c(YTPageStyleController) currentColorPalette];
-        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:colorPalette.textPrimary];
+        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[[%c(YTPageStyleController) currentColorPalette] textPrimary]];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
         return image;
