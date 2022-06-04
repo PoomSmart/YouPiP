@@ -231,7 +231,7 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
         self.pipButton = [self buttonWithImage:image accessibilityLabel:@"pip" verticalContentPadding:padding];
         self.pipButton.hidden = YES;
         self.pipButton.alpha = 0;
-        [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:64];
+        [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:UIControlEventTouchUpInside];
         @try {
             [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
         } @catch (id ex) {

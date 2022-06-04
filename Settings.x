@@ -2,7 +2,7 @@
 
 #import "../PSHeader/iOSVersions.h"
 #import "Header.h"
-#import "../YouTubeHeader/YTUIUtils.h"
+#import "../YouTubeHeader/YTAlertView.h"
 #import "../YouTubeHeader/YTHotConfig.h"
 #import "../YouTubeHeader/YTSettingsViewController.h"
 #import "../YouTubeHeader/YTSettingsSectionItem.h"
@@ -162,11 +162,10 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
     if (![defaults boolForKey:YouPiPWarnVersionKey]) {
         if ([currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedDescending) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                UIAlertController *warning = [UIAlertController alertControllerWithTitle:@"YouPiP" message:[NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)] preferredStyle:UIAlertControllerStyleAlert];
-                UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
-                [warning addAction:action];
-                UIViewController *rootViewController = [%c(YTUIUtils) topViewControllerForPresenting];
-                [rootViewController presentViewController:warning animated:YES completion:nil];
+                YTAlertView *alertView = [%c(YTAlertView) infoDialog];
+                alertView.title = @"YouPiP";
+                alertView.subtitle = [NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)];
+                [alertView show];
                 [defaults setBool:YES forKey:YouPiPWarnVersionKey];
             });
         }
