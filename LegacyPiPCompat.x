@@ -129,7 +129,7 @@ static YTHotConfig *(*InjectYTHotConfig)(void);
 %group Legacy
 
 static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig *playerConfig, MLPlayerStickySettings *stickySettings, BOOL gimmeAlloc) {
-    BOOL externalPlaybackActive = [(MLPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
+    BOOL externalPlaybackActive = [(MLAVPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
     MLAVPlayer *player = gimmeAlloc ? [((MLPlayerPool *)self).gimme allocOf:%c(MLAVPlayer)] : [%c(MLAVPlayer) alloc];
     player = [player initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
     if (stickySettings)
