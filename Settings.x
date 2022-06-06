@@ -102,7 +102,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
     } @catch (id ex) {
         hotConfig = [sectionItemManager.gimme instanceForType:%c(YTHotConfig)];
     }
-    YTIIosMediaHotConfig *iosMediaHotConfig = [hotConfig hotConfigGroup].mediaHotConfig.iosMediaHotConfig;
+    YTIIosMediaHotConfig *iosMediaHotConfig = hotConfig.hotConfigGroup.mediaHotConfig.iosMediaHotConfig;
     if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)]) {
         YTSettingsSectionItem *nonBackgroundable = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"NON_BACKGROUNDABLE_PIP")
             titleDescription:LOC(@"NON_BACKGROUNDABLE_PIP_DESC")
@@ -154,6 +154,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
     if (![defaults boolForKey:YouPiPWarnVersionKey] && [currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedDescending) {
         [defaults setBool:YES forKey:YouPiPWarnVersionKey];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            NSBundle *tweakBundle = YouPiPBundle();
             YTAlertView *alertView = [%c(YTAlertView) infoDialog];
             alertView.title = TweakName;
             alertView.subtitle = [NSString stringWithFormat:LOC(@"UNSUPPORTED_YT_VERSION"), currentVersion, @(OS_STRINGIFY(MIN_YOUTUBE_VERSION))];
