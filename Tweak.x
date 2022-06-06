@@ -550,17 +550,23 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 
 %end
 
+NSBundle *YouPiPBundle() {
+    static NSBundle *bundle = nil;
+    static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+        NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
+        if (tweakBundlePath)
+            bundle = [NSBundle bundleWithPath:tweakBundlePath];
+        else
+            bundle = [NSBundle bundleWithPath:@"/Library/Application Support/YouPiP.bundle"];
+    });
+    return bundle;
+}
+
 %ctor {
-    NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
-    if (tweakBundlePath) {
-        NSBundle *tweakBundle = [NSBundle bundleWithPath:tweakBundlePath];
-        PiPVideoPath = [tweakBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
-        PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
-        TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
-    } else {
-        PiPVideoPath = @"/Library/Application Support/YouPiP.bundle/PiPPlaceholderAsset.mp4";
-        PiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-overlay.png";
-        TabBarPiPIconPath = @"/Library/Application Support/YouPiP.bundle/yt-pip-tabbar.png";
-    }
+    NSBundle *tweakBundle = YouPiPBundle();
+    PiPVideoPath = [tweakBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
+    PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
+    TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
     %init;
 }

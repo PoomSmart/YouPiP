@@ -3,11 +3,12 @@
 
 #import "AVKit-Header.h"
 
+#define TweakName @"YouPiP"
+
 #define CompatibilityModeKey @"CompatibilityModeKey"
 #define PiPActivationMethodKey @"PiPActivationMethodKey"
 #define PiPActivationMethod2Key @"PiPActivationMethod2Key"
 #define NoMiniPlayerPiPKey @"NoMiniPlayerPiPKey"
-#define SampleBufferWorkKey @"SampleBufferWorkKey"
 #define NonBackgroundableKey @"NonBackgroundableKey"
 #define FakeVersionKey @"FakeVersionKey"
 

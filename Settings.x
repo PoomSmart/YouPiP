@@ -9,6 +9,8 @@
 #import "../YouTubeHeader/YTSettingsSectionItemManager.h"
 #import "../YouTubeHeader/YTAppSettingsSectionItemActionController.h"
 
+#define LOC(x) [tweakBundle localizedStringForKey:x value:nil table:nil]
+
 #define FEATURE_CUTOFF_VERSION @"16.46.5"
 
 @interface YTSettingsSectionItemManager (YouPiP)
@@ -21,9 +23,10 @@ extern BOOL UsePiPButton();
 extern BOOL UseTabBarPiPButton();
 extern BOOL NoMiniPlayerPiP();
 extern BOOL LegacyPiP();
-extern BOOL SampleBufferWork();
 extern BOOL NonBackgroundable();
 extern BOOL FakeVersion();
+
+extern NSBundle *YouPiPBundle();
 
 NSString *currentVersion;
 
@@ -48,8 +51,9 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 - (void)updateYouPiPSectionWithEntry:(id)entry {
     YTSettingsViewController *delegate = [self valueForKey:@"_dataDelegate"];
     NSMutableArray *sectionItems = [NSMutableArray array];
-    YTSettingsSectionItem *activationMethod = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Use PiP Button"
-        titleDescription:@"Adds a PiP button over the video control overlay to activate PiP instead of dismissing the app."
+    NSBundle *tweakBundle = YouPiPBundle();
+    YTSettingsSectionItem *activationMethod = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"USE_PIP_BUTTON")
+        titleDescription:LOC(@"USE_PIP_BUTTON_DESC")
         accessibilityIdentifier:nil
         switchOn:UsePiPButton()
         switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
@@ -58,8 +62,8 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         }
         settingItemId:0];
     [sectionItems addObject:activationMethod];
-    YTSettingsSectionItem *activationMethod2 = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Use Video Tab Bar PiP Button"
-        titleDescription:@"Adds a PiP button in video tab bar to activate PiP instead of dismissing the app. App restart is required."
+    YTSettingsSectionItem *activationMethod2 = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"USE_TAB_BAR_PIP_BUTTON")
+        titleDescription:LOC(@"USE_TAB_BAR_PIP_BUTTON_DESC")
         accessibilityIdentifier:nil
         switchOn:UseTabBarPiPButton()
         switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
@@ -68,8 +72,8 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         }
         settingItemId:0];
     [sectionItems addObject:activationMethod2];
-    YTSettingsSectionItem *miniPlayer = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Disable PiP for Mini Player"
-        titleDescription:@"Disables PiP while playing a video in the mini player."
+    YTSettingsSectionItem *miniPlayer = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"DISABLE_PIP_MINI_PLAYER")
+        titleDescription:LOC(@"DISABLE_PIP_MINI_PLAYER_DESC")
         accessibilityIdentifier:nil
         switchOn:NoMiniPlayerPiP()
         switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
@@ -78,21 +82,9 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         }
         settingItemId:0];
     [sectionItems addObject:miniPlayer];
-    if (IS_IOS_BETWEEN_EEX(iOS_14_0, iOS_15_0)) {
-        YTSettingsSectionItem *sampleBuffer = [%c(YTSettingsSectionItem) switchItemWithTitle:@"PiP Sample Buffer Hack"
-            titleDescription:@"Implements PiP sample buffering based on iOS 15.0b5, which should reduce the chance of getting playback speedup bug. Turn off this option if you face weird issues. App restart is required."
-            accessibilityIdentifier:nil
-            switchOn:SampleBufferWork()
-            switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
-                [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:SampleBufferWorkKey];
-                return YES;
-            }
-            settingItemId:0];
-        [sectionItems addObject:sampleBuffer];
-    }
     if (IS_IOS_OR_NEWER(iOS_13_0) && [currentVersion compare:@"15.33.4" options:NSNumericSearch] == NSOrderedDescending) {
-        YTSettingsSectionItem *legacyPiP = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Legacy PiP"
-            titleDescription:@"Uses AVPlayerLayer for PiP. This gracefully fixes speedup bug but also removes UHD options (2K/4K) from any videos. App restart is required."
+        YTSettingsSectionItem *legacyPiP = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"LEGACY_PIP")
+            titleDescription:LOC(@"LEGACY_PIP_DESC")
             accessibilityIdentifier:nil
             switchOn:LegacyPiP()
             switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
@@ -112,8 +104,8 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
     }
     YTIIosMediaHotConfig *iosMediaHotConfig = [hotConfig hotConfigGroup].mediaHotConfig.iosMediaHotConfig;
     if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)]) {
-        YTSettingsSectionItem *nonBackgroundable = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Non-backgroundable PiP"
-            titleDescription:@"Enables PiP for non-backgroundable content."
+        YTSettingsSectionItem *nonBackgroundable = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"NON_BACKGROUNDABLE_PIP")
+            titleDescription:LOC(@"NON_BACKGROUNDABLE_PIP_DESC")
             accessibilityIdentifier:nil
             switchOn:NonBackgroundable()
             switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
@@ -124,8 +116,8 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         [sectionItems addObject:nonBackgroundable];
     }
     if ([currentVersion compare:FEATURE_CUTOFF_VERSION options:NSNumericSearch] == NSOrderedDescending) {
-        YTSettingsSectionItem *fakeVersion = [%c(YTSettingsSectionItem) switchItemWithTitle:@"Fake YouTube version"
-            titleDescription:[NSString stringWithFormat:@"Set YouTube version to %@ so that PiP button under video player may show.", FEATURE_CUTOFF_VERSION]
+        YTSettingsSectionItem *fakeVersion = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"FAKE_YT_VERSION")
+            titleDescription:[NSString stringWithFormat:LOC(@"FAKE_YT_VERSION_DESC"), FEATURE_CUTOFF_VERSION]
             accessibilityIdentifier:nil
             switchOn:FakeVersion()
             switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
@@ -135,7 +127,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             settingItemId:0];
         [sectionItems addObject:fakeVersion];
     }
-    [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:@"YouPiP" titleDescription:nil headerHidden:NO];
+    [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName titleDescription:nil headerHidden:NO];
 }
 
 - (void)updateSectionForCategory:(NSUInteger)category withEntry:(id)entry {
@@ -159,16 +151,14 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 %ctor {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     currentVersion = [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
-    if (![defaults boolForKey:YouPiPWarnVersionKey]) {
-        if ([currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedDescending) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                YTAlertView *alertView = [%c(YTAlertView) infoDialog];
-                alertView.title = @"YouPiP";
-                alertView.subtitle = [NSString stringWithFormat:@"YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %s", currentVersion, OS_STRINGIFY(MIN_YOUTUBE_VERSION)];
-                [alertView show];
-                [defaults setBool:YES forKey:YouPiPWarnVersionKey];
-            });
-        }
+    if (![defaults boolForKey:YouPiPWarnVersionKey] && [currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedDescending) {
+        [defaults setBool:YES forKey:YouPiPWarnVersionKey];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            YTAlertView *alertView = [%c(YTAlertView) infoDialog];
+            alertView.title = TweakName;
+            alertView.subtitle = [NSString stringWithFormat:LOC(@"UNSUPPORTED_YT_VERSION"), currentVersion, @(OS_STRINGIFY(MIN_YOUTUBE_VERSION))];
+            [alertView show];
+        });
     }
     %init;
 }
