@@ -557,8 +557,11 @@ NSBundle *YouPiPBundle() {
         NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
         if (tweakBundlePath)
             bundle = [NSBundle bundleWithPath:tweakBundlePath];
-        else
+        else {
             bundle = [NSBundle bundleWithPath:@"/Library/Application Support/YouPiP.bundle"];
+            if (!bundle)
+                bundle = [NSBundle bundleWithPath:@"/var/jb/Library/Application Support/YouPiP.bundle"];
+        }
     });
     return bundle;
 }

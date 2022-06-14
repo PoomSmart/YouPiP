@@ -46,29 +46,35 @@ static YTHotConfig *(*InjectYTHotConfig)(void);
 
 %group WithInjection
 
+YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *controller, id delegate) {
+    if (controller) return controller;
+    controller = [[%c(YTPlayerPIPController) alloc] init];
+    MLPIPController *pip = InjectMLPIPController();
+    YTSystemNotifications *systemNotifications = InjectYTSystemNotifications();
+    YTBackgroundabilityPolicy *bgPolicy = InjectYTBackgroundabilityPolicy();
+    YTPlayerViewControllerConfig *playerConfig = InjectYTPlayerViewControllerConfig();
+    [controller setValue:pip forKey:@"_pipController"];
+    [controller setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
+    [controller setValue:playerConfig forKey:@"_config"];
+    @try {
+        YTHotConfig *config = InjectYTHotConfig();
+        [controller setValue:config forKey:@"_hotConfig"];
+    } @catch (id ex) {}
+    [controller setValue:delegate forKey:@"_delegate"];
+    [bgPolicy addBackgroundabilityPolicyObserver:controller];
+    [pip addPIPControllerObserver:controller];
+    [systemNotifications addSystemNotificationsObserver:controller];
+    return controller;
+}
+
 %hook YTPlayerPIPController
 
 - (instancetype)initWithDelegate:(id)delegate {
-    id controller = %orig;
-    if (controller == nil) {
-        controller = [[%c(YTPlayerPIPController) alloc] init];
-        MLPIPController *pip = InjectMLPIPController();
-        YTSystemNotifications *systemNotifications = InjectYTSystemNotifications();
-        YTBackgroundabilityPolicy *bgPolicy = InjectYTBackgroundabilityPolicy();
-        YTPlayerViewControllerConfig *playerConfig = InjectYTPlayerViewControllerConfig();
-        [controller setValue:pip forKey:@"_pipController"];
-        [controller setValue:bgPolicy forKey:@"_backgroundabilityPolicy"];
-        [controller setValue:playerConfig forKey:@"_config"];
-        @try {
-            YTHotConfig *config = InjectYTHotConfig();
-            [controller setValue:config forKey:@"_hotConfig"];
-        } @catch (id ex) {}
-        [controller setValue:delegate forKey:@"_delegate"];
-        [bgPolicy addBackgroundabilityPolicyObserver:controller];
-        [pip addPIPControllerObserver:controller];
-        [systemNotifications addSystemNotificationsObserver:controller];
-    }
-    return controller;
+    return initPlayerPiPControllerIfNeeded(%orig, delegate);
+}
+
+- (instancetype)initWithDelegate:(id)delegate parentResponder:(id)parentResponder {
+    return initPlayerPiPControllerIfNeeded(%orig, delegate);
 }
 
 %end
