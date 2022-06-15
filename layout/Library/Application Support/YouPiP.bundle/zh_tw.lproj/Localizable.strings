@@ -1,0 +1,22 @@
+﻿// Settings
+
+"USE_PIP_BUTTON" = "使用子母畫面按鈕";
+"USE_PIP_BUTTON_DESC" = "在影片控制層上添加子母畫面按鈕以啟用子母畫面而不是關閉應用程式。";
+
+"USE_TAB_BAR_PIP_BUTTON" = "使用影片標籤欄子母畫面按鈕";
+"USE_TAB_BAR_PIP_BUTTON_DESC" = "在影片標籤欄中添加子母畫面按鈕以啟用子母畫面而不是關閉應用程式。需要重新啟動應用程式。";
+
+"DISABLE_PIP_MINI_PLAYER" = "為迷你播放器禁用子母畫面";
+"DISABLE_PIP_MINI_PLAYER_DESC" = "在迷你播放器中播放影片時禁用子母畫面。";
+
+"LEGACY_PIP" = "傳統子母畫面";
+"LEGACY_PIP_DESC" = "使用 AVPlayerLayer 進行子母畫面。 這修復了加速錯誤，但也從任何影片中刪除了 UHD 選項 (2K/4K)。 需要重新啟動應用程式。";
+
+"NON_BACKGROUNDABLE_PIP" = "非背景子母畫面";
+"NON_BACKGROUNDABLE_PIP_DESC" = "為非背景影片啟用子母畫面。";
+
+"FAKE_YT_VERSION" = "假 YouTube 版本";
+"FAKE_YT_VERSION_DESC" = "將 YouTube 版本設置為 %@，以便影片播放器下的子母畫面按鈕可以顯示。";
+
+// Compatibility warning
+"UNSUPPORTED_YT_VERSION" = "YouTube 版本 %@ 未經測試，YouPiP 可能不支持，請將 YouTube 至少升級到版本 %@";
