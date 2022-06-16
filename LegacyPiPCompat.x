@@ -46,7 +46,7 @@ static YTHotConfig *(*InjectYTHotConfig)(void);
 
 %group WithInjection
 
-YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *controller, id delegate) {
+YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *controller, id delegate, id parentResponder) {
     if (controller) return controller;
     controller = [[%c(YTPlayerPIPController) alloc] init];
     MLPIPController *pip = InjectMLPIPController();
@@ -60,6 +60,11 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
         YTHotConfig *config = InjectYTHotConfig();
         [controller setValue:config forKey:@"_hotConfig"];
     } @catch (id ex) {}
+    if (parentResponder) {
+        @try {
+            [controller setValue:parentResponder forKey:@"_parentResponder"];
+        } @catch (id ex) {}
+    }
     [controller setValue:delegate forKey:@"_delegate"];
     [bgPolicy addBackgroundabilityPolicyObserver:controller];
     [pip addPIPControllerObserver:controller];
@@ -70,11 +75,11 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 %hook YTPlayerPIPController
 
 - (instancetype)initWithDelegate:(id)delegate {
-    return initPlayerPiPControllerIfNeeded(%orig, delegate);
+    return initPlayerPiPControllerIfNeeded(%orig, delegate, nil);
 }
 
 - (instancetype)initWithDelegate:(id)delegate parentResponder:(id)parentResponder {
-    return initPlayerPiPControllerIfNeeded(%orig, delegate);
+    return initPlayerPiPControllerIfNeeded(%orig, delegate, parentResponder);
 }
 
 %end
@@ -277,6 +282,50 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %end
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+
+%group AVKit_iOS14_2_Up
+
+%hook AVPictureInPictureControllerContentSource
+
+%property (assign) bool hasInitialRenderSize;
+
+- (id)initWithSampleBufferDisplayLayer:(AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer initialRenderSize:(CGSize)initialRenderSize playbackDelegate:(id)playbackDelegate {
+    self = %orig;
+    if (self)
+        self.hasInitialRenderSize = true;
+    return self;
+}
+
+%end
+
+%end
+
+%group AVKit_preiOS14_2
+
+%hook AVPictureInPictureControllerContentSource
+
+%property (assign) bool hasInitialRenderSize;
+
+%new
+- (instancetype)initWithSampleBufferDisplayLayer:(AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer initialRenderSize:(CGSize)initialRenderSize playbackDelegate:(id <AVPictureInPictureSampleBufferPlaybackDelegate>)playbackDelegate {
+    return [self initWithSampleBufferDisplayLayer:sampleBufferDisplayLayer playbackDelegate:playbackDelegate];
+}
+
+%end
+
+%hook AVPictureInPictureController
+
+%new
+- (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {}
+
+%end
+
+%end
+
+#pragma clang diagnostic pop
+
 %ctor {
     NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
     MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
@@ -299,5 +348,12 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     }
     if (LegacyPiP()) {
         %init(Legacy);
+    }
+    if (!IS_IOS_OR_NEWER(iOS_14_0) || IS_IOS_OR_NEWER(iOS_15_0))
+        return;
+    if (IS_IOS_OR_NEWER(iOS_14_2)) {
+        %init(AVKit_iOS14_2_Up);
+    } else {
+        %init(AVKit_preiOS14_2);
     }
 }
