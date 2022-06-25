@@ -1,5 +1,3 @@
-// clang-format off
-
 #import <version.h>
 #import "Header.h"
 #import "../YouTubeHeader/GIMBindingBuilder.h"
@@ -22,6 +20,7 @@
 #import "../YouTubeHeader/YTSlimVideoDetailsActionView.h"
 #import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
 #import "../YouTubeHeader/YTPageStyleController.h"
+#import "../YouTubeHeader/YTPlayerStatus.h"
 
 #define PiPButtonType 801
 
@@ -32,6 +31,7 @@
 @end
 
 BOOL FromUser = NO;
+BOOL PiPDisabled = NO;
 
 extern BOOL LegacyPiP();
 
@@ -478,8 +478,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 - (void)appWillResignActive:(id)arg1 {
     // If PiP button on, PiP doesn't activate on app resign unless it's from user
     BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
-    BOOL isMiniPlayer = [(YTLocalPlaybackController *)[self valueForKey:@"_delegate"] playerVisibility] == 1;
-    BOOL disablePiP = (NoMiniPlayerPiP() && isMiniPlayer) || (hasPiPButton && !FromUser);
+    BOOL disablePiP = hasPiPButton && !FromUser;
     if (disablePiP) {
         MLPIPController *pip = [self valueForKey:@"_pipController"];
         [pip setValue:nil forKey:@"_pictureInPictureController"];
@@ -494,6 +493,19 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
     FromUser = NO;
 }
 
+%end
+
+%hook YTSingleVideoController
+- (void)playerStatusDidChange:(YTPlayerStatus *)playerStatus {
+    %orig;
+    PiPDisabled = NoMiniPlayerPiP() && playerStatus.visibility == 1;
+}
+%end
+
+%hook AVPictureInPicturePlatformAdapter
+- (BOOL)isSystemPictureInPicturePossible {
+    return PiPDisabled ? NO : %orig;
+}
 %end
 
 %hook YTIPlayabilityStatus
