@@ -496,16 +496,20 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 %end
 
 %hook YTSingleVideoController
+
 - (void)playerStatusDidChange:(YTPlayerStatus *)playerStatus {
     %orig;
     PiPDisabled = NoMiniPlayerPiP() && playerStatus.visibility == 1;
 }
+
 %end
 
 %hook AVPictureInPicturePlatformAdapter
+
 - (BOOL)isSystemPictureInPicturePossible {
     return PiPDisabled ? NO : %orig;
 }
+
 %end
 
 %hook YTIPlayabilityStatus
