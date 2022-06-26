@@ -310,10 +310,6 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     return YES;
 }
 
-- (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {
-    %orig(UsePiPButton() || UseTabBarPiPButton() ? NO : canStartFromInline);
-}
-
 %end
 
 %hook AVPlayerController
@@ -483,14 +479,10 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
         MLPIPController *pip = [self valueForKey:@"_pipController"];
         [pip setValue:nil forKey:@"_pictureInPictureController"];
     } else {
-        if (LegacyPiP()) {
-            // FIXME: Don't do this and don't ask me why
-            for (int i = 0; i < 5; ++i)
-                activatePiPBase(self, YES);
-        }
+        if (LegacyPiP())
+            activatePiPBase(self, YES);
         %orig;
     }
-    FromUser = NO;
 }
 
 %end
