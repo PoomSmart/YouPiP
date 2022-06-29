@@ -140,10 +140,22 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
 %end
 
+BOOL loadWatchNextRequest = NO;
+
 %hook YTVersionUtils
 
 + (NSString *)appVersion {
-    return FakeVersion() ? FEATURE_CUTOFF_VERSION : %orig;
+    return FakeVersion() && loadWatchNextRequest ? FEATURE_CUTOFF_VERSION : %orig;
+}
+
+%end
+
+%hook YTWatchNextViewController
+
+- (void)loadWatchNextRequest {
+    loadWatchNextRequest = YES;
+    %orig;
+    loadWatchNextRequest = NO;
 }
 
 %end
