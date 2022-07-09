@@ -451,9 +451,9 @@ static BOOL isPiPDisabledForMiniPlayer(YTPlayerPIPController *pip) {
     YTLocalPlaybackController *local = [pip valueForKey:@"_delegate"];
     YTPlayerViewController *player = [local valueForKey:@"_delegate"];
     YTWatchMiniBarViewController *mini = (YTWatchMiniBarViewController *)player.parentViewController;
-    // FIXME: If video feed autoplay is enabled, there can be multiple instances of YTPlayerPIPController - one of which is false positive, mini = nil
-    // Can we prevent multiple instances of YTPlayerPIPController at all?
-    return mini == nil || ([mini isKindOfClass:%c(YTWatchMiniBarViewController)] && mini.activated);
+    return mini == nil
+        || [mini isKindOfClass:%c(YTInlineMutedPlaybackWatchViewController)]
+        || ([mini isKindOfClass:%c(YTWatchMiniBarViewController)] && mini.activated);
 }
 
 %hook YTPlayerPIPController
