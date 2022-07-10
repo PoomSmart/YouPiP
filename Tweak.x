@@ -487,10 +487,17 @@ static BOOL isPiPDisabledForMiniPlayer(YTPlayerPIPController *pip) {
     // If PiP button on, PiP doesn't activate on app resign unless it's from user
     BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
     BOOL disablePiP = hasPiPButton && !FromUser;
+    MLPIPController *mlpip = [self valueForKey:@"_pipController"];
+    AVPictureInPictureController *avpip = [mlpip valueForKey:@"_pictureInPictureController"];
     if (disablePiP) {
-        MLPIPController *pip = [self valueForKey:@"_pipController"];
-        [pip setValue:nil forKey:@"_pictureInPictureController"];
+        [mlpip setValue:nil forKey:@"_pictureInPictureController"];
     } else {
+        // Prevent problems when toggling PiP. No idea why this works
+        if ([avpip respondsToSelector:@selector(setContentSource:)])
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+            avpip.contentSource = [mlpip newContentSource];
+#pragma clang diagnostic pop
         if (NoMiniPlayerPiP() && isPiPDisabledForMiniPlayer(self)) return;
         if (LegacyPiP())
             activatePiPBase(self, YES);
