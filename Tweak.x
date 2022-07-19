@@ -20,7 +20,7 @@
 #import "../YouTubeHeader/YTSlimVideoDetailsActionView.h"
 #import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
 #import "../YouTubeHeader/YTPageStyleController.h"
-#import "../YouTubeHeader/YTPlayerStatus.h"
+#import "../YouTubeHeader/YTWatchMiniBarViewController.h"
 
 #define PiPButtonType 801
 
@@ -31,7 +31,6 @@
 @end
 
 BOOL FromUser = NO;
-BOOL PiPDisabled = NO;
 
 extern BOOL LegacyPiP();
 
@@ -448,6 +447,15 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
     }
 }
 
+static BOOL isPiPDisabledForMiniPlayer(YTPlayerPIPController *pip) {
+    YTLocalPlaybackController *local = [pip valueForKey:@"_delegate"];
+    YTPlayerViewController *player = [local valueForKey:@"_delegate"];
+    YTWatchMiniBarViewController *mini = (YTWatchMiniBarViewController *)player.parentViewController;
+    return mini == nil
+        || [mini isKindOfClass:%c(YTInlineMutedPlaybackWatchViewController)]
+        || ([mini isKindOfClass:%c(YTWatchMiniBarViewController)] && mini.activated);
+}
+
 %hook YTPlayerPIPController
 
 - (BOOL)canInvokePictureInPicture {
@@ -455,6 +463,8 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
+    if (value && NoMiniPlayerPiP() && isPiPDisabledForMiniPlayer(self))
+        return NO;
     return value;
 }
 
@@ -463,6 +473,8 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
+    if (value && NoMiniPlayerPiP() && isPiPDisabledForMiniPlayer(self))
+        return NO;
     return value;
 }
 
@@ -479,27 +491,11 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
         MLPIPController *pip = [self valueForKey:@"_pipController"];
         [pip setValue:nil forKey:@"_pictureInPictureController"];
     } else {
+        if (NoMiniPlayerPiP() && isPiPDisabledForMiniPlayer(self)) return;
         if (LegacyPiP())
             activatePiPBase(self, YES);
         %orig;
     }
-}
-
-%end
-
-%hook YTSingleVideoController
-
-- (void)playerStatusDidChange:(YTPlayerStatus *)playerStatus {
-    %orig;
-    PiPDisabled = NoMiniPlayerPiP() && playerStatus.visibility == 1;
-}
-
-%end
-
-%hook AVPictureInPicturePlatformAdapter
-
-- (BOOL)isSystemPictureInPicturePossible {
-    return PiPDisabled ? NO : %orig;
 }
 
 %end
