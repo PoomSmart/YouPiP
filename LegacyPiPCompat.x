@@ -260,13 +260,13 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %hook AVPictureInPictureController
 
-%new
+%new(v@:)
 - (void)invalidatePlaybackState {}
 
-%new
+%new(v@:)
 - (void)sampleBufferDisplayLayerDidDisappear {}
 
-%new
+%new(v@:)
 - (void)sampleBufferDisplayLayerDidAppear {}
 
 %new
@@ -275,7 +275,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %new
 - (void)setRequiresLinearPlayback:(BOOL)linear {}
 
-%new
+%new(v@:)
 - (void)reloadPrerollAttributes {}
 
 %end

@@ -280,7 +280,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     %orig;
 }
 
-%new
+%new(@:)
 - (UIImage *)pipImage {
     static UIImage *image = nil;
     static dispatch_once_t onceToken;
@@ -293,7 +293,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     return image;
 }
 
-%new
+%new(v@:@)
 - (void)didPressPiP:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     FromUser = YES;
@@ -342,12 +342,12 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     return [self pictureInPictureControllerIsPlaybackPaused:pictureInPictureController];
 }
 
-%new
+%new(v@:@)
 - (void)pictureInPictureControllerStartPlayback:(id)arg1 {
     [self pictureInPictureControllerStartPlayback];
 }
 
-%new
+%new(v@:@)
 - (void)pictureInPictureControllerStopPlayback:(id)arg1 {
     [self pictureInPictureControllerStopPlayback];
 }
@@ -360,7 +360,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     }
 }
 
-%new
+%new(v@:@)
 - (void)appWillEnterForeground:(id)arg1 {
     if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
         AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
@@ -368,7 +368,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     }
 }
 
-%new
+%new(v@:@)
 - (void)appWillEnterBackground:(id)arg1 {
     if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
         AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
