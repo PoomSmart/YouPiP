@@ -241,12 +241,8 @@ static void createPiPButton(YTMainAppControlsOverlayView *self) {
 }
 
 static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
-    if (UsePiPButton()) {
-        // TODO: Remove this mutable copying when iSponsorBlock fixed the data type
-        if (![controls respondsToSelector:@selector(insertObject:atIndex:)])
-            controls = [controls mutableCopy];
+    if (UsePiPButton())
         [controls insertObject:self.pipButton atIndex:0];
-    }
     return controls;
 }
 
@@ -337,7 +333,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     return YES;
 }
 
-%new
+%new(v@:@)
 - (BOOL)pictureInPictureControllerPlaybackPaused:(AVPictureInPictureController *)pictureInPictureController {
     return [self pictureInPictureControllerIsPlaybackPaused:pictureInPictureController];
 }
