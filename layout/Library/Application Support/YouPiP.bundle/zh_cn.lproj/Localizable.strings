@@ -1,10 +1,10 @@
 // Settings
 
 "USE_PIP_BUTTON" = "使用画中画按钮";
-"USE_PIP_BUTTON_DESC" = "在视频播放器控制界面上显示用于手动启动画中画的按钮。开启本设置后，点按主屏幕按钮将不会启动画中画。";
+"USE_PIP_BUTTON_DESC" = "在视频播放器控制界面上显示用于手动启动画中画的按钮。开启本设置后，返回主屏幕时将不会启动画中画。";
 
 "USE_TAB_BAR_PIP_BUTTON" = "使用视频标签栏画中画按钮";
-"USE_TAB_BAR_PIP_BUTTON_DESC" = "在视频标签栏处显示用于手动启动画中画的按钮。开启本设置后，点按主屏幕按钮将不会启动画中画。";
+"USE_TAB_BAR_PIP_BUTTON_DESC" = "在视频标签栏处显示用于手动启动画中画的按钮。开启本设置后，返回主屏幕时将不会启动画中画。";
 
 "DISABLE_PIP_MINI_PLAYER" = "禁用迷你播放器画中画";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "在使用迷你播放器时禁用画中画。";
