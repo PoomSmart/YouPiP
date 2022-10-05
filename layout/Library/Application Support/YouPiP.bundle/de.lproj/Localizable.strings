@@ -19,4 +19,4 @@
 "FAKE_YT_VERSION_DESC" = "Setzt die YouTube-Version auf %@, sodass die PiP-Taste unter dem Videoplayer eventuell angezeigt wird.";
 
 // Compatibility warning
-"UNSUPPORTED_YT_VERSION" = "YouTube-Version %@ wurde nicht getestet und wird eventuell nicht von YouPiP unterstüzt, bitte upgrade YouTube mindestens zur Version %@";
+"UNSUPPORTED_YT_VERSION" = "YouTube-Version %@ wurde nicht getestet und wird eventuell nicht von YouPiP unterstützt, bitte upgrade YouTube mindestens zur Version %@";
