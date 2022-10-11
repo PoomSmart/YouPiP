@@ -236,13 +236,6 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     return %orig;
 }
 
-// - (id)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-//     if (hasSampleBufferPiP || !isLegacyVersion)
-//         return %orig;
-//     MLPIPController *pip = [self.gimme instanceForType:%c(MLPIPController)];
-//     return [pip valueForKey:@"_pipPlayerLayerView"];
-// }
-
 %end
 
 %hook MLVideoDecoderFactory
@@ -260,13 +253,13 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %hook AVPictureInPictureController
 
-%new
+%new(v@:)
 - (void)invalidatePlaybackState {}
 
-%new
+%new(v@:)
 - (void)sampleBufferDisplayLayerDidDisappear {}
 
-%new
+%new(v@:)
 - (void)sampleBufferDisplayLayerDidAppear {}
 
 %new
@@ -275,7 +268,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %new
 - (void)setRequiresLinearPlayback:(BOOL)linear {}
 
-%new
+%new(v@:)
 - (void)reloadPrerollAttributes {}
 
 %end
@@ -330,7 +323,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
     MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
     InjectMLPIPController = MSFindSymbol(ref, "_InjectMLPIPController");
-    if (InjectMLPIPController != NULL) {
+    if (InjectMLPIPController) {
         InjectYTSystemNotifications = MSFindSymbol(ref, "_InjectYTSystemNotifications");
         InjectYTBackgroundabilityPolicy = MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
         InjectYTPlayerViewControllerConfig = MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");

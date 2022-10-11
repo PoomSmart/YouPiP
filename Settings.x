@@ -47,7 +47,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
 %hook YTSettingsSectionItemManager
 
-%new
+%new(v@:@)
 - (void)updateYouPiPSectionWithEntry:(id)entry {
     YTSettingsViewController *delegate = [self valueForKey:@"_dataDelegate"];
     NSMutableArray *sectionItems = [NSMutableArray array];

@@ -10,7 +10,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Disables PiP while playing a video in the mini player.";
 
 "LEGACY_PIP" = "Legacy PiP";
-"LEGACY_PIP_DESC" = "Uses AVPlayerLayer for PiP. This fixes speedup bug but also removes UHD options (2K/4K) from any videos. App restart is required.";
+"LEGACY_PIP_DESC" = "Uses AVPlayerLayer for PiP. This fixes speedup bug but may remove UHD options (2K/4K) from any videos. App restart is required.";
 
 "NON_BACKGROUNDABLE_PIP" = "Non-backgroundable PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Enables PiP for non-backgroundable video.";
