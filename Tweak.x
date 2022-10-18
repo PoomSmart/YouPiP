@@ -34,6 +34,7 @@ BOOL FromUser = NO;
 BOOL PiPDisabled = NO;
 
 extern BOOL LegacyPiP();
+extern YTHotConfig *(*InjectYTHotConfig)(void);
 
 BOOL UsePiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
@@ -112,7 +113,10 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
 static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     YTHotConfig *hotConfig;
     @try {
-        hotConfig = [self valueForKey:@"_hotConfig"];
+        if (InjectYTHotConfig)
+            hotConfig = InjectYTHotConfig();
+        else
+            hotConfig = [self valueForKey:@"_hotConfig"];
     } @catch (id ex) {
         hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
     }

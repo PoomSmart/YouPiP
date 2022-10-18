@@ -42,7 +42,7 @@ static MLPIPController *(*InjectMLPIPController)(void);
 static YTSystemNotifications *(*InjectYTSystemNotifications)(void);
 static YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)(void);
 static YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)(void);
-static YTHotConfig *(*InjectYTHotConfig)(void);
+YTHotConfig *(*InjectYTHotConfig)(void);
 
 %group WithInjection
 
