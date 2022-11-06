@@ -10,6 +10,6 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = YouPiP
 $(TWEAK_NAME)_FILES = Tweak.x Settings.x LegacyPiPCompat.x
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc $(EXTRA_CFLAGS)
-$(TWEAK_NAME)_FRAMEWORKS = AVKit
+$(TWEAK_NAME)_FRAMEWORKS = AVFoundation AVKit UIKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk
