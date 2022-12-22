@@ -13,11 +13,11 @@
 
 #define FEATURE_CUTOFF_VERSION @"16.46.5"
 
+static const NSInteger YouPiPSection = 200;
+
 @interface YTSettingsSectionItemManager (YouPiP)
 - (void)updateYouPiPSectionWithEntry:(id)entry;
 @end
-
-static const NSInteger YouPiPSection = 200;
 
 extern BOOL UsePiPButton();
 extern BOOL UseTabBarPiPButton();
