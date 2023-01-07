@@ -21,6 +21,7 @@
 #import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
 #import "../YouTubeHeader/YTPageStyleController.h"
 #import "../YouTubeHeader/YTPlayerStatus.h"
+#import "../YouTubeHeader/YTWatchViewController.h"
 
 #define PiPButtonType 801
 
@@ -34,6 +35,7 @@ BOOL FromUser = NO;
 BOOL PiPDisabled = NO;
 
 extern BOOL LegacyPiP();
+extern YTHotConfig *(*InjectYTHotConfig)(void);
 
 BOOL UsePiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
@@ -112,7 +114,10 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
 static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     YTHotConfig *hotConfig;
     @try {
-        hotConfig = [self valueForKey:@"_hotConfig"];
+        if (InjectYTHotConfig)
+            hotConfig = InjectYTHotConfig();
+        else
+            hotConfig = [self valueForKey:@"_hotConfig"];
     } @catch (id ex) {
         hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
     }
@@ -191,7 +196,12 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *
         @try {
             if ([[_delegate valueForKey:@"_metadataPanelStateProvider"] isKindOfClass:%c(YTWatchController)]) {
                 id provider = [_delegate valueForKey:@"_metadataPanelStateProvider"];
-                playerViewController = [provider valueForKey:@"_playerViewController"];
+                @try {
+                    YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
+                    playerViewController = [watchViewController valueForKey:@"_playerViewController"];
+                } @catch (id ex) {
+                    playerViewController = [provider valueForKey:@"_playerViewController"];
+                }
             }
         } @catch (id ex) { // for old YouTube version
             if ([[_delegate valueForKey:@"_ngwMetadataPanelStateProvider"] isKindOfClass:%c(YTNGWatchController)]) {
@@ -561,11 +571,8 @@ NSBundle *YouPiPBundle() {
         NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
         if (tweakBundlePath)
             bundle = [NSBundle bundleWithPath:tweakBundlePath];
-        else {
+        else
             bundle = [NSBundle bundleWithPath:@"/Library/Application Support/YouPiP.bundle"];
-            if (!bundle)
-                bundle = [NSBundle bundleWithPath:@"/var/jb/Library/Application Support/YouPiP.bundle"];
-        }
     });
     return bundle;
 }

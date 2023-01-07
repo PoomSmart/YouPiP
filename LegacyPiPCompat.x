@@ -42,7 +42,7 @@ static MLPIPController *(*InjectMLPIPController)(void);
 static YTSystemNotifications *(*InjectYTSystemNotifications)(void);
 static YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)(void);
 static YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)(void);
-static YTHotConfig *(*InjectYTHotConfig)(void);
+YTHotConfig *(*InjectYTHotConfig)(void);
 
 %group WithInjection
 
@@ -118,7 +118,8 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 
 - (instancetype)init {
     self = %orig;
-    [self setValue:InjectMLPIPController() forKey:@"_pipController"];
+    if (self)
+        [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
 
@@ -321,6 +322,8 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %ctor {
     NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+    NSBundle *bundle = [NSBundle bundleWithPath:frameworkPath];
+    if (!bundle.loaded) [bundle load];
     MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
     InjectMLPIPController = MSFindSymbol(ref, "_InjectMLPIPController");
     if (InjectMLPIPController) {
