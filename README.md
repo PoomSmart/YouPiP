@@ -6,4 +6,4 @@ Activate PiP by playing the video and dismissing the app, or tapping PiP button 
 
 ## Build it yourself
 
-Use iOS 15 SDK and latest THEOS.
+Use iOS 15+ SDK and latest THEOS.
