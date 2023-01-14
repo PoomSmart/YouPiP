@@ -152,7 +152,7 @@ BOOL loadWatchNextRequest = NO;
 
 %hook YTWatchNextViewController
 
-- (void)loadWatchNextRequest {
+- (void)loadWatchNextRequest:(id)arg1 withInitialWatchNextResponse:(id)arg2 disableUnloadModel:(BOOL)arg3 {
     loadWatchNextRequest = YES;
     %orig;
     loadWatchNextRequest = NO;
