@@ -326,6 +326,14 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %end
 
+%hook AVSampleBufferDisplayLayerPlayerController
+
+- (void)setPictureInPictureAvailable:(BOOL)available {
+    %orig(YES);
+}
+
+%end
+
 %hook MLPIPController
 
 - (void)activatePiPController {
