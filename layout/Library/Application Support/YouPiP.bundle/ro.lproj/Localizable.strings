@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Enabled";
+"ENABLED_DESC" = "Este necesară repornirea aplicației.";
+
 "USE_PIP_BUTTON" = "Utilizare buton PiP";
 "USE_PIP_BUTTON_DESC" = "Adaugă un buton PiP deasupra controalelor video pentru a activa PiP, în loc să închideți aplicația.";
 

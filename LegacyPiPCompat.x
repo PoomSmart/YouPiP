@@ -14,6 +14,7 @@
 #import "../YouTubeHeader/YTSystemNotifications.h"
 #import "../YouTubeHeader/YTAutonavEndscreenController.h"
 
+extern BOOL TweakEnabled();
 extern BOOL isPictureInPictureActive(MLPIPController *);
 
 BOOL hasSampleBufferPiP;
@@ -321,6 +322,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 #pragma clang diagnostic pop
 
 %ctor {
+    if (!TweakEnabled()) return;
     NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
     NSBundle *bundle = [NSBundle bundleWithPath:frameworkPath];
     if (!bundle.loaded) [bundle load];

@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Kích hoạt";
+"ENABLED_DESC" = "Cần khởi động lại ứng dụng.";
+
 "USE_PIP_BUTTON" = "Thêm nút kích hoạt PiP";
 "USE_PIP_BUTTON_DESC" = "Thêm một nút để kích hoạt PiP thủ công vào trong trình phát video, thay vì để PiP kích hoạt tự động khi ẩn ứng dụng."; 
 

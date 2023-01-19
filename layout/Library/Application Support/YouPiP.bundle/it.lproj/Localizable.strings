@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Enabled";
+"ENABLED_DESC" = "È richiesto un riavvio dell'app.";
+
 "USE_PIP_BUTTON" = "Usa Bottone PiP";
 "USE_PIP_BUTTON_DESC" = "Aggiunge un bottone PiP tra i controlli in sovrimpressione al video per attivare il PiP invece di chiudere l'app.";
 

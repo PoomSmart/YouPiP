@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Enabled";
+"ENABLED_DESC" = "App restart is required.";
+
 "USE_PIP_BUTTON" = "Use PiP Button";
 "USE_PIP_BUTTON_DESC" = "Adds a PiP button over the video control overlay to activate PiP instead of dismissing the app.";
 

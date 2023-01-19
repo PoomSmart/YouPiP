@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "启用";
+"ENABLED_DESC" = "更改本设置后需要重启App。";
+
 "USE_PIP_BUTTON" = "使用画中画按钮";
 "USE_PIP_BUTTON_DESC" = "在视频播放器控制界面上显示用于手动启动画中画的按钮。开启本设置后，返回主屏幕时将不会启动画中画。";
 

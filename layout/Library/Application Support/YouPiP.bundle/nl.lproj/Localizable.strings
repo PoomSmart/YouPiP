@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Enabled";
+"ENABLED_DESC" = "App herstart is vereist.";
+
 "USE_PIP_BUTTON" = "Gebruik PiP Knop";
 "USE_PIP_BUTTON_DESC" = "Voegt een PiP knop toe aan de Video Control Overlay om PiP te activeren in plaats van de app af te sluiten.";
 

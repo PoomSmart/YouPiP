@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "有効";
+"ENABLED_DESC" = "アプリの再起動が必要です。";
+
 "USE_PIP_BUTTON" = "PiPボタンを使用";
 "USE_PIP_BUTTON_DESC" = "ビデオコントロールオーバーレイの上にPiPボタンを追加しアプリを終了する代わりにPiPを起動できるようにします。";
 

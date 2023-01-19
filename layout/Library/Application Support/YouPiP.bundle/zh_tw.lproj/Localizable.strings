@@ -1,5 +1,8 @@
 ﻿// Settings
 
+"ENABLED" = "啟用";
+"ENABLED_DESC" = "需要重新啟動應用程式。";
+
 "USE_PIP_BUTTON" = "使用子母畫面按鈕";
 "USE_PIP_BUTTON_DESC" = "在影片控制層上增加子母畫面按鈕以啟用子母畫面而不是關閉應用程式。";
 

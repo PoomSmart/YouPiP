@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Etkinleştir";
+"ENABLED_DESC" = "Uygulamanın yeniden başlatılması gerekir.";
+
 "USE_PIP_BUTTON" = "PiP Düğmesini Kullan";
 "USE_PIP_BUTTON_DESC" = "Uygulamayı kapatmak yerine PiP'yi etkinleştirmek için video kontrol katmanının üzerine bir PiP düğmesi ekler.";
 

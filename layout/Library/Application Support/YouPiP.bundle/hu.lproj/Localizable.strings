@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Engedélyezve";
+"ENABLED_DESC" = "Az alkalmazás újraindítása szükséges.";
+
 "USE_PIP_BUTTON" = "Használja a PiP gombot";
 "USE_PIP_BUTTON_DESC" = "Adjon hozzá egy PiP gombot a videovezérlő fedvényéhez, hogy aktiválja a kép a képben funkciót az alkalmazás elvetése helyett.";
 

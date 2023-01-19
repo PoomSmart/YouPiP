@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Ativado";
+"ENABLED_DESC" = "A reinicialização do app é necessária.";
+
 "USE_PIP_BUTTON" = "Usar o Botão PiP";
 "USE_PIP_BUTTON_DESC" = "Adiciona um botão PiP sobre a sobreposição de controle de vídeo para ativar o PiP em vez de dispensar o aplicativo.";
 

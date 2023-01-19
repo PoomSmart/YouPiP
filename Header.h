@@ -5,6 +5,7 @@
 
 #define TweakName @"YouPiP"
 
+#define EnabledKey @"YouPiPEnabled"
 #define CompatibilityModeKey @"CompatibilityModeKey"
 #define PiPActivationMethodKey @"PiPActivationMethodKey"
 #define PiPActivationMethod2Key @"PiPActivationMethod2Key"

@@ -1,5 +1,8 @@
 // Settings
 
+"ENABLED" = "Aktiviert";
+"ENABLED_DESC" = "App-Neustart erforderlich!";
+
 "USE_PIP_BUTTON" = "PiP-Taste im Video anzeigen";
 "USE_PIP_BUTTON_DESC" = "Fügt im Videoplayer eine PiP-Taste hinzu, um PiP auch ohne verlassen der App zu verwenden.";
 
