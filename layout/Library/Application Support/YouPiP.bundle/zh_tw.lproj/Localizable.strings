@@ -9,8 +9,8 @@
 "USE_TAB_BAR_PIP_BUTTON" = "使用影片標籤欄子母畫面按鈕";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "在影片標籤欄中增加子母畫面按鈕以啟用子母畫面而不是關閉應用程式。需要重新啟動應用程式。";
 
-"DISABLE_PIP_MINI_PLAYER" = "為迷你播放器禁用子母畫面";
-"DISABLE_PIP_MINI_PLAYER_DESC" = "在迷你播放器中播放影片時禁用子母畫面。";
+"DISABLE_PIP_MINI_PLAYER" = "為迷你播放器停用子母畫面";
+"DISABLE_PIP_MINI_PLAYER_DESC" = "在迷你播放器中播放影片時停用子母畫面。";
 
 "LEGACY_PIP" = "傳統子母畫面（不建議使用）";
 "LEGACY_PIP_DESC" = "使用 AVPlayerLayer 進行子母畫面。這修復了加速錯誤，但也同時從影片中刪除了 UHD 選項（2K/4K）。需要重新啟動應用程式。";
