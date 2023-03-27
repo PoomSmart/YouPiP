@@ -1,4 +1,4 @@
-#import "../PSHeader/iOSVersions.h"
+#import <version.h>
 #import "Header.h"
 #import "../YouTubeHeader/YTAlertView.h"
 #import "../YouTubeHeader/YTHotConfig.h"

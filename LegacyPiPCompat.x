@@ -1,5 +1,5 @@
 #import "Header.h"
-#import "../PSHeader/iOSVersions.h"
+#import <version.h>
 #import "../YouTubeHeader/MLAVPlayer.h"
 #import "../YouTubeHeader/MLHAMQueuePlayer.h"
 #import "../YouTubeHeader/MLPIPController.h"
