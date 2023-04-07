@@ -1,4 +1,5 @@
 #import <version.h>
+#import <rootless.h>
 #import "Header.h"
 #import "../YouTubeHeader/GIMBindingBuilder.h"
 #import "../YouTubeHeader/GPBExtensionRegistry.h"
@@ -584,7 +585,7 @@ NSBundle *YouPiPBundle() {
         if (tweakBundlePath)
             bundle = [NSBundle bundleWithPath:tweakBundlePath];
         else
-            bundle = [NSBundle bundleWithPath:@"/Library/Application Support/YouPiP.bundle"];
+            bundle = [NSBundle bundleWithPath:ROOT_PATH_NS(@"/Library/Application Support/YouPiP.bundle")];
     });
     return bundle;
 }
