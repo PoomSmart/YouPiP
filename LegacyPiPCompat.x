@@ -267,7 +267,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %new
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)size {}
 
-%new
+%new(v@:B)
 - (void)setRequiresLinearPlayback:(BOOL)linear {}
 
 %new(v@:)

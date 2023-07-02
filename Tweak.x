@@ -291,7 +291,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     %orig;
 }
 
-%new(@:)
+%new(@@:)
 - (UIImage *)pipImage {
     static UIImage *image = nil;
     static dispatch_once_t onceToken;
@@ -356,7 +356,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     return YES;
 }
 
-%new(v@:@)
+%new(B@:@)
 - (BOOL)pictureInPictureControllerPlaybackPaused:(AVPictureInPictureController *)pictureInPictureController {
     return [self pictureInPictureControllerIsPlaybackPaused:pictureInPictureController];
 }
