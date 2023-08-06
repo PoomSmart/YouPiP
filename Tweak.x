@@ -371,7 +371,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     [self pictureInPictureControllerStopPlayback];
 }
 
-%new
+%new(v@:{CGSize=dd})
 - (void)renderingViewSampleBufferFrameSizeDidChange:(CGSize)size {
     if (!IS_IOS_OR_NEWER(iOS_15_0) && size.width && size.height) {
         AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];

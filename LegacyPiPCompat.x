@@ -39,10 +39,10 @@ static void forceRenderViewType(YTHotConfig *hotConfig) {
     forceRenderViewTypeHot(hamplayerHotConfig);
 }
 
-static MLPIPController *(*InjectMLPIPController)(void);
-static YTSystemNotifications *(*InjectYTSystemNotifications)(void);
-static YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)(void);
-static YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)(void);
+MLPIPController *(*InjectMLPIPController)(void);
+YTSystemNotifications *(*InjectYTSystemNotifications)(void);
+YTBackgroundabilityPolicy *(*InjectYTBackgroundabilityPolicy)(void);
+YTPlayerViewControllerConfig *(*InjectYTPlayerViewControllerConfig)(void);
 YTHotConfig *(*InjectYTHotConfig)(void);
 
 %group WithInjection
@@ -119,7 +119,7 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 
 - (instancetype)init {
     self = %orig;
-    if (self)
+    if ([self valueForKey:@"_pipController"] == nil)
         [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
@@ -264,7 +264,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %new(v@:)
 - (void)sampleBufferDisplayLayerDidAppear {}
 
-%new
+%new(v@:{CGSize=dd})
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)size {}
 
 %new(v@:B)
@@ -303,7 +303,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %property (assign) bool hasInitialRenderSize;
 
-%new
+%new(@@:@{CGSize=dd}@)
 - (instancetype)initWithSampleBufferDisplayLayer:(AVSampleBufferDisplayLayer *)sampleBufferDisplayLayer initialRenderSize:(CGSize)initialRenderSize playbackDelegate:(id <AVPictureInPictureSampleBufferPlaybackDelegate>)playbackDelegate {
     return [self initWithSampleBufferDisplayLayer:sampleBufferDisplayLayer playbackDelegate:playbackDelegate];
 }
@@ -312,7 +312,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %hook AVPictureInPictureController
 
-%new
+%new(v@:B)
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {}
 
 %end
@@ -327,12 +327,12 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     NSBundle *bundle = [NSBundle bundleWithPath:frameworkPath];
     if (!bundle.loaded) [bundle load];
     MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
-    InjectMLPIPController = MSFindSymbol(ref, "_InjectMLPIPController");
+    InjectMLPIPController = (MLPIPController *(*)(void))MSFindSymbol(ref, "_InjectMLPIPController");
     if (InjectMLPIPController) {
-        InjectYTSystemNotifications = MSFindSymbol(ref, "_InjectYTSystemNotifications");
-        InjectYTBackgroundabilityPolicy = MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
-        InjectYTPlayerViewControllerConfig = MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
-        InjectYTHotConfig = MSFindSymbol(ref, "_InjectYTHotConfig");
+        InjectYTSystemNotifications = (YTSystemNotifications *(*)(void))MSFindSymbol(ref, "_InjectYTSystemNotifications");
+        InjectYTBackgroundabilityPolicy = (YTBackgroundabilityPolicy *(*)(void))MSFindSymbol(ref, "_InjectYTBackgroundabilityPolicy");
+        InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)(void))MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
+        InjectYTHotConfig = (YTHotConfig *(*)(void))MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(WithInjection);
     } else {
         NSString *currentVersion = [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
