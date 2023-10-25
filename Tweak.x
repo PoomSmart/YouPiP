@@ -261,6 +261,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 - (void)layoutSubviews {
     if (UseTabBarPiPButton() && [self.subviews count] == 1 && [self frame].size.width == 79) {
         saveButton = self;
+        [self layoutIfNeeded];
         _ASDisplayView *contentContainer = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
         NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
