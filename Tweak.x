@@ -244,7 +244,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 
     UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
     UIImageView *buttonImage = [[UIImageView alloc] initWithImage:image];
-    [buttonImage setFrame:CGRectMake(12, 8, 16, 16)];
+    [buttonImage setFrame:CGRectMake(12, 8, 15.5, 15.5)];
     
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 8, 20, 16)];
     titleAttr.mutableString.string = title;
@@ -258,10 +258,9 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 
 %hook _ASCollectionViewCell
 
-- (void)didMoveToSuperview {
+- (void)layoutSubviews {
     if (UseTabBarPiPButton() && [self.subviews count] == 1 && [self frame].size.width == 79) {
         saveButton = self;
-        [self layoutIfNeeded];
         _ASDisplayView *contentContainer = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
         NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
