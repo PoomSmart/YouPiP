@@ -1,10 +1,15 @@
 #import <version.h>
 #import <rootless.h>
 #import "Header.h"
+#import "../YouTubeHeader/_ASCollectionViewCell.h"
+#import "../YouTubeHeader/_ASDisplayView.h"
+#import "../YouTubeHeader/ASCollectionView.h"
+#import "../YouTubeHeader/ELMTextNode.h"
 #import "../YouTubeHeader/GIMBindingBuilder.h"
 #import "../YouTubeHeader/GPBExtensionRegistry.h"
 #import "../YouTubeHeader/MLPIPController.h"
 #import "../YouTubeHeader/MLDefaultPlayerViewFactory.h"
+#import "../YouTubeHeader/YTAsyncCollectionView.h"
 #import "../YouTubeHeader/YTBackgroundabilityPolicy.h"
 #import "../YouTubeHeader/YTMainAppControlsOverlayView.h"
 #import "../YouTubeHeader/YTMainAppVideoPlayerOverlayViewController.h"
@@ -22,6 +27,7 @@
 #import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
 #import "../YouTubeHeader/YTPageStyleController.h"
 #import "../YouTubeHeader/YTPlayerStatus.h"
+#import "../YouTubeHeader/YTWatchLayerViewController.h"
 #import "../YouTubeHeader/YTWatchViewController.h"
 
 #define PiPButtonType 801
@@ -34,6 +40,7 @@
 
 BOOL FromUser = NO;
 BOOL PiPDisabled = NO;
+_ASCollectionViewCell *saveButton = nil;
 
 extern BOOL LegacyPiP();
 extern YTHotConfig *(*InjectYTHotConfig)(void);
@@ -131,9 +138,9 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     activatePiP(local, playPiP);
 }
 
-#pragma mark - Video tab bar PiP Button
+#pragma mark - Video tab bar PiP Button (16.x.x and below)
 
-static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *title, int iconType, NSString *browseId) {
+static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSString *title, int iconType, NSString *browseId) {
     YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
     YTISlimMetadataButtonRenderer *metadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
     YTIButtonSupportedRenderers *buttonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
@@ -174,7 +181,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
         if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
     }
@@ -183,7 +190,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
         if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
     }
@@ -221,6 +228,101 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderPlayerButton(NSString *
         return;
     }
     %orig;
+}
+
+%end
+
+#pragma mark - Video tab bar PiP Button (17.x.x and up)
+
+static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
+    _ASCollectionViewCell *buttonContainer = [[%c(_ASCollectionViewCell) alloc] initWithFrame:CGRectMake(79, 0, 73, 32)];
+
+    _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:CGRectMake(0, 0, 65, 32)];
+    buttonView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.102];
+    buttonView.accessibilityLabel = accessibilityLabel;
+    buttonView._cornerRadius = 16;
+
+    UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
+    UIImageView *buttonImage = [[UIImageView alloc] initWithImage:image];
+    [buttonImage setFrame:CGRectMake(12, 8, 16, 16)];
+    
+    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 8, 20, 16)];
+    titleAttr.mutableString.string = title;
+    buttonTitle.attributedText = titleAttr;
+    
+    [buttonView addSubview:buttonImage];
+    [buttonView addSubview:buttonTitle];
+    [buttonContainer.subviews[0] addSubview:buttonView];
+    return buttonContainer;
+}
+
+%hook _ASCollectionViewCell
+
+- (void)didMoveToSuperview {
+    if (UseTabBarPiPButton() && [self.subviews count] == 1 && [self frame].size.width == 79) {
+        saveButton = self;
+        [self layoutIfNeeded];
+        _ASDisplayView *contentContainer = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
+        ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
+        NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
+        _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(@"PiP", textAttr, @"Play in PiP");
+        [self insertSubview:PiPButton atIndex:0];
+    }
+}
+
+%end
+
+%hook ASCollectionView
+
+- (void)layoutSubviews {
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
+        self.delaysContentTouches = NO;
+        self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
+    }
+    %orig;
+}
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    %orig;
+    UITouch *touch = [[touches allObjects] objectAtIndex:0];
+    CGPoint location = [touch locationInView:self];
+    if (UseTabBarPiPButton() && location.x >= [saveButton frame].origin.x + 79 && location.x <= [saveButton frame].origin.x + 79 + 73) {
+        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0];
+        [UIView animateWithDuration:0.1 animations:^{
+            button.transform = CGAffineTransformMakeScale(0.929, 0.929);
+        } completion:nil];
+    }
+}
+
+- (void)handlePan:(UIPanGestureRecognizer *)recognizer {
+    %orig;
+    CGPoint location = [recognizer locationInView:self];
+    if (UseTabBarPiPButton() && location.x >= [saveButton frame].origin.x + 79 && location.x <= [saveButton frame].origin.x + 79 + 73) {
+        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0];
+        if (recognizer.state == UIGestureRecognizerStateChanged) {
+            [UIView animateWithDuration:0.2 animations:^{
+                button.transform = CGAffineTransformMakeScale(1, 1);
+            } completion:nil];
+        }
+    }
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    %orig;
+    UITouch *touch = [[touches allObjects] objectAtIndex:0];
+    CGPoint location = [touch locationInView:self];
+    if (UseTabBarPiPButton() && location.x >= [saveButton frame].origin.x + 79 && location.x <= [saveButton frame].origin.x + 79 + 73) {
+        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0];
+        [UIView animateWithDuration:0.2 animations:^{
+            button.transform = CGAffineTransformMakeScale(1, 1);
+        } completion:nil];
+
+        YTAsyncCollectionView *_delegate = [[[self.superview valueForKey:@"_keepalive_node"] valueForKey:@"_interactionDelegate"] valueForKey:@"_pageStylingDelegate"];
+        YTWatchLayerViewController *provider = [[_delegate valueForKey:@"_metadataPanelStateProvider"] valueForKey:@"_delegate"];
+        YTPlayerViewController *playerViewController = [provider valueForKey:@"_playerViewController"];
+        FromUser = YES;
+        bootstrapPiP(playerViewController, YES);
+    }
 }
 
 %end
