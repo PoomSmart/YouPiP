@@ -287,7 +287,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
     if (UseTabBarPiPButton() && [self.superview.superview.subviews[0] frame].size.width == 73) {
         if ([self frame].size.width == 86) {
             saveButton.subviews[0].subviews[0].center = CGPointMake(122.5, 16);
-        } else {
+        } else if ([self frame].size.width == 79) {
             saveButton.subviews[0].subviews[0].center = CGPointMake(115.5, 16);
         }
     }
