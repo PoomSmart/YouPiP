@@ -271,7 +271,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
             ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
             NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
             _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(@"PiP", textAttr, @"Play in PiP");
-            // why `self.subview[0]` ? Because when you scroll, `self` is changed and that may causes misdetection, not `self.subview[0]`
+            // Why `self.subview[0]` ? Because when you scroll, `self` is changed and that may causes misdetection, not `self.subview[0]`
             [self.subviews[0] insertSubview:PiPButton atIndex:0];
         }
     }
