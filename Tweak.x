@@ -235,7 +235,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 #pragma mark - Video tab bar PiP Button (17.x.x and up)
 
 static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
-    _ASCollectionViewCell *buttonContainer = [[%c(_ASCollectionViewCell) alloc] initWithFrame:CGRectMake(79, 0, 73, 32)];
+    _ASCollectionViewCell *buttonContainer = [[%c(_ASCollectionViewCell) alloc] initWithFrame:CGRectMake([saveButton frame].size.width, 0, 73, 32)];
 
     _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:CGRectMake(0, 0, 65, 32)];
     buttonView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.102];
@@ -245,10 +245,11 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
     UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
     UIImageView *buttonImage = [[UIImageView alloc] initWithImage:image];
     [buttonImage setFrame:CGRectMake(12, 8, 15.5, 15.5)];
-    
+
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 8, 20, 16)];
     titleAttr.mutableString.string = title;
     buttonTitle.attributedText = titleAttr;
+    buttonTitle.textColor = [%c(YTColor) white1];
     
     [buttonView addSubview:buttonImage];
     [buttonView addSubview:buttonTitle];
@@ -258,15 +259,37 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 
 %hook _ASCollectionViewCell
 
+- (void)didMoveToSuperview {
+    %orig;
+    if (!UseTabBarPiPButton() || ![self.superview.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) return;
+    if ([self frame].size.width == 79 || [self frame].size.width == 86) {
+        ASCollectionView *scrollView = (ASCollectionView *)self.superview;
+        if ([self frame].origin.x >= [scrollView contentSize].width - 86 && [self.subviews[0].subviews count] == 1) {
+            saveButton = self;
+            [self layoutIfNeeded];
+            _ASDisplayView *contentContainer = (_ASDisplayView *)self.subviews[0].subviews[0].subviews[0].subviews[0];
+            ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
+            NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
+            _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(@"PiP", textAttr, @"Play in PiP");
+            // why `self.subview[0]` ? Because when you scroll, `self` is changed and that may causes misdetection, not `self.subview[0]`
+            [self.subviews[0] insertSubview:PiPButton atIndex:0];
+        }
+    }
+}
+
+%end
+
+%hook _ASDisplayView
+
 - (void)layoutSubviews {
-    if (UseTabBarPiPButton() && [self.subviews count] == 1 && [self frame].size.width == 79) {
-        saveButton = self;
-        [self layoutIfNeeded];
-        _ASDisplayView *contentContainer = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
-        ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
-        NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
-        _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(@"PiP", textAttr, @"Play in PiP");
-        [self insertSubview:PiPButton atIndex:0];
+    %orig;
+    // Handle the transition of the "Save" and "Saved" buttons
+    if (UseTabBarPiPButton() && [self.superview.superview.subviews[0] frame].size.width == 73) {
+        if ([self frame].size.width == 86) {
+            saveButton.subviews[0].subviews[0].center = CGPointMake(122.5, 16);
+        } else {
+            saveButton.subviews[0].subviews[0].center = CGPointMake(115.5, 16);
+        }
     }
 }
 
@@ -275,35 +298,28 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 %hook ASCollectionView
 
 - (void)layoutSubviews {
+    %orig;
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
         self.delaysContentTouches = NO;
         self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
+        
+        // Fake calls
+        for (_ASCollectionViewCell *cell in self.subviews) {
+            [cell didMoveToSuperview];
+        }
     }
-    %orig;
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint location = [touch locationInView:self];
-    if (UseTabBarPiPButton() && location.x >= [saveButton frame].origin.x + 79 && location.x <= [saveButton frame].origin.x + 79 + 73) {
-        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0];
+    CGPoint validPoint = CGPointMake([saveButton frame].origin.x + [saveButton frame].size.width, 32);
+    if (UseTabBarPiPButton() && location.x > validPoint.x && location.x < validPoint.x + 73 && location.y > 0 && location.y < validPoint.y) {
+        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         [UIView animateWithDuration:0.1 animations:^{
             button.transform = CGAffineTransformMakeScale(0.929, 0.929);
         } completion:nil];
-    }
-}
-
-- (void)handlePan:(UIPanGestureRecognizer *)recognizer {
-    %orig;
-    CGPoint location = [recognizer locationInView:self];
-    if (UseTabBarPiPButton() && location.x >= [saveButton frame].origin.x + 79 && location.x <= [saveButton frame].origin.x + 79 + 73) {
-        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0];
-        if (recognizer.state == UIGestureRecognizerStateChanged) {
-            [UIView animateWithDuration:0.2 animations:^{
-                button.transform = CGAffineTransformMakeScale(1, 1);
-            } completion:nil];
-        }
     }
 }
 
@@ -311,17 +327,32 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
     %orig;
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint location = [touch locationInView:self];
-    if (UseTabBarPiPButton() && location.x >= [saveButton frame].origin.x + 79 && location.x <= [saveButton frame].origin.x + 79 + 73) {
-        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0];
+    CGPoint validPoint = CGPointMake([saveButton frame].origin.x + [saveButton frame].size.width, 32);
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
+        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         [UIView animateWithDuration:0.2 animations:^{
             button.transform = CGAffineTransformMakeScale(1, 1);
         } completion:nil];
 
-        YTAsyncCollectionView *_delegate = [[[self.superview valueForKey:@"_keepalive_node"] valueForKey:@"_interactionDelegate"] valueForKey:@"_pageStylingDelegate"];
-        YTWatchLayerViewController *provider = [[_delegate valueForKey:@"_metadataPanelStateProvider"] valueForKey:@"_delegate"];
-        YTPlayerViewController *playerViewController = [provider valueForKey:@"_playerViewController"];
-        FromUser = YES;
-        bootstrapPiP(playerViewController, YES);
+        if (location.x < validPoint.x || location.x > validPoint.x + 73 || location.y < 0 || location.y > validPoint.y) return;
+        YTAsyncCollectionView *_delegate = [self.superview valueForKey:@"_keepalive_node"];
+        if ([_delegate valueForKey:@"_interactionDelegate"] != nil) {
+            _delegate = [[_delegate valueForKey:@"_interactionDelegate"] valueForKey:@"_pageStylingDelegate"];
+            YTWatchLayerViewController *provider = [[_delegate valueForKey:@"_metadataPanelStateProvider"] valueForKey:@"_delegate"];
+            YTPlayerViewController *playerViewController = [provider valueForKey:@"_playerViewController"];
+            FromUser = YES;
+            bootstrapPiP(playerViewController, YES);
+        }
+    }
+}
+
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    %orig;
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
+        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
+        [UIView animateWithDuration:0.2 animations:^{
+            button.transform = CGAffineTransformMakeScale(1, 1);
+        } completion:nil];
     }
 }
 
