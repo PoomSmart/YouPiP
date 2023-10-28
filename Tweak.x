@@ -38,6 +38,10 @@
 - (UIImage *)pipImage;
 @end
 
+@interface ASCollectionView (YP)
+@property (nonatomic) BOOL canTogglePip;
+@end
+
 BOOL FromUser = NO;
 BOOL PiPDisabled = NO;
 _ASCollectionViewCell *saveButton = nil;
@@ -297,6 +301,8 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 
 %hook ASCollectionView
 
+%property (nonatomic) BOOL canTogglePip;
+
 - (void)layoutSubviews {
     %orig;
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
@@ -312,10 +318,12 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
+    self.canTogglePip = NO;
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint location = [touch locationInView:self];
     CGPoint validPoint = CGPointMake([saveButton frame].origin.x + [saveButton frame].size.width, 32);
     if (UseTabBarPiPButton() && location.x > validPoint.x && location.x < validPoint.x + 73 && location.y > 0 && location.y < validPoint.y) {
+        self.canTogglePip = YES;
         _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         [UIView animateWithDuration:0.1 animations:^{
             button.transform = CGAffineTransformMakeScale(0.929, 0.929);
@@ -323,25 +331,35 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
     }
 }
 
-- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint location = [touch locationInView:self];
     CGPoint validPoint = CGPointMake([saveButton frame].origin.x + [saveButton frame].size.width, 32);
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
+        if (location.x < validPoint.x || location.x > validPoint.x + 73 || location.y < 0 || location.y > validPoint.y) {
+            self.canTogglePip = NO;
+        }
+    }
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    %orig;
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
         _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         [UIView animateWithDuration:0.2 animations:^{
             button.transform = CGAffineTransformMakeScale(1, 1);
         } completion:nil];
 
-        if (location.x < validPoint.x || location.x > validPoint.x + 73 || location.y < 0 || location.y > validPoint.y) return;
-        YTAsyncCollectionView *_delegate = [self.superview valueForKey:@"_keepalive_node"];
-        if ([_delegate valueForKey:@"_interactionDelegate"] != nil) {
-            _delegate = [[_delegate valueForKey:@"_interactionDelegate"] valueForKey:@"_pageStylingDelegate"];
-            YTWatchLayerViewController *provider = [[_delegate valueForKey:@"_metadataPanelStateProvider"] valueForKey:@"_delegate"];
-            YTPlayerViewController *playerViewController = [provider valueForKey:@"_playerViewController"];
-            FromUser = YES;
-            bootstrapPiP(playerViewController, YES);
+        if (self.canTogglePip) {
+            YTAsyncCollectionView *_delegate = [self.superview valueForKey:@"_keepalive_node"];
+            if ([_delegate valueForKey:@"_interactionDelegate"] != nil) {
+                _delegate = [[_delegate valueForKey:@"_interactionDelegate"] valueForKey:@"_pageStylingDelegate"];
+                YTWatchLayerViewController *provider = [[_delegate valueForKey:@"_metadataPanelStateProvider"] valueForKey:@"_delegate"];
+                YTPlayerViewController *playerViewController = [provider valueForKey:@"_playerViewController"];
+                FromUser = YES;
+                bootstrapPiP(playerViewController, YES);
+            }
         }
     }
 }
