@@ -356,13 +356,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
             if ([_delegate valueForKey:@"_interactionDelegate"] != nil) {
                 _delegate = [[_delegate valueForKey:@"_interactionDelegate"] valueForKey:@"_pageStylingDelegate"];
                 YTWatchLayerViewController *provider = [[_delegate valueForKey:@"_metadataPanelStateProvider"] valueForKey:@"_delegate"];
-                YTPlayerViewController *playerViewController = nil;
-                @try {
-                    YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
-                    playerViewController = [watchViewController valueForKey:@"_playerViewController"];
-                } @catch (id ex) {
-                    playerViewController = [provider valueForKey:@"_playerViewController"];
-                }
+                YTPlayerViewController *playerViewController = [provider valueForKey:@"_playerViewController"];
                 FromUser = YES;
                 bootstrapPiP(playerViewController, YES);
             }
