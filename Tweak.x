@@ -40,6 +40,7 @@
 
 @interface ASCollectionView (YP)
 @property (nonatomic) BOOL canTogglePip;
+@property (nonatomic) CGPoint validPoint;
 @end
 
 BOOL FromUser = NO;
@@ -238,17 +239,19 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 #pragma mark - Video tab bar PiP Button (17.x.x and up)
 
-static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
-    _ASCollectionViewCell *buttonContainer = [[%c(_ASCollectionViewCell) alloc] initWithFrame:CGRectMake([saveButton frame].size.width, 0, 73, 32)];
+static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
+    CGRect containerFrame = CGRectMake([saveButton frame].size.width, [saveButton frame].origin.y, 73, [saveButton frame].size.height);
+    _ASCollectionViewCell *buttonContainer = [[%c(_ASCollectionViewCell) alloc] initWithFrame:containerFrame];
+    buttonContainer.accessibilityLabel = accessibilityLabel;
 
-    _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:CGRectMake(0, 0, 65, 32)];
+    CGRect buttonFrame = CGRectMake(contentFrame.origin.x, contentFrame.origin.y, 65, contentFrame.size.height);
+    _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:buttonFrame];
     buttonView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.102];
-    buttonView.accessibilityLabel = accessibilityLabel;
     buttonView._cornerRadius = 16;
 
     UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
     UIImageView *buttonImage = [[UIImageView alloc] initWithImage:image];
-    [buttonImage setFrame:CGRectMake(12, 8, 15.5, 15.5)];
+    [buttonImage setFrame:CGRectMake(12, (contentFrame.size.height - 15.5) / 2, 15.5, 15.5)];
 
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 8, 20, 16)];
     titleAttr.mutableString.string = title;
@@ -271,10 +274,12 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
         if ([self frame].origin.x >= [scrollView contentSize].width - 86 && [self.subviews[0].subviews count] == 1) {
             saveButton = self;
             [self layoutIfNeeded];
+            scrollView.validPoint = CGPointMake([saveButton frame].origin.x + [saveButton frame].size.width, 32);
             _ASDisplayView *contentContainer = (_ASDisplayView *)self.subviews[0].subviews[0].subviews[0].subviews[0];
             ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
             NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
-            _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(@"PiP", textAttr, @"Play in PiP");
+            CGRect contentFrame = [self.subviews[0].subviews[0].subviews[0] frame];
+            _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"PiP button");
             // Why `self.subview[0]` ? Because when you scroll, `self` is changed and that may causes misdetection, not `self.subview[0]`
             [self.subviews[0] insertSubview:PiPButton atIndex:0];
         }
@@ -288,12 +293,8 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 - (void)layoutSubviews {
     %orig;
     // Handle the transition of the "Save" and "Saved" buttons
-    if (UseTabBarPiPButton() && [self.superview.superview.subviews[0] frame].size.width == 73) {
-        if ([self frame].size.width == 86) {
-            saveButton.subviews[0].subviews[0].center = CGPointMake(122.5, 16);
-        } else if ([self frame].size.width == 79) {
-            saveButton.subviews[0].subviews[0].center = CGPointMake(115.5, 16);
-        }
+    if (UseTabBarPiPButton() && [self.superview.superview.subviews[0].accessibilityLabel isEqual:@"PiP button"]) {
+        saveButton.subviews[0].subviews[0].center = CGPointMake([self frame].size.width + 36.5, [saveButton frame].size.height / 2);
     }
 }
 
@@ -302,6 +303,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 %hook ASCollectionView
 
 %property (nonatomic) BOOL canTogglePip;
+%property (nonatomic) CGPoint validPoint;
 
 - (void)layoutSubviews {
     %orig;
@@ -318,16 +320,17 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
-    self.canTogglePip = NO;
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint location = [touch locationInView:self];
-    CGPoint validPoint = CGPointMake([saveButton frame].origin.x + [saveButton frame].size.width, 32);
-    if (UseTabBarPiPButton() && location.x > validPoint.x && location.x < validPoint.x + 73 && location.y > 0 && location.y < validPoint.y) {
-        self.canTogglePip = YES;
-        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
-        [UIView animateWithDuration:0.1 animations:^{
-            button.transform = CGAffineTransformMakeScale(0.929, 0.929);
-        } completion:nil];
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
+        self.canTogglePip = NO;
+        if (location.x > self.validPoint.x && location.x < self.validPoint.x + 73 && location.y > 0 && location.y < self.validPoint.y) {
+            self.canTogglePip = YES;
+            _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
+            [UIView animateWithDuration:0.1 animations:^{
+                button.transform = CGAffineTransformMakeScale(0.929, 0.929);
+            } completion:nil];
+        }
     }
 }
 
@@ -335,9 +338,8 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(NSString *title, NSMutabl
     %orig;
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint location = [touch locationInView:self];
-    CGPoint validPoint = CGPointMake([saveButton frame].origin.x + [saveButton frame].size.width, 32);
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
-        if (location.x < validPoint.x || location.x > validPoint.x + 73 || location.y < 0 || location.y > validPoint.y) {
+        if (location.x < self.validPoint.x || location.x > self.validPoint.x + 73 || location.y < 0 || location.y > self.validPoint.y) {
             self.canTogglePip = NO;
         }
     }
