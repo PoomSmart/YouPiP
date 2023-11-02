@@ -278,7 +278,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
             ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
             NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
             CGRect contentFrame = [self.subviews[0].subviews[0].subviews[0] frame];
-            scrollView.validRect = CGRectMake([scrollView contentSize].width, contentFrame.origin.y, 73, contentFrame.size.height);
+            scrollView.validRect = CGRectMake([scrollView contentSize].width, contentFrame.origin.y, 65, contentFrame.size.height);
             _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"PiP button");
             // Why `self.subview[0]` ? Because when you scroll, `self` is changed and that may causes misdetection, not `self.subview[0]`
             [self.subviews[0] insertSubview:PiPButton atIndex:0];
@@ -294,11 +294,13 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
     %orig;
     // Handle the transition of the "Save" and "Saved" buttons
     if (UseTabBarPiPButton() && [self.superview.superview.subviews[0].accessibilityLabel isEqual:@"PiP button"]) {
-        ASCollectionView *scrollView = (ASCollectionView *)saveButton.superview;
-        CGRect tempRect = scrollView.validRect; // It's pretty long, so I use this temporary varible
-        tempRect.origin.x = tempRect.origin.x + ([self frame].size.width == 86 ? 7 : -7);
-        scrollView.validRect = tempRect;
-        saveButton.subviews[0].subviews[0].center = CGPointMake([self frame].size.width + 36.5, [saveButton frame].size.height / 2);
+        if (saveButton.subviews[0].subviews[0].center.x != [self frame].size.width + 36.5) {
+            ASCollectionView *scrollView = (ASCollectionView *)saveButton.superview;
+            CGRect tempRect = scrollView.validRect; // It's pretty long, so I use this temporary varible
+            tempRect.origin.x = tempRect.origin.x + ([self frame].size.width == 86 ? 7 : -7);
+            scrollView.validRect = tempRect;
+            saveButton.subviews[0].subviews[0].center = CGPointMake([self frame].size.width + 36.5, [saveButton frame].size.height / 2);
+        }
     }
 }
 
