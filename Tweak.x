@@ -256,7 +256,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 8, 20, 16)];
     titleAttr.mutableString.string = title;
     buttonTitle.attributedText = titleAttr;
-    buttonTitle.textColor = [%c(YTColor) white1];
+    buttonTitle.textColor = [%c(YTColor) white3];
     
     [buttonView addSubview:buttonImage];
     [buttonView addSubview:buttonTitle];
