@@ -301,7 +301,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
         self.delaysContentTouches = NO;
         self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
-        
+
         // Fake calls
         for (_ASCollectionViewCell *cell in self.subviews) {
             [cell didMoveToSuperview];
