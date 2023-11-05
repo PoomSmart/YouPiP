@@ -296,9 +296,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
     if (UseTabBarPiPButton() && [self.superview.superview.subviews[0].accessibilityLabel isEqual:@"PiP button"]) {
         if (saveButton.subviews[0].subviews[0].center.x != [self frame].size.width + 36.5) {
             ASCollectionView *scrollView = (ASCollectionView *)saveButton.superview;
-            CGRect tempRect = scrollView.validRect; // It's pretty long, so I use this temporary varible
-            tempRect.origin.x = tempRect.origin.x + ([self frame].size.width == 86 ? 7 : -7);
-            scrollView.validRect = tempRect;
+            scrollView.validRect = CGRectOffset(scrollView.validRect, [self frame].size.width == 86 ? 7 : -7, 0);
             saveButton.subviews[0].subviews[0].center = CGPointMake([self frame].size.width + 36.5, [saveButton frame].size.height / 2);
         }
     }
