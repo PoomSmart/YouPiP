@@ -9,7 +9,6 @@
 #import "../YouTubeHeader/GPBExtensionRegistry.h"
 #import "../YouTubeHeader/MLPIPController.h"
 #import "../YouTubeHeader/MLDefaultPlayerViewFactory.h"
-#import "../YouTubeHeader/YTAsyncCollectionView.h"
 #import "../YouTubeHeader/YTBackgroundabilityPolicy.h"
 #import "../YouTubeHeader/YTMainAppControlsOverlayView.h"
 #import "../YouTubeHeader/YTMainAppVideoPlayerOverlayViewController.h"
@@ -26,8 +25,8 @@
 #import "../YouTubeHeader/YTSlimVideoDetailsActionView.h"
 #import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
 #import "../YouTubeHeader/YTPageStyleController.h"
+#import "../YouTubeHeader/YTPlaybackStrippedWatchController.h"
 #import "../YouTubeHeader/YTPlayerStatus.h"
-#import "../YouTubeHeader/YTWatchLayerViewController.h"
 #import "../YouTubeHeader/YTWatchViewController.h"
 
 #define PiPButtonType 801
@@ -40,7 +39,7 @@
 
 @interface ASCollectionView (YP)
 @property (nonatomic) BOOL canTogglePip;
-@property (nonatomic) CGRect validRect;
+@property (retain, nonatomic) _ASDisplayView *pipButton;
 @end
 
 BOOL FromUser = NO;
@@ -239,29 +238,25 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 #pragma mark - Video tab bar PiP Button (17.x.x and up)
 
-static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
-    CGRect containerFrame = CGRectMake([saveButton frame].size.width, [saveButton frame].origin.y, 73, [saveButton frame].size.height);
-    _ASCollectionViewCell *buttonContainer = [[%c(_ASCollectionViewCell) alloc] initWithFrame:containerFrame];
-    buttonContainer.accessibilityLabel = accessibilityLabel;
-
-    CGRect buttonFrame = CGRectMake(contentFrame.origin.x, contentFrame.origin.y, 65, contentFrame.size.height);
+static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
+    CGRect buttonFrame = CGRectMake([saveButton frame].size.width, contentFrame.origin.y, 65, contentFrame.size.height);
     _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:buttonFrame];
     buttonView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.102];
-    buttonView._cornerRadius = 16;
+    buttonView.accessibilityLabel = accessibilityLabel;
+    buttonView._cornerRadius = 16; 
 
     UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
     UIImageView *buttonImage = [[UIImageView alloc] initWithImage:image];
-    [buttonImage setFrame:CGRectMake(12, (contentFrame.size.height - 15.5) / 2, 15.5, 15.5)];
+    [buttonImage setFrame:CGRectMake(12, (buttonFrame.size.height - 15.5) / 2, 15.5, 15.5)];
 
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 8, 20, 16)];
     titleAttr.mutableString.string = title;
     buttonTitle.attributedText = titleAttr;
     buttonTitle.textColor = [%c(YTColor) white3];
-    
+
     [buttonView addSubview:buttonImage];
     [buttonView addSubview:buttonTitle];
-    [buttonContainer.subviews[0] addSubview:buttonView];
-    return buttonContainer;
+    return buttonView;
 }
 
 %hook _ASCollectionViewCell
@@ -278,27 +273,19 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
             ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
             NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
             CGRect contentFrame = [self.subviews[0].subviews[0].subviews[0] frame];
-            scrollView.validRect = CGRectMake([scrollView contentSize].width, contentFrame.origin.y, 65, contentFrame.size.height);
-            _ASCollectionViewCell *PiPButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"PiP button");
+            scrollView.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"PiP button");
             // Why `self.subview[0]` ? Because when you scroll, `self` is changed and that may causes misdetection, not `self.subview[0]`
-            [self.subviews[0] insertSubview:PiPButton atIndex:0];
+            [self.subviews[0] insertSubview:scrollView.pipButton atIndex:0];
         }
     }
 }
 
-%end
-
-%hook _ASDisplayView
-
 - (void)layoutSubviews {
     %orig;
-    // Handle the transition of the "Save" and "Saved" buttons
-    if (UseTabBarPiPButton() && [self.superview.superview.subviews[0].accessibilityLabel isEqual:@"PiP button"]) {
-        if (saveButton.subviews[0].subviews[0].center.x != [self frame].size.width + 36.5) {
-            ASCollectionView *scrollView = (ASCollectionView *)saveButton.superview;
-            scrollView.validRect = CGRectOffset(scrollView.validRect, [self frame].size.width == 86 ? 7 : -7, 0);
-            saveButton.subviews[0].subviews[0].center = CGPointMake([self frame].size.width + 36.5, [saveButton frame].size.height / 2);
-        }
+    // Handle the transition between "Save" and "Saved" buttons
+    if (UseTabBarPiPButton() && self == saveButton) {
+        ASCollectionView *scrollView = (ASCollectionView *)self.superview;
+        scrollView.pipButton.center = CGPointMake([self frame].size.width + 32.5, [self frame].size.height / 2);
     }
 }
 
@@ -307,7 +294,7 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
 %hook ASCollectionView
 
 %property (nonatomic) BOOL canTogglePip;
-%property (nonatomic) CGRect validRect;
+%property (retain, nonatomic) _ASDisplayView *pipButton;
 
 - (void)layoutSubviews {
     %orig;
@@ -324,40 +311,42 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
-    self.canTogglePip = NO;
-    UITouch *touch = [[touches allObjects] objectAtIndex:0];
-    CGPoint location = [touch locationInView:self];
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && CGRectContainsPoint(self.validRect, location)) {
-        self.canTogglePip = YES;
-        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
-        [UIView animateWithDuration:0.1 animations:^{
-            button.transform = CGAffineTransformMakeScale(0.929, 0.929);
-        } completion:nil];
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
+        self.canTogglePip = NO;
+        UITouch *touch = [[touches allObjects] objectAtIndex:0];
+        CGPoint location = [touch locationInView:self];
+        CGRect validRect = CGRectMake(CGRectGetMaxX([saveButton frame]), [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
+        if (CGRectContainsPoint(validRect, location)) {
+            self.canTogglePip = YES;
+            [UIView animateWithDuration:0.1 animations:^{
+                self.pipButton.transform = CGAffineTransformMakeScale(0.929, 0.929);
+            } completion:nil];
+        }
     }
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
-    UITouch *touch = [[touches allObjects] objectAtIndex:0];
-    CGPoint location = [touch locationInView:self];
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && self.canTogglePip) {
-        self.canTogglePip = CGRectContainsPoint(self.validRect, location);
+        UITouch *touch = [[touches allObjects] objectAtIndex:0];
+        CGPoint location = [touch locationInView:self];
+        CGRect validRect = CGRectMake(CGRectGetMaxX([saveButton frame]), [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
+        self.canTogglePip = CGRectContainsPoint(validRect, location);
     }
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
-        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         [UIView animateWithDuration:0.2 animations:^{
-            button.transform = CGAffineTransformMakeScale(1, 1);
+            self.pipButton.transform = CGAffineTransformMakeScale(1, 1);
         } completion:nil];
 
-        YTAsyncCollectionView *_delegate = [self.superview valueForKey:@"_keepalive_node"];
-        if (self.canTogglePip && [_delegate valueForKey:@"_interactionDelegate"]) {
-            _delegate = [[_delegate valueForKey:@"_interactionDelegate"] valueForKey:@"_pageStylingDelegate"];
-            YTWatchLayerViewController *provider = [[_delegate valueForKey:@"_metadataPanelStateProvider"] valueForKey:@"_delegate"];
-            YTPlayerViewController *playerViewController = [provider valueForKey:@"_playerViewController"];
+        if (self.canTogglePip) {
+            UIViewController *controller = [[self.superview valueForKey:@"_keepalive_node"] closestViewController];
+            YTPlaybackStrippedWatchController *provider = [controller valueForKey:@"_metadataPanelStateProvider"];
+            YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
+            YTPlayerViewController *playerViewController = [watchViewController valueForKey:@"_playerViewController"];
             FromUser = YES;
             bootstrapPiP(playerViewController, YES);
         }
@@ -367,9 +356,8 @@ static _ASCollectionViewCell *makeUnderNewPlayerButton(CGRect contentFrame, NSSt
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
-        _ASDisplayView *button = saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
         [UIView animateWithDuration:0.2 animations:^{
-            button.transform = CGAffineTransformMakeScale(1, 1);
+            self.pipButton.transform = CGAffineTransformMakeScale(1, 1);
         } completion:nil];
     }
 }
