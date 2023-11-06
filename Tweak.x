@@ -38,8 +38,9 @@
 @end
 
 @interface ASCollectionView (YP)
-@property (nonatomic) BOOL canTogglePip;
 @property (retain, nonatomic) _ASDisplayView *pipButton;
+@property (nonatomic) BOOL canTogglePip;
+- (void)addButton:(_ASCollectionViewCell *)cell;
 @end
 
 BOOL FromUser = NO;
@@ -261,25 +262,6 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
 
 %hook _ASCollectionViewCell
 
-- (void)didMoveToSuperview {
-    %orig;
-    if (!UseTabBarPiPButton() || ![self.superview.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) return;
-    if ([self frame].size.width == 79 || [self frame].size.width == 86) {
-        ASCollectionView *scrollView = (ASCollectionView *)self.superview;
-        if ([self frame].origin.x >= [scrollView contentSize].width - 86 && [self.subviews[0].subviews count] == 1) {
-            saveButton = self;
-            [self layoutIfNeeded];
-            _ASDisplayView *contentContainer = (_ASDisplayView *)self.subviews[0].subviews[0].subviews[0].subviews[0];
-            ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
-            NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
-            CGRect contentFrame = [self.subviews[0].subviews[0].subviews[0] frame];
-            scrollView.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"PiP button");
-            // Why `self.subview[0]` ? Because when you scroll, `self` is changed and that may causes misdetection, not `self.subview[0]`
-            [self.subviews[0] insertSubview:scrollView.pipButton atIndex:0];
-        }
-    }
-}
-
 - (void)layoutSubviews {
     %orig;
     // Handle the transition between "Save" and "Saved" buttons
@@ -293,8 +275,8 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
 
 %hook ASCollectionView
 
-%property (nonatomic) BOOL canTogglePip;
 %property (retain, nonatomic) _ASDisplayView *pipButton;
+%property (nonatomic) BOOL canTogglePip;
 
 - (void)layoutSubviews {
     %orig;
@@ -302,11 +284,26 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
         self.delaysContentTouches = NO;
         self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
 
-        // Fake calls
         for (_ASCollectionViewCell *cell in self.subviews) {
-            [cell didMoveToSuperview];
+            if ([cell frame].origin.x >= [self contentSize].width - 86) {
+                [self addButton:cell];
+            }
         }
     }
+}
+
+%new(v@:)
+- (void)addButton:(_ASCollectionViewCell *)cell {
+    @try {
+        saveButton = cell;
+        [saveButton layoutIfNeeded];
+        _ASDisplayView *contentContainer = (_ASDisplayView *)saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
+        ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
+        NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
+        CGRect contentFrame = [saveButton.subviews[0].subviews[0].subviews[0] frame];
+        self.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"PiP button");
+        [saveButton.subviews[0] insertSubview:self.pipButton atIndex:0];
+    } @catch (id ex) {}
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
@@ -315,7 +312,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
         self.canTogglePip = NO;
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint location = [touch locationInView:self];
-        CGRect validRect = CGRectMake(CGRectGetMaxX([saveButton frame]), [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
+        CGRect validRect = CGRectMake([self contentSize].width, [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
         if (CGRectContainsPoint(validRect, location)) {
             self.canTogglePip = YES;
             [UIView animateWithDuration:0.1 animations:^{
@@ -330,7 +327,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && self.canTogglePip) {
         UITouch *touch = [[touches allObjects] objectAtIndex:0];
         CGPoint location = [touch locationInView:self];
-        CGRect validRect = CGRectMake(CGRectGetMaxX([saveButton frame]), [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
+        CGRect validRect = CGRectMake([self contentSize].width, [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
         self.canTogglePip = CGRectContainsPoint(validRect, location);
     }
 }
