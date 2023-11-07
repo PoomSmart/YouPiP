@@ -285,7 +285,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
         self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
 
         for (_ASCollectionViewCell *cell in self.subviews) {
-            if ([cell frame].origin.x >= [self contentSize].width - 86) {
+            if ([cell frame].origin.x + [cell frame].size.width == [self contentSize].width) {
                 [self addButton:cell];
             }
         }
@@ -301,7 +301,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
         ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
         NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
         CGRect contentFrame = [saveButton.subviews[0].subviews[0].subviews[0] frame];
-        self.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"PiP button");
+        self.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"Play in PiP");
         [saveButton.subviews[0] insertSubview:self.pipButton atIndex:0];
     } @catch (id ex) {}
 }
