@@ -45,7 +45,7 @@
 
 BOOL FromUser = NO;
 BOOL PiPDisabled = NO;
-_ASCollectionViewCell *saveButton = nil;
+_ASCollectionViewCell *lastButton = nil;
 
 extern BOOL LegacyPiP();
 extern YTHotConfig *(*InjectYTHotConfig)(void);
@@ -240,7 +240,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 #pragma mark - Video tab bar PiP Button (17.x.x and up)
 
 static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
-    CGRect buttonFrame = CGRectMake([saveButton frame].size.width, contentFrame.origin.y, 65, contentFrame.size.height);
+    CGRect buttonFrame = CGRectMake([lastButton frame].size.width, contentFrame.origin.y, 65, contentFrame.size.height);
     _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:buttonFrame];
     buttonView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.102];
     buttonView.accessibilityLabel = accessibilityLabel;
@@ -265,7 +265,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
 - (void)layoutSubviews {
     %orig;
     // Handle the transition between "Save" and "Saved" buttons
-    if (UseTabBarPiPButton() && self == saveButton) {
+    if (UseTabBarPiPButton() && self == lastButton) {
         ASCollectionView *scrollView = (ASCollectionView *)self.superview;
         scrollView.pipButton.center = CGPointMake([self frame].size.width + 32.5, [self frame].size.height / 2);
     }
@@ -295,14 +295,14 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
 %new(v@:)
 - (void)addButton:(_ASCollectionViewCell *)cell {
     @try {
-        saveButton = cell;
-        [saveButton layoutIfNeeded];
-        _ASDisplayView *contentContainer = (_ASDisplayView *)saveButton.subviews[0].subviews[0].subviews[0].subviews[0];
+        lastButton = cell;
+        [lastButton layoutIfNeeded];
+        _ASDisplayView *contentContainer = (_ASDisplayView *)lastButton.subviews[0].subviews[0].subviews[0].subviews[0];
         ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
         NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
-        CGRect contentFrame = [saveButton.subviews[0].subviews[0].subviews[0] frame];
+        CGRect contentFrame = [lastButton.subviews[0].subviews[0].subviews[0] frame];
         self.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"Play in PiP");
-        [saveButton.subviews[0] insertSubview:self.pipButton atIndex:0];
+        [lastButton.subviews[0] insertSubview:self.pipButton atIndex:0];
     } @catch (id ex) {}
 }
 
