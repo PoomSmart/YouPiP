@@ -292,7 +292,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
     }
 }
 
-%new(v@:)
+%new(v@:@)
 - (void)addButton:(_ASCollectionViewCell *)cell {
     @try {
         lastButton = cell;
@@ -302,6 +302,8 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
         NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
         CGRect contentFrame = [lastButton.subviews[0].subviews[0].subviews[0] frame];
         self.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"Play in PiP");
+        // Why `lastButton.subviews[0]` ? Just to make it fit the hierarchy.
+        // Why `index:0` ? When the PiP button was added, and this method is called again, it will fail due to missing subviews and prevent duplication.
         [lastButton.subviews[0] insertSubview:self.pipButton atIndex:0];
     } @catch (id ex) {}
 }
