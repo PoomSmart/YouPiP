@@ -1,9 +1,9 @@
 #import <version.h>
 #import <rootless.h>
 #import "Header.h"
-#import "../YouTubeHeader/_ASCollectionViewCell.h"
 #import "../YouTubeHeader/_ASDisplayView.h"
 #import "../YouTubeHeader/ASCollectionView.h"
+#import "../YouTubeHeader/ELMContainerNode.h"
 #import "../YouTubeHeader/ELMTextNode.h"
 #import "../YouTubeHeader/GIMBindingBuilder.h"
 #import "../YouTubeHeader/GPBExtensionRegistry.h"
@@ -40,12 +40,10 @@
 @interface ASCollectionView (YP)
 @property (retain, nonatomic) _ASDisplayView *pipButton;
 @property (nonatomic) BOOL canTogglePip;
-- (void)addButton:(_ASCollectionViewCell *)cell;
 @end
 
 BOOL FromUser = NO;
 BOOL PiPDisabled = NO;
-_ASCollectionViewCell *lastButton = nil;
 
 extern BOOL LegacyPiP();
 extern YTHotConfig *(*InjectYTHotConfig)(void);
@@ -239,18 +237,21 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 #pragma mark - Video tab bar PiP Button (17.x.x and up)
 
-static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *title, NSMutableAttributedString *titleAttr, NSString *accessibilityLabel) {
-    CGRect buttonFrame = CGRectMake([lastButton frame].size.width, contentFrame.origin.y, 65, contentFrame.size.height);
+static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, NSString *title, NSString *accessibilityLabel) {
+    CGRect buttonFrame = CGRectMake([[dependButton.yogaParent view] frame].size.width, 0, 65, [dependButton frame].size.height);
     _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:buttonFrame];
-    buttonView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.102];
+    buttonView.backgroundColor = dependButton.backgroundColor;
     buttonView.accessibilityLabel = accessibilityLabel;
-    buttonView._cornerRadius = 16; 
+    buttonView._cornerRadius = 16;
 
     UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
     UIImageView *buttonImage = [[UIImageView alloc] initWithImage:image];
-    [buttonImage setFrame:CGRectMake(12, (buttonFrame.size.height - 15.5) / 2, 15.5, 15.5)];
+    [buttonImage setFrame:CGRectMake(12, ([dependButton frame].size.height - 15.5) / 2, 15.5, 15.5)];
 
-    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 8, 20, 16)];
+    ELMTextNode *titleNode = dependButton.yogaChildren[1];
+    NSMutableAttributedString *titleAttr = [[NSMutableAttributedString alloc] initWithAttributedString:titleNode.attributedText];
+    CGRect titleFrame = CGRectMake(33, (buttonFrame.size.height - [titleNode frame].size.height) / 2, 20, [titleNode frame].size.height);
+    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:titleFrame];
     titleAttr.mutableString.string = title;
     buttonTitle.attributedText = titleAttr;
     buttonTitle.textColor = [%c(YTColor) white3];
@@ -260,14 +261,18 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
     return buttonView;
 }
 
-%hook _ASCollectionViewCell
+%hook ELMContainerNode
 
-- (void)layoutSubviews {
+- (void)setBorderSublayer {
     %orig;
-    // Handle the transition between "Save" and "Saved" buttons
-    if (UseTabBarPiPButton() && self == lastButton) {
-        ASCollectionView *scrollView = (ASCollectionView *)self.superview;
-        scrollView.pipButton.center = CGPointMake([self frame].size.width + 32.5, [self frame].size.height / 2);
+    if (UseTabBarPiPButton() && ([self.accessibilityLabel isEqual:@"Save to playlist"] || [self.accessibilityLabel isEqual:@"Saved"])) {
+        ASCollectionView *scrollView = [self.yogaParent.yogaParent valueForKey:@"_interactionDelegate"];
+        scrollView.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
+        scrollView.delaysContentTouches = NO;
+
+        if (scrollView.pipButton) [scrollView.pipButton removeFromSuperview];
+        scrollView.pipButton = makeUnderNewPlayerButton(self, @"PiP", @"Play in PiP");
+        [[self.yogaParent view] addSubview:scrollView.pipButton];
     }
 }
 
@@ -277,36 +282,6 @@ static _ASDisplayView *makeUnderNewPlayerButton(CGRect contentFrame, NSString *t
 
 %property (retain, nonatomic) _ASDisplayView *pipButton;
 %property (nonatomic) BOOL canTogglePip;
-
-- (void)layoutSubviews {
-    %orig;
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
-        self.delaysContentTouches = NO;
-        self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
-
-        for (_ASCollectionViewCell *cell in self.subviews) {
-            if ([cell frame].origin.x + [cell frame].size.width == [self contentSize].width) {
-                [self addButton:cell];
-            }
-        }
-    }
-}
-
-%new(v@:@)
-- (void)addButton:(_ASCollectionViewCell *)cell {
-    @try {
-        lastButton = cell;
-        [lastButton layoutIfNeeded];
-        _ASDisplayView *contentContainer = (_ASDisplayView *)lastButton.subviews[0].subviews[0].subviews[0].subviews[0];
-        ELMTextNode *textNode = contentContainer.keepalive_node.yogaChildren[1];
-        NSMutableAttributedString *textAttr = [[NSMutableAttributedString alloc] initWithAttributedString:textNode.attributedText];
-        CGRect contentFrame = [lastButton.subviews[0].subviews[0].subviews[0] frame];
-        self.pipButton = makeUnderNewPlayerButton(contentFrame, @"PiP", textAttr, @"Play in PiP");
-        // Why `lastButton.subviews[0]` ? Just to make it fit the hierarchy.
-        // Why `index:0` ? When the PiP button was added, and this method is called again, it will fail due to missing subviews and prevent duplication.
-        [lastButton.subviews[0] insertSubview:self.pipButton atIndex:0];
-    } @catch (id ex) {}
-}
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     %orig;
