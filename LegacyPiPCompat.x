@@ -105,6 +105,13 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
     return self;
 }
 
+- (instancetype)initWithStickySettings:(MLPlayerStickySettings *)stickySettings playerViewProvider:(MLPlayerPoolImpl *)playerViewProvider playerConfiguration:(void *)playerConfiguration mediaPlayerResources:(id)mediaPlayerResources {
+    self = %orig;
+    if ([self valueForKey:@"_pipController"] == nil)
+        [self setValue:InjectMLPIPController() forKey:@"_pipController"];
+    return self;
+}
+
 %end
 
 %hook MLAVPlayer
@@ -188,6 +195,10 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
 }
 
+- (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger reloadContext:(id)reloadContext mediaPlayerResources:(id)mediaPlayerResources {
+    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
+}
+
 - (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     MLDefaultPlayerViewFactory *factory = [self valueForKey:@"_playerViewFactory"];
     return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
@@ -243,6 +254,11 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %hook MLVideoDecoderFactory
 
 - (void)prepareDecoderForFormatDescription:(id)formatDescription delegateQueue:(id)delegateQueue {
+    forceRenderViewTypeHot([self valueForKey:@"_hotConfig"]);
+    %orig;
+}
+
+- (void)prepareDecoderForFormatDescription:(id)formatDescription setPixelBufferTypeOnlyIfEmpty:(BOOL)setPixelBufferTypeOnlyIfEmpty delegateQueue:(id)delegateQueue {
     forceRenderViewTypeHot([self valueForKey:@"_hotConfig"]);
     %orig;
 }
