@@ -209,8 +209,8 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
         YTSlimVideoScrollableActionBarCellController *_delegate = self.delegate;
         YTPlayerViewController *playerViewController = nil;
         @try {
-            if ([[_delegate valueForKey:@"_metadataPanelStateProvider"] isKindOfClass:%c(YTWatchController)]) {
-                id provider = [_delegate valueForKey:@"_metadataPanelStateProvider"];
+            id provider = [_delegate valueForKey:@"_metadataPanelStateProvider"];
+            if ([provider isKindOfClass:%c(YTWatchController)] || [provider isKindOfClass:%c(YTPlaybackStrippedWatchController)]) {
                 @try {
                     YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
                     playerViewController = [watchViewController valueForKey:@"_playerViewController"];
