@@ -265,7 +265,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, 
 
 - (void)setBorderSublayer {
     %orig;
-    if (UseTabBarPiPButton() && ([self.accessibilityLabel isEqual:@"Save to playlist"] || [self.accessibilityLabel isEqual:@"Saved"])) {
+    if (UseTabBarPiPButton() && ([self.accessibilityLabel isEqual:@"Save to playlist"] || [self.accessibilityLabel isEqual:@"Saved"]) && [self.yogaChildren count] == 2) {
         ASCollectionView *scrollView = [self.yogaParent.yogaParent valueForKey:@"_interactionDelegate"];
         scrollView.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
         scrollView.delaysContentTouches = NO;
