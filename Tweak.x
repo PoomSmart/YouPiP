@@ -144,7 +144,7 @@ static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
     activatePiP(local, playPiP);
 }
 
-#pragma mark - Video tab bar PiP Button (16.x.x and below)
+#pragma mark - Video tab bar PiP Button (16.46.5 and below + offline mode)
 
 static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSString *title, int iconType, NSString *browseId) {
     YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
@@ -238,7 +238,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 %end
 
-#pragma mark - Video tab bar PiP Button (17.x.x and up)
+#pragma mark - Video tab bar PiP Button (17.01.4 and up)
 
 static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, NSString *title, NSString *accessibilityLabel) {
     CGRect buttonFrame = CGRectMake([[dependButton.yogaParent view] frame].size.width, 0, 65, [dependButton frame].size.height);
