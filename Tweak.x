@@ -27,6 +27,7 @@
 #import "../YouTubeHeader/YTSlimVideoDetailsActionView.h"
 #import "../YouTubeHeader/YTSlimVideoScrollableActionBarCellController.h"
 #import "../YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h"
+#import "../YouTubeHeader/YTTouchFeedbackController.h"
 #import "../YouTubeHeader/YTWatchViewController.h"
 
 #define PiPButtonType 801
@@ -38,8 +39,10 @@
 @end
 
 @interface ASCollectionView (YP)
+@property (retain, nonatomic) UIButton *pipTouch;
 @property (retain, nonatomic) _ASDisplayView *pipButton;
-@property (nonatomic) BOOL canTogglePip;
+@property (retain, nonatomic) YTTouchFeedbackController *pipTouchController;
+- (void)didPressPiP:(UIButton *)button event:(UIEvent *)event;
 @end
 
 BOOL FromUser = NO;
@@ -263,12 +266,11 @@ static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, 
 
 %hook ELMContainerNode
 
-- (void)setBorderSublayer {
+- (void)layoutDidFinish {
     %orig;
     if (UseTabBarPiPButton() && ([self.accessibilityLabel isEqual:@"Save to playlist"] || [self.accessibilityLabel isEqual:@"Saved"]) && [self.yogaChildren count] == 2) {
         ASCollectionView *scrollView = [self.yogaParent.yogaParent valueForKey:@"_interactionDelegate"];
         scrollView.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
-        scrollView.delaysContentTouches = NO;
 
         if (scrollView.pipButton) [scrollView.pipButton removeFromSuperview];
         scrollView.pipButton = makeUnderNewPlayerButton(self, @"PiP", @"Play in PiP");
@@ -280,59 +282,38 @@ static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, 
 
 %hook ASCollectionView
 
+%property (retain, nonatomic) UIButton *pipTouch;
 %property (retain, nonatomic) _ASDisplayView *pipButton;
-%property (nonatomic) BOOL canTogglePip;
+%property (retain, nonatomic) YTTouchFeedbackController *pipTouchController;
 
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+- (BOOL)touchesShouldCancelInContentView:(id)arg1 {
+    return YES; // Ensure we can scroll
+}
+
+- (void)setContentSize:(CGSize)size {
     %orig;
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
-        self.canTogglePip = NO;
-        UITouch *touch = [[touches allObjects] objectAtIndex:0];
-        CGPoint location = [touch locationInView:self];
-        CGRect validRect = CGRectMake([self contentSize].width, [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
-        if (CGRectContainsPoint(validRect, location)) {
-            self.canTogglePip = YES;
-            [UIView animateWithDuration:0.1 animations:^{
-                self.pipButton.transform = CGAffineTransformMakeScale(0.929, 0.929);
-            } completion:nil];
-        }
+    if (UseTabBarPiPButton() && self.pipButton && [self.pipTouch frame].origin.x != size.width) {
+        if (self.pipTouch) [self.pipTouch removeFromSuperview];
+        CGRect frame = CGRectMake(size.width, [self.pipButton.superview frame].origin.y, 65, [self.pipButton frame].size.height);
+        self.pipTouch = [[%c(UIButton) alloc] initWithFrame:frame];
+        YTTouchFeedbackController *controller = [[%c(YTTouchFeedbackController) alloc] initWithView:self.pipTouch];
+        controller.touchFeedbackView.customCornerRadius = 16;
+        self.pipTouchController = controller;
+        [self.pipTouch addTarget:self action:@selector(didPressPiP:event:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:self.pipTouch];
     }
 }
 
-- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    %orig;
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && self.canTogglePip) {
-        UITouch *touch = [[touches allObjects] objectAtIndex:0];
-        CGPoint location = [touch locationInView:self];
-        CGRect validRect = CGRectMake([self contentSize].width, [self.pipButton frame].origin.y, 65, [self.pipButton frame].size.height);
-        self.canTogglePip = CGRectContainsPoint(validRect, location);
-    }
-}
-
-- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    %orig;
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
-        [UIView animateWithDuration:0.2 animations:^{
-            self.pipButton.transform = CGAffineTransformMakeScale(1, 1);
-        } completion:nil];
-
-        if (self.canTogglePip) {
-            UIViewController *controller = [[self.superview valueForKey:@"_keepalive_node"] closestViewController];
-            YTPlaybackStrippedWatchController *provider = [controller valueForKey:@"_metadataPanelStateProvider"];
-            YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
-            YTPlayerViewController *playerViewController = [watchViewController valueForKey:@"_playerViewController"];
-            FromUser = YES;
-            bootstrapPiP(playerViewController, YES);
-        }
-    }
-}
-
-- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    %orig;
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"]) {
-        [UIView animateWithDuration:0.2 animations:^{
-            self.pipButton.transform = CGAffineTransformMakeScale(1, 1);
-        } completion:nil];
+%new(v@:@@)
+- (void)didPressPiP:(UIButton *)button event:(UIEvent *)event {
+    CGPoint location = [[[event allTouches] anyObject] locationInView:button];
+    if (CGRectContainsPoint(button.bounds, location)) {
+        UIViewController *controller = [[self.superview valueForKey:@"_keepalive_node"] closestViewController];
+        YTPlaybackStrippedWatchController *provider = [controller valueForKey:@"_metadataPanelStateProvider"];
+        YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
+        YTPlayerViewController *playerViewController = [watchViewController valueForKey:@"_playerViewController"];
+        FromUser = YES;
+        bootstrapPiP(playerViewController, YES);
     }
 }
 
