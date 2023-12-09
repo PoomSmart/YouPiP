@@ -290,11 +290,10 @@ static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, 
     return YES; // Ensure we can scroll
 }
 
-- (void)setContentSize:(CGSize)size {
-    %orig;
-    if (UseTabBarPiPButton() && self.pipButton && [self.pipTouch frame].origin.x != size.width) {
+- (CGPoint)contentOffset {
+    if (UseTabBarPiPButton() && self.pipButton && [self.pipTouch frame].origin.x != [self contentSize].width) {
         if (self.pipTouch) [self.pipTouch removeFromSuperview];
-        CGRect frame = CGRectMake(size.width, [self.pipButton.superview frame].origin.y, 65, [self.pipButton frame].size.height);
+        CGRect frame = CGRectMake([self contentSize].width, [self.pipButton.superview frame].origin.y, 65, [self.pipButton frame].size.height);
         self.pipTouch = [[%c(UIButton) alloc] initWithFrame:frame];
         YTTouchFeedbackController *controller = [[%c(YTTouchFeedbackController) alloc] initWithView:self.pipTouch];
         controller.touchFeedbackView.customCornerRadius = 16;
@@ -302,6 +301,7 @@ static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, 
         [self.pipTouch addTarget:self action:@selector(didPressPiP:event:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:self.pipTouch];
     }
+    return %orig;
 }
 
 %new(v@:@@)
