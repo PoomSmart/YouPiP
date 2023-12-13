@@ -1,10 +1,9 @@
 #import <version.h>
 #import <rootless.h>
 #import "Header.h"
-#import "../YouTubeHeader/_ASDisplayView.h"
 #import "../YouTubeHeader/ASCollectionView.h"
+#import "../YouTubeHeader/ELMCellNode.h"
 #import "../YouTubeHeader/ELMContainerNode.h"
-#import "../YouTubeHeader/ELMTextNode.h"
 #import "../YouTubeHeader/GIMBindingBuilder.h"
 #import "../YouTubeHeader/GPBExtensionRegistry.h"
 #import "../YouTubeHeader/MLDefaultPlayerViewFactory.h"
@@ -39,8 +38,7 @@
 @end
 
 @interface ASCollectionView (YP)
-@property (retain, nonatomic) UIButton *pipTouch;
-@property (retain, nonatomic) _ASDisplayView *pipButton;
+@property (retain, nonatomic) UIButton *pipButton;
 @property (retain, nonatomic) YTTouchFeedbackController *pipTouchController;
 - (void)didPressPiP:(UIButton *)button event:(UIEvent *)event;
 @end
@@ -240,75 +238,67 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 #pragma mark - Video tab bar PiP Button (17.01.4 and up)
 
-static _ASDisplayView *makeUnderNewPlayerButton(ELMContainerNode *dependButton, NSString *title, NSString *accessibilityLabel) {
-    CGRect buttonFrame = CGRectMake([[dependButton.yogaParent view] frame].size.width, 0, 65, [dependButton frame].size.height);
-    _ASDisplayView *buttonView = [[%c(_ASDisplayView) alloc] initWithFrame:buttonFrame];
-    buttonView.backgroundColor = dependButton.backgroundColor;
+static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NSString *accessibilityLabel) {
+    ELMContainerNode *containerNode = (ELMContainerNode *)node.yogaChildren[0].yogaChildren[0]; // To get node container properties
+    UIButton *buttonView = [[UIButton alloc] initWithFrame:(CGRect){{0, 0}, {65, containerNode.calculatedSize.height}}];
+    buttonView.center = (CGPoint){CGRectGetMaxX([node.layoutAttributes frame]) + 65 / 2, CGRectGetMidY([node.layoutAttributes frame])};
+    buttonView.backgroundColor = containerNode.backgroundColor;
     buttonView.accessibilityLabel = accessibilityLabel;
-    buttonView._cornerRadius = 16;
+    buttonView.layer.cornerRadius = 16;
 
-    UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
-    UIImageView *buttonImage = [[UIImageView alloc] initWithImage:image];
-    [buttonImage setFrame:CGRectMake(12, ([dependButton frame].size.height - 15.5) / 2, 15.5, 15.5)];
+    UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:(CGRect){{12, ([buttonView frame].size.height - 15.5) / 2}, {15.5, 15.5}}];
+    buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
 
-    ELMTextNode *titleNode = dependButton.yogaChildren[1];
-    NSMutableAttributedString *titleAttr = [[NSMutableAttributedString alloc] initWithAttributedString:titleNode.attributedText];
-    CGRect titleFrame = CGRectMake(33, (buttonFrame.size.height - [titleNode frame].size.height) / 2, 20, [titleNode frame].size.height);
-    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:titleFrame];
-    titleAttr.mutableString.string = title;
-    buttonTitle.attributedText = titleAttr;
+    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:(CGRect){{33, 9}, {20, 14}}];
+    buttonTitle.font = [UIFont fontWithName:@".SFUIText-Semibold" size:12];
     buttonTitle.textColor = [%c(YTColor) white3];
+    buttonTitle.text = title;
 
     [buttonView addSubview:buttonImage];
     [buttonView addSubview:buttonTitle];
     return buttonView;
 }
 
-%hook ELMContainerNode
-
-- (void)layoutDidFinish {
-    %orig;
-    if (UseTabBarPiPButton() && ([self.accessibilityLabel isEqual:@"Save to playlist"] || [self.accessibilityLabel isEqual:@"Saved"]) && [self.yogaChildren count] == 2) {
-        ASCollectionView *scrollView = [self.yogaParent.yogaParent valueForKey:@"_interactionDelegate"];
-        scrollView.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
-
-        if (scrollView.pipButton) [scrollView.pipButton removeFromSuperview];
-        scrollView.pipButton = makeUnderNewPlayerButton(self, @"PiP", @"Play in PiP");
-        [[self.yogaParent view] addSubview:scrollView.pipButton];
-    }
-}
-
-%end
-
 %hook ASCollectionView
 
-%property (retain, nonatomic) UIButton *pipTouch;
-%property (retain, nonatomic) _ASDisplayView *pipButton;
+%property (retain, nonatomic) UIButton *pipButton;
 %property (retain, nonatomic) YTTouchFeedbackController *pipTouchController;
 
 - (BOOL)touchesShouldCancelInContentView:(id)arg1 {
     return YES; // Ensure we can scroll
 }
 
-- (CGPoint)contentOffset {
-    if (UseTabBarPiPButton() && self.pipButton && [self.pipTouch frame].origin.x != [self contentSize].width) {
-        if (self.pipTouch) [self.pipTouch removeFromSuperview];
-        CGRect frame = CGRectMake([self contentSize].width, [self.pipButton.superview frame].origin.y, 65, [self.pipButton frame].size.height);
-        self.pipTouch = [[%c(UIButton) alloc] initWithFrame:frame];
-        YTTouchFeedbackController *controller = [[%c(YTTouchFeedbackController) alloc] initWithView:self.pipTouch];
-        controller.touchFeedbackView.customCornerRadius = 16;
-        self.pipTouchController = controller;
-        [self.pipTouch addTarget:self action:@selector(didPressPiP:event:) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:self.pipTouch];
+- (ELMCellNode *)nodeForItemAtIndexPath:(NSIndexPath *)indexPath {
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && !self.pipButton) {
+        self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
+        if ([self numberOfItemsInSection:0] - 1 == indexPath.row) {
+            self.pipButton = makeUnderNewPlayerButton(%orig, @"PiP", @"Play in PiP");
+            [self addSubview:self.pipButton];
+
+            [self.pipButton addTarget:self action:@selector(didPressPiP:event:) forControlEvents:UIControlEventTouchUpInside];
+            YTTouchFeedbackController *controller = [[%c(YTTouchFeedbackController) alloc] initWithView:self.pipButton];
+            controller.touchFeedbackView.customCornerRadius = 16;
+            self.pipTouchController = controller;
+        }
     }
     return %orig;
+}
+
+- (void)nodesDidRelayout:(NSArray <ELMCellNode *> *)nodes {
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && [nodes count] == 1) {
+        CGFloat offset = nodes[0].calculatedSize.width - [nodes[0].layoutAttributes frame].size.width;
+        [UIView animateWithDuration:0.3 animations:^{
+            self.pipButton.center = (CGPoint){self.pipButton.center.x + offset , self.pipButton.center.y};
+        }];
+    }
+    %orig;
 }
 
 %new(v@:@@)
 - (void)didPressPiP:(UIButton *)button event:(UIEvent *)event {
     CGPoint location = [[[event allTouches] anyObject] locationInView:button];
     if (CGRectContainsPoint(button.bounds, location)) {
-        UIViewController *controller = [[self.superview valueForKey:@"_keepalive_node"] closestViewController];
+        UIViewController *controller = [self.collectionNode closestViewController];
         YTPlaybackStrippedWatchController *provider = [controller valueForKey:@"_metadataPanelStateProvider"];
         YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
         YTPlayerViewController *playerViewController = [watchViewController valueForKey:@"_playerViewController"];
