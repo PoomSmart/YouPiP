@@ -240,16 +240,16 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NSString *accessibilityLabel) {
     ELMContainerNode *containerNode = (ELMContainerNode *)node.yogaChildren[0].yogaChildren[0]; // To get node container properties
-    UIButton *buttonView = [[UIButton alloc] initWithFrame:(CGRect){{0, 0}, {65, containerNode.calculatedSize.height}}];
-    buttonView.center = (CGPoint){CGRectGetMaxX([node.layoutAttributes frame]) + 65 / 2, CGRectGetMidY([node.layoutAttributes frame])};
+    UIButton *buttonView = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 65, containerNode.calculatedSize.height)];
+    buttonView.center = CGPointMake(CGRectGetMaxX([node.layoutAttributes frame]) + 65 / 2, CGRectGetMidY([node.layoutAttributes frame]));
     buttonView.backgroundColor = containerNode.backgroundColor;
     buttonView.accessibilityLabel = accessibilityLabel;
     buttonView.layer.cornerRadius = 16;
 
-    UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:(CGRect){{12, ([buttonView frame].size.height - 15.5) / 2}, {15.5, 15.5}}];
+    UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:CGRectMake(12, ([buttonView frame].size.height - 15.5) / 2, 15.5, 15.5)];
     buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
 
-    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:(CGRect){{33, 9}, {20, 14}}];
+    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 9, 20, 14)];
     buttonTitle.font = [UIFont fontWithName:@".SFUIText-Semibold" size:12];
     buttonTitle.textColor = [%c(YTColor) white3];
     buttonTitle.text = title;
