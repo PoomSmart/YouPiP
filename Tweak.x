@@ -239,7 +239,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 #pragma mark - Video tab bar PiP Button (17.01.4 and up)
 
 static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NSString *accessibilityLabel) {
-    ELMContainerNode *containerNode = (ELMContainerNode *)node.yogaChildren[0].yogaChildren[0]; // To get node container properties
+    ELMContainerNode *containerNode = (ELMContainerNode *)[[node yogaChildren][0] yogaChildren][0]; // To get node container properties
     UIButton *buttonView = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 65, containerNode.calculatedSize.height)];
     buttonView.center = CGPointMake(CGRectGetMaxX([node.layoutAttributes frame]) + 65 / 2, CGRectGetMidY([node.layoutAttributes frame]));
     buttonView.backgroundColor = containerNode.backgroundColor;
