@@ -288,7 +288,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && [nodes count] == 1) {
         CGFloat offset = nodes[0].calculatedSize.width - [nodes[0].layoutAttributes frame].size.width;
         [UIView animateWithDuration:0.3 animations:^{
-            self.pipButton.center = (CGPoint){self.pipButton.center.x + offset, self.pipButton.center.y};
+            self.pipButton.center = CGPointMake(self.pipButton.center.x + offset, self.pipButton.center.y);
         }];
     }
     %orig;
