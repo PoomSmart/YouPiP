@@ -11,6 +11,7 @@
 #import "../YouTubeHeader/QTMIcon.h"
 #import "../YouTubeHeader/YTBackgroundabilityPolicy.h"
 #import "../YouTubeHeader/YTColor.h"
+#import "../YouTubeHeader/YTColorPalette.h"
 #import "../YouTubeHeader/YTHotConfig.h"
 #import "../YouTubeHeader/YTIPictureInPictureRendererRoot.h"
 #import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
@@ -239,7 +240,11 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 #pragma mark - Video tab bar PiP Button (17.01.4 and up)
 
 static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NSString *accessibilityLabel) {
-    ELMContainerNode *containerNode = (ELMContainerNode *)[[node yogaChildren][0] yogaChildren][0]; // To get node container properties
+    NSInteger pageStyle = [%c(YTPageStyleController) pageStyle];
+    YTColorPalette *palette = [%c(YTColorPalette) colorPaletteForPageStyle:pageStyle];
+    UIColor *textColor = [palette textPrimary];
+    UIColor *imageColor = pageStyle == 1 ? [%c(YTColor) white1] : textColor;
+    ELMContainerNode *containerNode = (ELMContainerNode *)[[[[node yogaChildren] firstObject] yogaChildren] firstObject]; // To get node container properties
     UIButton *buttonView = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 65, containerNode.calculatedSize.height)];
     buttonView.center = CGPointMake(CGRectGetMaxX([node.layoutAttributes frame]) + 65 / 2, CGRectGetMidY([node.layoutAttributes frame]));
     buttonView.backgroundColor = containerNode.backgroundColor;
@@ -247,11 +252,11 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     buttonView.layer.cornerRadius = 16;
 
     UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:CGRectMake(12, ([buttonView frame].size.height - 15.5) / 2, 15.5, 15.5)];
-    buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
+    buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:imageColor];
 
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 9, 20, 14)];
     buttonTitle.font = [UIFont boldSystemFontOfSize:12];
-    buttonTitle.textColor = [%c(YTColor) white3];
+    buttonTitle.textColor = textColor;
     buttonTitle.text = title;
 
     [buttonView addSubview:buttonImage];
