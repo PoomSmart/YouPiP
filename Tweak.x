@@ -250,7 +250,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[%c(YTColor) white1]];
 
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 9, 20, 14)];
-    buttonTitle.font = [UIFont fontWithName:@".SFUIText-Semibold" size:12];
+    buttonTitle.font = [UIFont boldSystemFontOfSize:12];
     buttonTitle.textColor = [%c(YTColor) white3];
     buttonTitle.text = title;
 
