@@ -12,6 +12,7 @@
 #import "../YouTubeHeader/YTBackgroundabilityPolicy.h"
 #import "../YouTubeHeader/YTColor.h"
 #import "../YouTubeHeader/YTColorPalette.h"
+#import "../YouTubeHeader/YTCommonColorPalette.h"
 #import "../YouTubeHeader/YTHotConfig.h"
 #import "../YouTubeHeader/YTIPictureInPictureRendererRoot.h"
 #import "../YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h"
@@ -241,9 +242,10 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NSString *accessibilityLabel) {
     NSInteger pageStyle = [%c(YTPageStyleController) pageStyle];
-    YTColorPalette *palette = [%c(YTColorPalette) colorPaletteForPageStyle:pageStyle];
+    YTCommonColorPalette *palette = pageStyle == 1 ? [%c(YTCommonColorPalette) darkPalette] : [%c(YTCommonColorPalette) lightPalette];
+    if (!palette) palette = [%c(YTColorPalette) colorPaletteForPageStyle:pageStyle]; // YouTube 17.18.4 and below
     UIColor *textColor = [palette textPrimary];
-    UIColor *imageColor = pageStyle == 1 ? [%c(YTColor) white1] : textColor;
+
     ELMContainerNode *containerNode = (ELMContainerNode *)[[[[node yogaChildren] firstObject] yogaChildren] firstObject]; // To get node container properties
     UIButton *buttonView = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 65, containerNode.calculatedSize.height)];
     buttonView.center = CGPointMake(CGRectGetMaxX([node.layoutAttributes frame]) + 65 / 2, CGRectGetMidY([node.layoutAttributes frame]));
@@ -252,7 +254,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     buttonView.layer.cornerRadius = 16;
 
     UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:CGRectMake(12, ([buttonView frame].size.height - 15.5) / 2, 15.5, 15.5)];
-    buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:imageColor];
+    buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:textColor];
 
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 9, 20, 14)];
     buttonTitle.font = [UIFont boldSystemFontOfSize:12];
