@@ -136,7 +136,10 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             settingItemId:0];
         [sectionItems addObject:fakeVersion];
     }
-    [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName titleDescription:nil headerHidden:NO];
+    if ([delegate respondsToSelector:@selector(setSectionItems:forCategory:title:icon:titleDescription:headerHidden:)])
+        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName icon:nil titleDescription:nil headerHidden:NO];
+    else
+        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName titleDescription:nil headerHidden:NO];
 }
 
 - (void)updateSectionForCategory:(NSUInteger)category withEntry:(id)entry {
