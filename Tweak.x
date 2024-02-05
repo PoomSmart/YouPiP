@@ -278,8 +278,9 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
 - (ELMCellNode *)nodeForItemAtIndexPath:(NSIndexPath *)indexPath {
     if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && !self.pipButton) {
         self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
-        if ([self numberOfItemsInSection:0] - 1 == indexPath.row) {
-            self.pipButton = makeUnderNewPlayerButton(%orig, @"PiP", @"Play in PiP");
+        ELMCellNode *node = %orig;
+        if (CGRectGetMaxX([node.layoutAttributes frame]) == [self contentSize].width) {
+            self.pipButton = makeUnderNewPlayerButton(node, @"PiP", @"Play in PiP");
             [self addSubview:self.pipButton];
 
             [self.pipButton addTarget:self action:@selector(didPressPiP:event:) forControlEvents:UIControlEventTouchUpInside];
