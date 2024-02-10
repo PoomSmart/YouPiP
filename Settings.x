@@ -1,11 +1,11 @@
 #import <version.h>
 #import "Header.h"
-#import "../YouTubeHeader/YTAlertView.h"
-#import "../YouTubeHeader/YTHotConfig.h"
-#import "../YouTubeHeader/YTSettingsViewController.h"
-#import "../YouTubeHeader/YTSettingsSectionItem.h"
-#import "../YouTubeHeader/YTSettingsSectionItemManager.h"
-#import "../YouTubeHeader/YTAppSettingsSectionItemActionController.h"
+#import <YouTubeHeader/YTAlertView.h>
+#import <YouTubeHeader/YTHotConfig.h>
+#import <YouTubeHeader/YTSettingsViewController.h>
+#import <YouTubeHeader/YTSettingsSectionItem.h>
+#import <YouTubeHeader/YTSettingsSectionItemManager.h>
+#import <YouTubeHeader/YTAppSettingsSectionItemActionController.h>
 
 #define LOC(x) [tweakBundle localizedStringForKey:x value:nil table:nil]
 
