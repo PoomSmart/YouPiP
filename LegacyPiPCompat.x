@@ -13,6 +13,7 @@
 #import <YouTubeHeader/YTPlayerViewControllerConfig.h>
 #import <YouTubeHeader/YTSystemNotifications.h>
 #import <YouTubeHeader/YTAutonavEndscreenController.h>
+#import <YouTubeHeader/YTLiveWatchPlaybackOverlayView.h>
 
 extern BOOL TweakEnabled();
 extern BOOL isPictureInPictureActive(MLPIPController *);
@@ -89,7 +90,14 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 
 - (instancetype)initWithParentResponder:(id)arg1 config:(id)arg2 imageService:(id)arg3 lastActionController:(id)arg4 reachabilityController:(id)arg5 endscreenDelegate:(id)arg6 {
     self = %orig;
-    if ([self valueForKey:@"_pipController"] == nil)
+    if (self && [self valueForKey:@"_pipController"] == nil)
+        [self setValue:InjectMLPIPController() forKey:@"_pipController"];
+    return self;
+}
+
+- (instancetype)initWithParentResponder:(id)arg1 config:(id)arg2 lastActionController:(id)arg3 reachabilityController:(id)arg4 endscreenDelegate:(id)arg5 {
+    self = %orig;
+    if (self && [self valueForKey:@"_pipController"] == nil)
         [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
@@ -100,14 +108,14 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 
 - (instancetype)initWithStickySettings:(MLPlayerStickySettings *)stickySettings playerViewProvider:(MLPlayerPoolImpl *)playerViewProvider playerConfiguration:(void *)playerConfiguration {
     self = %orig;
-    if ([self valueForKey:@"_pipController"] == nil)
+    if (self && [self valueForKey:@"_pipController"] == nil)
         [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
 
 - (instancetype)initWithStickySettings:(MLPlayerStickySettings *)stickySettings playerViewProvider:(MLPlayerPoolImpl *)playerViewProvider playerConfiguration:(void *)playerConfiguration mediaPlayerResources:(id)mediaPlayerResources {
     self = %orig;
-    if ([self valueForKey:@"_pipController"] == nil)
+    if (self && [self valueForKey:@"_pipController"] == nil)
         [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
@@ -126,7 +134,7 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 
 - (instancetype)init {
     self = %orig;
-    if ([self valueForKey:@"_pipController"] == nil)
+    if (self && [self valueForKey:@"_pipController"] == nil)
         [self setValue:InjectMLPIPController() forKey:@"_pipController"];
     return self;
 }
@@ -135,10 +143,34 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 
 %hook MLAVPIPPlayerLayerView
 
-- (id)initWithPlaceholderPlayerItem:(AVPlayerItem *)playerItem {
+- (instancetype)initWithPlaceholderPlayerItem:(AVPlayerItem *)playerItem {
     self = %orig;
-    if ([self valueForKey:@"_pipController"] == nil)
+    if (self && [self valueForKey:@"_pipController"] == nil)
         [self setValue:InjectMLPIPController() forKey:@"_pipController"];
+    return self;
+}
+
+%end
+
+%hook YTLiveWatchPlaybackOverlayView
+
+- (instancetype)initWithFrame:(CGRect)frame reelModel:(id)reelModel ghostViewManager:(id)ghostViewManager parentResponder:(id)parentResponder {
+    self = %orig;
+    if (self && [self valueForKey:@"_pipController"] == nil)
+        [self setValue:InjectMLPIPController() forKey:@"_pipController"];
+    return self;
+}
+
+%end
+
+%hook YTResumeToHomeController
+
+- (instancetype)init {
+    self = %orig;
+    if (!IS_IOS_OR_NEWER(iOS_15_0)) {
+        MLPIPController *pip = InjectMLPIPController();
+        [pip addPIPControllerObserver:self];
+    }
     return self;
 }
 
