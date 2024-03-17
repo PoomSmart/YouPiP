@@ -30,6 +30,7 @@
 #import <YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h>
 #import <YouTubeHeader/YTTouchFeedbackController.h>
 #import <YouTubeHeader/YTWatchViewController.h>
+#import <YouTubeHeader/YTAssetLoader.h>
 
 #define PiPButtonType 801
 
@@ -79,8 +80,7 @@ BOOL isPictureInPictureActive(MLPIPController *pip) {
     return [pip respondsToSelector:@selector(pictureInPictureActive)] ? [pip pictureInPictureActive] : [pip isPictureInPictureActive];
 }
 
-static NSString *PiPIconPath;
-static NSString *TabBarPiPIconPath;
+static UIImage *PiPIcon;
 static NSString *PiPVideoPath;
 
 static void forcePictureInPicture(YTHotConfig *hotConfig, BOOL value) {
@@ -174,7 +174,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == PiPButtonType) {
-        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[[%c(YTPageStyleController) currentColorPalette] textPrimary]];
+        UIImage *image = [%c(QTMIcon) tintImage:PiPIcon color:[[%c(YTPageStyleController) currentColorPalette] textPrimary]];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
         return image;
@@ -254,7 +254,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     buttonView.layer.cornerRadius = 16;
 
     UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:CGRectMake(12, ([buttonView frame].size.height - 15.5) / 2, 15.5, 15.5)];
-    buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:textColor];
+    buttonImage.image = [%c(QTMIcon) tintImage:PiPIcon color:textColor];
 
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 9, 20, 14)];
     buttonTitle.font = [UIFont boldSystemFontOfSize:12];
@@ -389,7 +389,7 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         UIColor *color = [%c(YTColor) white1];
-        image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:PiPIconPath] color:color];
+        image = [%c(QTMIcon) tintImage:PiPIcon color:color];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
     });
@@ -684,9 +684,12 @@ NSBundle *YouPiPBundle() {
 
 %ctor {
     if (!TweakEnabled()) return;
+
     NSBundle *tweakBundle = YouPiPBundle();
     PiPVideoPath = [tweakBundle pathForResource:@"PiPPlaceholderAsset" ofType:@"mp4"];
-    PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
-    TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
+
+    YTAssetLoader *al = [[%c(YTAssetLoader) alloc] initWithBundle:[NSBundle mainBundle]];
+    PiPIcon = [al imageNamed:@"yt_outline_picture_in_picture_24pt"];
+
     %init;
 }
