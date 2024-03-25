@@ -71,10 +71,6 @@ BOOL NonBackgroundable() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:NonBackgroundableKey];
 }
 
-BOOL FakeVersion() {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:FakeVersionKey];
-}
-
 BOOL isPictureInPictureActive(MLPIPController *pip) {
     return [pip respondsToSelector:@selector(pictureInPictureActive)] ? [pip pictureInPictureActive] : [pip isPictureInPictureActive];
 }
@@ -271,12 +267,8 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
 %property (retain, nonatomic) UIButton *pipButton;
 %property (retain, nonatomic) YTTouchFeedbackController *pipTouchController;
 
-- (BOOL)touchesShouldCancelInContentView:(id)arg1 {
-    return YES; // Ensure we can scroll
-}
-
 - (ELMCellNode *)nodeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && !self.pipButton) {
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqualToString:@"id.video.scrollable_action_bar"] && !self.pipButton) {
         self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
         ELMCellNode *node = %orig;
         if (CGRectGetMaxX([node.layoutAttributes frame]) == [self contentSize].width) {
@@ -293,7 +285,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
 }
 
 - (void)nodesDidRelayout:(NSArray <ELMCellNode *> *)nodes {
-    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqual:@"id.video.scrollable_action_bar"] && [nodes count] == 1) {
+    if (UseTabBarPiPButton() && [self.accessibilityIdentifier isEqualToString:@"id.video.scrollable_action_bar"] && [nodes count] == 1) {
         CGFloat offset = nodes[0].calculatedSize.width - [nodes[0].layoutAttributes frame].size.width;
         [UIView animateWithDuration:0.3 animations:^{
             self.pipButton.center = CGPointMake(self.pipButton.center.x + offset, self.pipButton.center.y);
@@ -313,6 +305,12 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
         FromUser = YES;
         bootstrapPiP(playerViewController, YES);
     }
+}
+
+- (void)dealloc {
+    self.pipButton = nil;
+    self.pipTouchController = nil;
+    %orig;
 }
 
 %end
@@ -672,7 +670,7 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 NSBundle *YouPiPBundle() {
     static NSBundle *bundle = nil;
     static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{
+    dispatch_once(&onceToken, ^{
         NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
         if (tweakBundlePath)
             bundle = [NSBundle bundleWithPath:tweakBundlePath];

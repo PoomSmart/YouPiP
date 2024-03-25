@@ -6,11 +6,11 @@
 @end
 
 @interface AVPictureInPictureControllerContentSource (Private)
-@property(assign) bool hasInitialRenderSize;
+@property (assign) bool hasInitialRenderSize;
 @end
 
 @interface AVPictureInPictureController (Private)
-@property(nonatomic, retain) AVPictureInPictureControllerContentSource *contentSource API_AVAILABLE(ios(15.0)); // retain -> strong on iOS 15
+@property (nonatomic, strong) AVPictureInPictureControllerContentSource *contentSource API_AVAILABLE(ios(15.0));
 - (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource API_AVAILABLE(ios(15.0));
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
 - (void)sampleBufferDisplayLayerDidAppear;

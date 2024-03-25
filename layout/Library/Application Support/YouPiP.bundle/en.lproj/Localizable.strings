@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Non-backgroundable PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Enables PiP for non-backgroundable video.";
 
-"FAKE_YT_VERSION" = "Fake YouTube version";
-"FAKE_YT_VERSION_DESC" = "Set YouTube version to %@ so that PiP button under video player may show.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTube version %@ is not tested and may not be supported by YouPiP, please upgrade YouTube to at least version %@";

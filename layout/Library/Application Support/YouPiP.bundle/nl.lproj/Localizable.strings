@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Niet-achtergrondgebonden PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Schakelt PiP in voor niet-achtergrondgebonden video.";
 
-"FAKE_YT_VERSION" = "Vals YouTube versie";
-"FAKE_YT_VERSION_DESC" = "Stel de YouTube-versie in op %@ zodat de PiP-knop onder de videospeler kan worden weergegeven.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTube versie %@ is niet getest en wordt waarschijnlijk niet ondersteunt door YouPiP, gelieve YouTube te upgraden naar het nieuwste versie %@.";

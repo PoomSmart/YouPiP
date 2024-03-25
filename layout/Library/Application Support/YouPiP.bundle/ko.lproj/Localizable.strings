@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "강제 백그라운드 PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "백그라운드가 되지 않는 영상에 PiP를 활성화합니다.";
 
-"FAKE_YT_VERSION" = "가짜 유튜브 버전";
-"FAKE_YT_VERSION_DESC" = "영상 플레이어 아래에 PiP 버튼이 나타날 수 있도록 YouTube 버전을 16.46.5로 설정합니다.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTube 버전 %@는 테스트되지 않았으며 YouPiP에서 지원하지 않을 수 있습니다. YouTube를 버전 %@ 이상으로 업그레이드하세요.";

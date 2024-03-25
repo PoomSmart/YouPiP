@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Принудительный PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Активирует PiP (Картинка в Картинке) для контента, не поддерживающего PiP изначально.";
 
-"FAKE_YT_VERSION" = "Имитация старой версии YouTube";
-"FAKE_YT_VERSION_DESC" = "Понижает версию YouTube до %@, в которой корректно отображаются кнопки под плеером.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "Данная версия YouTube (%@) еще не протестирована и, возможно, неподдерживается YouPiP-ом. Понизьте YouTube, как минимум, до версии %@";

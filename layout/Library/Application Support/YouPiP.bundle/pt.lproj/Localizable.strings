@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "PiP sem segundo plano";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Habilita PiP para vídeo sem segundo plano.";
 
-"FAKE_YT_VERSION" = "Versão Fake do YouTube";
-"FAKE_YT_VERSION_DESC" = "Define a versão do YouTube para %@ para que o botão PiP no player de vídeo possa ser exibido.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "A versão do YouTube %@ não foi testado e pode não ser compatível com o YouPiP, porfavor atualize o YouTube para pelo menos a versão %@";

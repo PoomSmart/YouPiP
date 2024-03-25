@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Nicht-hintergrundfähiges PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Aktiviert PiP für nicht im Hintergrund laufende Videos.";
 
-"FAKE_YT_VERSION" = "Fake YouTube-Version";
-"FAKE_YT_VERSION_DESC" = "Setzt die YouTube-Version auf %@, sodass die PiP-Taste unter dem Videoplayer eventuell angezeigt wird.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTube-Version %@ wurde nicht getestet und wird eventuell nicht von YouPiP unterstützt, bitte upgrade YouTube mindestens zur Version %@";

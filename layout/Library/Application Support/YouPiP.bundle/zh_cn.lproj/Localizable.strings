@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "强制画中画";
 "NON_BACKGROUNDABLE_PIP_DESC" = "为不支持后台播放的视频启用画中画。";
 
-"FAKE_YT_VERSION" = "伪装 YouTube 版本";
-"FAKE_YT_VERSION_DESC" = "将 YouTube App 的版本设为 %@ 以尝试显示播放器下方的画中画按钮。";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTube App 版本 %@ 未经测试，可能不支持 YouPiP 画中画插件。请将 YouTube 更新至版本 %@ 或以上。";

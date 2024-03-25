@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "PiP neredabil în fundal";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Activează PiP pentru videoclipuri ce nu pot fi redate în fundal.";
 
-"FAKE_YT_VERSION" = "Versiune YouTube falsă";
-"FAKE_YT_VERSION_DESC" = "Setare versiune YouTube la %@ pentru a permite apariția butonului PiP sub player-ul video.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "Această versiune YouTube (%@) nu a fost testată și este posibil să nu fie suportată de YouPiP. Vă rugăm să actualizați YouTube cel puțin la versiunea %@";

@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Arkaplansız PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Arkaplansız video için PiP'yi etkinleştirir.";
 
-"FAKE_YT_VERSION" = "Sahte YouTube sürümü";
-"FAKE_YT_VERSION_DESC" = "Video oynatıcının altındaki PiP düğmesinin gösterilebilmesi için YouTube sürümünü %@ olarak ayarlayın.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTube %@ sürümü test edilmemiştir ve YouPiP tarafından desteklenmeyebilir, lütfen YouTube'u en az %@ sürümüne yükseltin";

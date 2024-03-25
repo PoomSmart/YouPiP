@@ -9,8 +9,6 @@
 
 #define LOC(x) [tweakBundle localizedStringForKey:x value:nil table:nil]
 
-#define FEATURE_CUTOFF_VERSION @"16.46.5"
-
 static const NSInteger YouPiPSection = 200;
 
 @interface YTSettingsSectionItemManager (YouPiP)
@@ -23,7 +21,6 @@ extern BOOL UseTabBarPiPButton();
 extern BOOL NoMiniPlayerPiP();
 extern BOOL LegacyPiP();
 extern BOOL NonBackgroundable();
-extern BOOL FakeVersion();
 
 extern NSBundle *YouPiPBundle();
 
@@ -124,18 +121,6 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             settingItemId:0];
         [sectionItems addObject:nonBackgroundable];
     }
-    if ([currentVersion compare:FEATURE_CUTOFF_VERSION options:NSNumericSearch] == NSOrderedDescending) {
-        YTSettingsSectionItem *fakeVersion = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"FAKE_YT_VERSION")
-            titleDescription:[NSString stringWithFormat:LOC(@"FAKE_YT_VERSION_DESC"), FEATURE_CUTOFF_VERSION]
-            accessibilityIdentifier:nil
-            switchOn:FakeVersion()
-            switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
-                [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:FakeVersionKey];
-                return YES;
-            }
-            settingItemId:0];
-        [sectionItems addObject:fakeVersion];
-    }
     if ([delegate respondsToSelector:@selector(setSectionItems:forCategory:title:icon:titleDescription:headerHidden:)])
         [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName icon:nil titleDescription:nil headerHidden:NO];
     else
@@ -148,26 +133,6 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         return;
     }
     %orig;
-}
-
-%end
-
-BOOL loadWatchNextRequest = NO;
-
-%hook YTVersionUtils
-
-+ (NSString *)appVersion {
-    return FakeVersion() && loadWatchNextRequest ? FEATURE_CUTOFF_VERSION : %orig;
-}
-
-%end
-
-%hook YTWatchNextViewController
-
-- (void)loadWatchNextRequest:(id)arg1 withInitialWatchNextResponse:(id)arg2 disableUnloadModel:(BOOL)arg3 {
-    loadWatchNextRequest = YES;
-    %orig;
-    loadWatchNextRequest = NO;
 }
 
 %end

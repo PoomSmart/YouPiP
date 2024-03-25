@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "PiP non rétroactif";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Active le PiP pour les vidéos qui ne sont pas en arrière-plan";
 
-"FAKE_YT_VERSION" = "Fausse version YouTube";
-"FAKE_YT_VERSION_DESC" = "Définir la version de YouTube à %@ pour que le bouton PiP sous le lecteur vidéo puisse s'afficher";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "La version %@ de YouTube n'a pas été testée et peut ne pas être prise en charge par YouPiP, veuillez mettre à jour YouTube vers au moins la version %@";

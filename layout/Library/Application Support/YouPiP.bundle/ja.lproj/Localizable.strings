@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "非バックグラウンドPiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "非バックグラウンドのビデオのPiPを有効化します。";
 
-"FAKE_YT_VERSION" = "YouTubeのバージョンを偽装";
-"FAKE_YT_VERSION_DESC" = "YouTubeをバージョン %@ に設定し、ビデオプレーヤー下のPiPボタンに表示させます。";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTubeバージョン %@ はテストされておらずYouPiPがサポートされていません、YouTubeを最低でもバージョン %@ 以上にアップグレードしてください。";

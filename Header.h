@@ -11,6 +11,5 @@
 #define PiPActivationMethod2Key @"PiPActivationMethod2Key"
 #define NoMiniPlayerPiPKey @"NoMiniPlayerPiPKey"
 #define NonBackgroundableKey @"NonBackgroundableKey"
-#define FakeVersionKey @"FakeVersionKey"
 
 #endif

@@ -18,8 +18,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Non-backgroundable PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Cho phép PiP hoạt động với những video không cho chạy nền (không khuyến khích).";
 
-"FAKE_YT_VERSION" = "Fake phiên bản của YouTube";
-"FAKE_YT_VERSION_DESC" = "Đánh lừa phiên bản của YouTube hiện tại thành phiên bản %@ để tính năng Thêm nút kích hoạt PiP vào thanh Tab có thể hoạt động.";
-
 // Compatibility warning
 "UNSUPPORTED_YT_VERSION" = "YouTube phiên bản dưới %@ chưa được test và có thể không được hỗ trợ bởi YouPiP, vui lòng cập nhật YouTube lên ít nhất phiên bản %@";
