@@ -299,7 +299,12 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     CGPoint location = [[[event allTouches] anyObject] locationInView:button];
     if (CGRectContainsPoint(button.bounds, location)) {
         UIViewController *controller = [self.collectionNode closestViewController];
-        YTPlaybackStrippedWatchController *provider = [controller valueForKey:@"_metadataPanelStateProvider"];
+        YTPlaybackStrippedWatchController *provider;
+        @try {
+            provider = [controller valueForKey:@"_metadataPanelStateProvider"];
+        } @catch (id ex) {
+            provider = [controller valueForKey:@"_ngwMetadataPanelStateProvider"];
+        }
         YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
         YTPlayerViewController *playerViewController = [watchViewController valueForKey:@"_playerViewController"];
         FromUser = YES;
