@@ -236,7 +236,16 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
 }
 
+- (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig mediaPlayerResources:(id)mediaPlayerResources {
+    MLDefaultPlayerViewFactory *factory = [self valueForKey:@"_playerViewFactory"];
+    return [factory AVPlayerViewForVideo:video playerConfig:playerConfig];
+}
+
 - (BOOL)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    return NO;
+}
+
+- (BOOL)canQueuePlayerPlayVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig reloadContext:(id)reloadContext {
     return NO;
 }
 
