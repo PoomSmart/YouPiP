@@ -402,8 +402,9 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 %new(v@:@)
 - (void)didPressPiP:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
+    YTPlayerViewController *pvc = (YTPlayerViewController *)c.parentViewController;
     FromUser = YES;
-    bootstrapPiP([c delegate], YES);
+    bootstrapPiP(pvc, YES);
 }
 
 %end
