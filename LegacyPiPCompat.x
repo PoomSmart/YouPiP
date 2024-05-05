@@ -392,8 +392,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
         InjectYTHotConfig = (YTHotConfig *(*)(void))MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(WithInjection);
     } else {
-        NSString *currentVersion = [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
-        hasSampleBufferPiP = isLegacyVersion = [currentVersion compare:@"15.33.4" options:NSNumericSearch] == NSOrderedDescending;
+        hasSampleBufferPiP = isLegacyVersion = YES;
         hasSampleBufferPiP &= IS_IOS_OR_NEWER(iOS_13_0);
     }
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
