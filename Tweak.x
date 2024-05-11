@@ -11,7 +11,6 @@
 #import <YouTubeHeader/YTColor.h>
 #import <YouTubeHeader/YTColorPalette.h>
 #import <YouTubeHeader/YTCommonColorPalette.h>
-#import <YouTubeHeader/YTHotConfig.h>
 #import <YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h>
 #import <YouTubeHeader/YTLocalPlaybackController.h>
 #import <YouTubeHeader/YTMainAppControlsOverlayView.h>
@@ -46,7 +45,6 @@ BOOL FromUser = NO;
 BOOL PiPDisabled = NO;
 
 extern BOOL LegacyPiP();
-extern YTHotConfig *(*InjectYTHotConfig)(void);
 
 BOOL TweakEnabled() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:EnabledKey];
@@ -74,16 +72,6 @@ BOOL isPictureInPictureActive(MLPIPController *pip) {
 
 static NSString *PiPIconPath;
 static NSString *TabBarPiPIconPath;
-
-static void forcePictureInPicture(YTHotConfig *hotConfig, BOOL value) {
-    [hotConfig mediaHotConfig].enablePictureInPicture = value;
-    YTIIosMediaHotConfig *iosMediaHotConfig = hotConfig.hotConfigGroup.mediaHotConfig.iosMediaHotConfig;
-    iosMediaHotConfig.enablePictureInPicture = value;
-    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)])
-        iosMediaHotConfig.enablePipForNonBackgroundableContent = value && NonBackgroundable();
-    if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonPremiumUsers:)])
-        iosMediaHotConfig.enablePipForNonPremiumUsers = value;
-}
 
 static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
@@ -122,16 +110,6 @@ static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
 }
 
 static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
-    YTHotConfig *hotConfig;
-    @try {
-        if (InjectYTHotConfig)
-            hotConfig = InjectYTHotConfig();
-        else
-            hotConfig = [self valueForKey:@"_hotConfig"];
-    } @catch (id ex) {
-        hotConfig = [[self gimme] instanceForType:%c(YTHotConfig)];
-    }
-    forcePictureInPicture(hotConfig, YES);
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
     activatePiP(local, playPiP);
 }
@@ -489,11 +467,21 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %end
 
-%hook MLDefaultPlayerViewFactory
+%hook YTIIosMediaHotConfig
 
-- (MLAVPlayerLayerView *)AVPlayerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
-    forcePictureInPicture([self valueForKey:@"_hotConfig"], YES);
-    return %orig;
+%new(B@:)
+- (BOOL)enablePictureInPicture {
+    return YES;
+}
+
+%new(B@:)
+- (BOOL)enablePipForNonBackgroundableContent {
+    return NonBackgroundable();
+}
+
+%new(B@:)
+- (BOOL)enablePipForNonPremiumUsers {
+    return YES;
 }
 
 %end
@@ -525,20 +513,6 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 %end
 
-%hook YTSettingsSectionItemManager
-
-- (YTSettingsSectionItem *)pictureInPictureSectionItem {
-    forcePictureInPicture([self valueForKey:@"_hotConfig"], YES);
-    return %orig;
-}
-
-- (YTSettingsSectionItem *)pictureInPictureSectionItem:(id)arg1 {
-    forcePictureInPicture([self valueForKey:@"_hotConfig"], YES);
-    return %orig;
-}
-
-%end
-
 #pragma mark - Hacks
 
 BOOL YTSingleVideo_isLivePlayback_override = NO;
@@ -551,18 +525,9 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 %end
 
-static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
-    @try {
-        return [self valueForKey:@"_hotConfig"];
-    } @catch (id ex) {
-        return [[self valueForKey:@"_config"] valueForKey:@"_hotConfig"];
-    }
-}
-
 %hook YTPlayerPIPController
 
 - (BOOL)canInvokePictureInPicture {
-    forcePictureInPicture(getHotConfig(self), YES);
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;
@@ -570,7 +535,6 @@ static YTHotConfig *getHotConfig(YTPlayerPIPController *self) {
 }
 
 - (BOOL)canEnablePictureInPicture {
-    forcePictureInPicture(getHotConfig(self), YES);
     YTSingleVideo_isLivePlayback_override = YES;
     BOOL value = %orig;
     YTSingleVideo_isLivePlayback_override = NO;

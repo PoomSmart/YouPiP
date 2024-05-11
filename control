@@ -3,7 +3,7 @@ Name: YouPiP
 Depends: mobilesubstrate, firmware (>= 11.0), firmware (>= 14.0) | gsc.ipad | com.ps.forceinpicture | com.cabralcole.forceinpicture
 Version: 1.0.0
 Architecture: iphoneos-arm
-Description: Enable native PiP in YouTube app.
+Description: Enable native PiP in iOS YouTube app.
 Maintainer: PoomSmart
 Author: PoomSmart
 Section: Tweaks
