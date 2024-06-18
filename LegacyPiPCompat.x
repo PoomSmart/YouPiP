@@ -380,10 +380,11 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %ctor {
     if (!TweakEnabled()) return;
-    NSString *frameworkPath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
-    NSBundle *bundle = [NSBundle bundleWithPath:frameworkPath];
-    if (!bundle.loaded) [bundle load];
-    MSImageRef ref = MSGetImageByName([frameworkPath UTF8String]);
+    NSString *bundlePath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    if (bundle) [bundle load];
+    else bundlePath = NSBundle.mainBundle.executablePath;
+    MSImageRef ref = MSGetImageByName([bundlePath UTF8String]);
     InjectMLPIPController = (MLPIPController *(*)(void))MSFindSymbol(ref, "_InjectMLPIPController");
     if (InjectMLPIPController) {
         InjectYTSystemNotifications = (YTSystemNotifications *(*)(void))MSFindSymbol(ref, "_InjectYTSystemNotifications");
