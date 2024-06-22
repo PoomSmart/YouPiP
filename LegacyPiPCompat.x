@@ -18,8 +18,8 @@
 extern BOOL TweakEnabled();
 extern BOOL isPictureInPictureActive(MLPIPController *);
 
-BOOL hasSampleBufferPiP;
-BOOL isLegacyVersion;
+BOOL hasSampleBufferPiP = NO;
+BOOL isLegacyVersion = NO;
 
 BOOL LegacyPiP() {
     return isLegacyVersion ? YES : [[NSUserDefaults standardUserDefaults] boolForKey:CompatibilityModeKey];
@@ -392,10 +392,8 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
         InjectYTPlayerViewControllerConfig = (YTPlayerViewControllerConfig *(*)(void))MSFindSymbol(ref, "_InjectYTPlayerViewControllerConfig");
         InjectYTHotConfig = (YTHotConfig *(*)(void))MSFindSymbol(ref, "_InjectYTHotConfig");
         %init(WithInjection);
-    } else {
-        hasSampleBufferPiP = isLegacyVersion = YES;
-        hasSampleBufferPiP &= IS_IOS_OR_NEWER(iOS_13_0);
-    }
+    } else
+        hasSampleBufferPiP = IS_IOS_OR_NEWER(iOS_13_0);
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
         %init(Compat);
         if (!IS_IOS_OR_NEWER(iOS_13_0))

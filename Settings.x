@@ -88,7 +88,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         }
         settingItemId:0];
     [sectionItems addObject:miniPlayer];
-    if (IS_IOS_OR_NEWER(iOS_13_0) && [currentVersion compare:@"15.33.4" options:NSNumericSearch] == NSOrderedDescending) {
+    if (IS_IOS_OR_NEWER(iOS_13_0)) {
         YTSettingsSectionItem *legacyPiP = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"LEGACY_PIP")
             titleDescription:LOC(@"LEGACY_PIP_DESC")
             accessibilityIdentifier:nil
