@@ -488,22 +488,6 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
 
 #pragma mark - PiP Support, Backgroundable
 
-%hook YTIHamplayerConfig
-
-- (BOOL)enableBackgroundable {
-    return YES;
-}
-
-%end
-
-%hook YTIBackgroundOfflineSettingCategoryEntryRenderer
-
-- (BOOL)isBackgroundEnabled {
-    return YES;
-}
-
-%end
-
 %hook YTBackgroundabilityPolicy
 
 - (void)updateIsBackgroundableByUserSettings {
@@ -580,10 +564,6 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 %end
 
 %hook YTIPlayabilityStatus
-
-- (BOOL)isPlayableInBackground {
-    return YES;
-}
 
 - (BOOL)isPlayableInPictureInPicture {
     return YES;

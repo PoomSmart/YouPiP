@@ -380,7 +380,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %ctor {
     if (!TweakEnabled()) return;
-    NSString *bundlePath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework/Module_Framework", NSBundle.mainBundle.bundlePath];
+    NSString *bundlePath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework", NSBundle.mainBundle.bundlePath];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
     if (bundle) [bundle load];
     else bundlePath = NSBundle.mainBundle.executablePath;
