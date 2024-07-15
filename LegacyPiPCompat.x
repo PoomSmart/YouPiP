@@ -382,7 +382,10 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     if (!TweakEnabled()) return;
     NSString *bundlePath = [NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework", NSBundle.mainBundle.bundlePath];
     NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    if (bundle) [bundle load];
+    if (bundle) {
+        [bundle load];
+        bundlePath = [bundlePath stringByAppendingString:@"/Module_Framework"];
+    }
     else bundlePath = NSBundle.mainBundle.executablePath;
     MSImageRef ref = MSGetImageByName([bundlePath UTF8String]);
     InjectMLPIPController = (MLPIPController *(*)(void))MSFindSymbol(ref, "_InjectMLPIPController");
