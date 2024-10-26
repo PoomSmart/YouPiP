@@ -121,9 +121,11 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
             settingItemId:0];
         [sectionItems addObject:nonBackgroundable];
     }
-    if ([delegate respondsToSelector:@selector(setSectionItems:forCategory:title:icon:titleDescription:headerHidden:)])
-        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName icon:nil titleDescription:nil headerHidden:NO];
-    else
+    if ([delegate respondsToSelector:@selector(setSectionItems:forCategory:title:icon:titleDescription:headerHidden:)]) {
+        YTIIcon *icon = [%c(YTIIcon) new];
+        icon.iconType = YT_PIP;
+        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName icon:icon titleDescription:nil headerHidden:NO];
+    } else
         [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName titleDescription:nil headerHidden:NO];
 }
 
