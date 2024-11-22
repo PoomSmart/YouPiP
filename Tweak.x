@@ -223,11 +223,11 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     buttonView.accessibilityLabel = accessibilityLabel;
     buttonView.layer.cornerRadius = 16;
 
-    UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:CGRectMake(12, ([buttonView frame].size.height - 15.5) / 2, 15.5, 15.5)];
+    UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:CGRectMake(12, ([buttonView frame].size.height - 15) / 2, 15, 15)];
     buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:textColor];
 
     UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 9, 20, 14)];
-    buttonTitle.font = [UIFont boldSystemFontOfSize:12];
+    buttonTitle.font = [UIFont boldSystemFontOfSize:10];
     buttonTitle.textColor = textColor;
     buttonTitle.text = title;
 
@@ -245,7 +245,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     ELMCellNode *node = %orig;
     if ([self.accessibilityIdentifier isEqualToString:@"id.video.scrollable_action_bar"] && UseTabBarPiPButton() && !self.pipButton) {
         self.contentInset = UIEdgeInsetsMake(0, 0, 0, 73);
-        if (CGRectGetMaxX([node.layoutAttributes frame]) == [self contentSize].width) {
+        if ([self collectionView:self numberOfItemsInSection:0] - 1 == indexPath.row) {
             self.pipButton = makeUnderNewPlayerButton(node, @"PiP", @"Play in PiP");
             [self addSubview:self.pipButton];
 
