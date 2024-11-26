@@ -6,6 +6,7 @@
 #import <YouTubeHeader/YTSettingsSectionItem.h>
 #import <YouTubeHeader/YTSettingsSectionItemManager.h>
 #import <YouTubeHeader/YTAppSettingsSectionItemActionController.h>
+#import <YouTubeHeader/YTSettingsGroupData.h>
 
 #define LOC(x) [tweakBundle localizedStringForKey:x value:nil table:nil]
 
@@ -13,6 +14,10 @@ static const NSInteger YouPiPSection = 200;
 
 @interface YTSettingsSectionItemManager (YouPiP)
 - (void)updateYouPiPSectionWithEntry:(id)entry;
+@end
+
+@interface YTSettingsGroupData (YouGroupSettings)
++ (NSMutableArray *)tweaks;
 @end
 
 extern BOOL TweakEnabled();
@@ -135,6 +140,25 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         return;
     }
     %orig;
+}
+
+%end
+
+%hook YTSettingsGroupData
+
+- (NSArray *)orderedCategories {
+    if (self.type != 1) {
+        return %orig;
+    }
+
+    if (class_getClassMethod(%c(YTSettingsGroupData), @selector(tweaks))) {
+        return %orig;
+    }
+
+    NSMutableArray *mutableCategories = %orig.mutableCopy;
+    [mutableCategories insertObject:@(YouPiPSection) atIndex:0];
+
+    return [mutableCategories copy];
 }
 
 %end
