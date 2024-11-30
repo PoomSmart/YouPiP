@@ -2,6 +2,7 @@
 #import "Header.h"
 #import <YouTubeHeader/YTAlertView.h>
 #import <YouTubeHeader/YTHotConfig.h>
+#import <YouTubeHeader/YTSettingsGroupData.h>
 #import <YouTubeHeader/YTSettingsViewController.h>
 #import <YouTubeHeader/YTSettingsSectionItem.h>
 #import <YouTubeHeader/YTSettingsSectionItemManager.h>
