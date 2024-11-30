@@ -1,0 +1,22 @@
+// Settings
+
+"ENABLED" = "Włączone";
+"ENABLED_DESC" = "Wymaga ponownego uruchomienia aplikacji.";
+
+"USE_PIP_BUTTON" = "Użyj przycisku PiP";
+"USE_PIP_BUTTON_DESC" = "Dodaje przycisk PiP do interfejsu odtwarzacza aby aktywować funkcję PiP zamiast zamykać aplikację.";
+
+"USE_TAB_BAR_PIP_BUTTON" = "Użyj przycisku PiP pod odtwarzaczem";
+"USE_TAB_BAR_PIP_BUTTON_DESC" = "Dodaje przycisk PiP pod odtwarzaczem aby aktywować PiP zamiast zamykać aplikację. Wymagane jest ponowne uruchomienie aplikacji.";
+
+"DISABLE_PIP_MINI_PLAYER" = "Wyłącz PiP dla Mini Odtwarzacza";
+"DISABLE_PIP_MINI_PLAYER_DESC" = "Wyłącza funkcję PiP podczas odtwarzania wideo w miniodtwarzaczu.";
+
+"LEGACY_PIP" = "Starszy PiP";
+"LEGACY_PIP_DESC" = "Używa AVPlayerLayer dla PiP. Naprawia błąd przyspieszenia, ale może usunąć opcje UHD (2K/4K) z dowolnych filmów. Wymagane jest ponowne uruchomienie aplikacji.";
+
+"NON_BACKGROUNDABLE_PIP" = "Wymuś PIP";
+"NON_BACKGROUNDABLE_PIP_DESC" = "Włącza PiP dla filmów, które mają zablokowane odtwarzanie w tle.";
+
+// Compatibility warning
+"UNSUPPORTED_YT_VERSION" = "YWersja YouTube %@ nie jest przetestowana i może być niewspierana przez YouPiP. Proszę zaktualizować YouTube do ostatniej wersji %@";
