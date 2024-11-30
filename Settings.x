@@ -2,6 +2,7 @@
 #import "Header.h"
 #import <YouTubeHeader/YTAlertView.h>
 #import <YouTubeHeader/YTHotConfig.h>
+#import <YouTubeHeader/YTSettingsGroupData.h>
 #import <YouTubeHeader/YTSettingsViewController.h>
 #import <YouTubeHeader/YTSettingsSectionItem.h>
 #import <YouTubeHeader/YTSettingsSectionItemManager.h>
@@ -30,13 +31,24 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
 %hook YTAppSettingsPresentationData
 
-+ (NSArray *)settingsCategoryOrder {
-    NSArray *order = %orig;
-    NSMutableArray *mutableOrder = [order mutableCopy];
++ (NSMutableArray <NSNumber *> *)settingsCategoryOrder {
+    NSMutableArray <NSNumber *> *order = %orig;
     NSUInteger insertIndex = [order indexOfObject:@(1)];
     if (insertIndex != NSNotFound)
-        [mutableOrder insertObject:@(YouPiPSection) atIndex:insertIndex + 1]; // Add YouPiP under General (ID: 1) section
-    return mutableOrder;
+        [order insertObject:@(YouPiPSection) atIndex:insertIndex + 1];
+    return order;
+}
+
+%end
+
+%hook YTSettingsGroupData
+
+- (NSArray <NSNumber *> *)orderedCategories {
+    if (self.type != 1 || class_getClassMethod(objc_getClass("YTSettingsGroupData"), @selector(tweaks)))
+        return %orig;
+    NSMutableArray *mutableCategories = %orig.mutableCopy;
+    [mutableCategories insertObject:@(YouPiPSection) atIndex:0];
+    return mutableCategories.copy;
 }
 
 %end
