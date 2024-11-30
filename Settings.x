@@ -6,7 +6,6 @@
 #import <YouTubeHeader/YTSettingsSectionItem.h>
 #import <YouTubeHeader/YTSettingsSectionItemManager.h>
 #import <YouTubeHeader/YTAppSettingsSectionItemActionController.h>
-#import <YouTubeHeader/YTSettingsGroupData.h>
 
 #define LOC(x) [tweakBundle localizedStringForKey:x value:nil table:nil]
 
@@ -14,10 +13,6 @@ static const NSInteger YouPiPSection = 200;
 
 @interface YTSettingsSectionItemManager (YouPiP)
 - (void)updateYouPiPSectionWithEntry:(id)entry;
-@end
-
-@interface YTSettingsGroupData (YouGroupSettings)
-+ (NSMutableArray *)tweaks;
 @end
 
 extern BOOL TweakEnabled();
@@ -35,13 +30,24 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
 %hook YTAppSettingsPresentationData
 
-+ (NSArray *)settingsCategoryOrder {
-    NSArray *order = %orig;
-    NSMutableArray *mutableOrder = [order mutableCopy];
++ (NSMutableArray <NSNumber *> *)settingsCategoryOrder {
+    NSMutableArray <NSNumber *> *order = %orig;
     NSUInteger insertIndex = [order indexOfObject:@(1)];
     if (insertIndex != NSNotFound)
-        [mutableOrder insertObject:@(YouPiPSection) atIndex:insertIndex + 1]; // Add YouPiP under General (ID: 1) section
-    return mutableOrder;
+        [order insertObject:@(YouPiPSection) atIndex:insertIndex + 1];
+    return order;
+}
+
+%end
+
+%hook YTSettingsGroupData
+
+- (NSArray *)orderedCategories {
+    if (self.type != 1 || class_getClassMethod(objc_getClass("YTSettingsGroupData"), @selector(tweaks)))
+        return %orig;
+    NSMutableArray *mutableCategories = %orig.mutableCopy;
+    [mutableCategories insertObject:@(YouPiPSection) atIndex:0];
+    return mutableCategories.copy;
 }
 
 %end
@@ -140,25 +146,6 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
         return;
     }
     %orig;
-}
-
-%end
-
-%hook YTSettingsGroupData
-
-- (NSArray *)orderedCategories {
-    if (self.type != 1) {
-        return %orig;
-    }
-
-    if (class_getClassMethod(%c(YTSettingsGroupData), @selector(tweaks))) {
-        return %orig;
-    }
-
-    NSMutableArray *mutableCategories = %orig.mutableCopy;
-    [mutableCategories insertObject:@(YouPiPSection) atIndex:0];
-
-    return [mutableCategories copy];
 }
 
 %end
