@@ -136,9 +136,9 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
     if ([delegate respondsToSelector:@selector(setSectionItems:forCategory:title:icon:titleDescription:headerHidden:)]) {
         YTIIcon *icon = [%c(YTIIcon) new];
         icon.iconType = YT_PIP;
-        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName icon:icon titleDescription:nil headerHidden:NO];
+        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:LOC(@"SETTINGS_TITLE") icon:icon titleDescription:nil headerHidden:NO];
     } else
-        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:TweakName titleDescription:nil headerHidden:NO];
+        [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:LOC(@"SETTINGS_TITLE") titleDescription:nil headerHidden:NO];
 }
 
 - (void)updateSectionForCategory:(NSUInteger)category withEntry:(id)entry {
