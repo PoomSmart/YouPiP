@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "YouPiP";
+
 "ENABLED" = "Ativado";
 "ENABLED_DESC" = "A reinicialização do app é necessária.";
 

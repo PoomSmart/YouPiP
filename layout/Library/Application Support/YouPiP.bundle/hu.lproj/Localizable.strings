@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "YouPiP";
+
 "ENABLED" = "Engedélyezve";
 "ENABLED_DESC" = "Az alkalmazás újraindítása szükséges.";
 

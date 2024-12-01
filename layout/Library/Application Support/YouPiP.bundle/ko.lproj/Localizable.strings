@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "YouPiP";
+
 "ENABLED" = "활성화";
 "ENABLED_DESC" = "앱 재시작이 필요합니다.";
 

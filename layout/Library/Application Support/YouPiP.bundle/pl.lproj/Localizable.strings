@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "Odtwarzaj w oknie (PiP)";
+
 "ENABLED" = "Włączone";
 "ENABLED_DESC" = "Wymaga ponownego uruchomienia aplikacji.";
 

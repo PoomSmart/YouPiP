@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "YouPiP";
+
 "ENABLED" = "启用";
 "ENABLED_DESC" = "更改本设置后需要重启App。";
 
