@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "YouPiP";
+
 "ENABLED" = "Enabled";
 "ENABLED_DESC" = "Este necesară repornirea aplicației.";
 
