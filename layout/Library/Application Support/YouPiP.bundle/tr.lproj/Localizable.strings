@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "YouPiP";
+
 "ENABLED" = "Etkinleştir";
 "ENABLED_DESC" = "Uygulamanın yeniden başlatılması gerekir.";
 

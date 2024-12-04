@@ -1,5 +1,7 @@
 // Settings
 
+"SETTINGS_TITLE" = "YouPiP";
+
 "ENABLED" = "Kích hoạt";
 "ENABLED_DESC" = "Cần khởi động lại ứng dụng.";
 
