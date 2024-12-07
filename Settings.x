@@ -35,7 +35,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
     NSArray <NSNumber *> *order = %orig;
     NSUInteger insertIndex = [order indexOfObject:@(1)];
     if (insertIndex != NSNotFound) {
-        NSMutableArray *mutableOrder = order.mutableCopy;
+        NSMutableArray <NSNumber *> *mutableOrder = order.mutableCopy;
         [mutableOrder insertObject:@(YouPiPSection) atIndex:insertIndex + 1];
         order = mutableOrder.copy;
     }
