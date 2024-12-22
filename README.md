@@ -7,3 +7,5 @@ Activate PiP by playing the video and dismissing the app, or tapping PiP button 
 ## Build it yourself
 
 Use iOS 15+ SDK and latest THEOS.
+
+Also clone [YTVideoOverlay](https://github.com/PoomSmart/YTVideoOverlay) and put it in the same directory as this project.
