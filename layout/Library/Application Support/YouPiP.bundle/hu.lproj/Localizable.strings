@@ -20,5 +20,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Háttérben nem használható PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Engedélyezi a PiP-t a nem háttérrel ellátott videókhoz.";
 
-// Compatibility warning
-"UNSUPPORTED_YT_VERSION" = "A YouTube %@ verziója nincs tesztelve, és előfordulhat, hogy a YouPiP nem támogatja. Kérjük, frissítse a YouTube-ot legalább %@ verzióra";
+// Overlay
+"POSITION" = "PiP gomb pozíciója";

@@ -20,5 +20,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Wymuś PIP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Włącza PiP dla filmów, które mają zablokowane odtwarzanie w tle.";
 
-// Compatibility warning
-"UNSUPPORTED_YT_VERSION" = "YWersja YouTube %@ nie jest przetestowana i może być niewspierana przez YouPiP. Proszę zaktualizować YouTube do ostatniej wersji %@";
+// Overlay
+"POSITION" = "Pozycja przycisku PiP";

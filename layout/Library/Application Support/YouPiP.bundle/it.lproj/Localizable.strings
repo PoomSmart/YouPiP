@@ -20,5 +20,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Non sullo sfondo PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Attiva PiP per i video che non possono essere messi sullo sfondo.";
 
-// Compatibility warning
-"UNSUPPORTED_YT_VERSION" = "YouTube versione %@ non è stato testato e potrebbe non essere supportato da YouPiP, ti preghiamo di aggiorare YouTube almeno alla versione %@";
+// Overlay
+"POSITION" = "Posizione del bottone PiP";

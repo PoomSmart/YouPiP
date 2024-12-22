@@ -20,6 +20,5 @@
 "NON_BACKGROUNDABLE_PIP" = "PiP للفيديوهات التي لا تعمل في الخلفية";
 "NON_BACKGROUNDABLE_PIP_DESC" = "تفعيل PiP للفيديوهات التي لا تعمل في الخلفية.";
 
-
-// Compatibility warning
-"UNSUPPORTED_YT_VERSION" = "إصدار يوتيوب رقم %@ لم يتم اختباره، وقد لا يكون مدعوماً من YouPiP. رجاءً قم بتحديث يوتيوب إلى إصدار %@ على الأقل.";
+// Overlay
+"POSITION" = "موضع زر PiP";

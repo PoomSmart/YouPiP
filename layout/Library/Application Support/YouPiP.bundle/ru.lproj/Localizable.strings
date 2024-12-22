@@ -20,5 +20,5 @@
 "NON_BACKGROUNDABLE_PIP" = "Принудительный PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Активирует PiP (Картинка в Картинке) для контента, не поддерживающего PiP изначально.";
 
-// Compatibility warning
-"UNSUPPORTED_YT_VERSION" = "Данная версия YouTube (%@) еще не протестирована и, возможно, неподдерживается YouPiP-ом. Понизьте YouTube, как минимум, до версии %@";
+// Overlay
+"POSITION" = "Позиция кнопки PiP";

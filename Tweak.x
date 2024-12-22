@@ -26,13 +26,17 @@
 #import <YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h>
 #import <YouTubeHeader/YTTouchFeedbackController.h>
 #import <YouTubeHeader/YTWatchViewController.h>
+#import "../YTVideoOverlay/Header.h"
+#import "../YTVideoOverlay/Init.x"
 
-#define PiPButtonType 801
-
-@interface YTMainAppControlsOverlayView (YP)
+@interface YTMainAppControlsOverlayView (YouPiP)
 @property (retain, nonatomic) YTQTMButton *pipButton;
 - (void)didPressPiP:(id)arg;
-- (UIImage *)pipImage;
+@end
+
+@interface YTInlinePlayerBarContainerView (YouPiP)
+@property (retain, nonatomic) YTQTMButton *pipButton;
+- (void)didPressPiP:(id)arg;
 @end
 
 @interface ASCollectionView (YP)
@@ -47,7 +51,8 @@ BOOL PiPDisabled = NO;
 extern BOOL LegacyPiP();
 
 BOOL TweakEnabled() {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:EnabledKey];
+    id value = [[NSUserDefaults standardUserDefaults] objectForKey:EnabledKey];
+    return value ? [value boolValue] : YES;
 }
 
 BOOL UsePiPButton() {
@@ -143,7 +148,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 %hook YTIIcon
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
-    if (self.iconType == PiPButtonType) {
+    if (self.iconType == YT_PICTURE_IN_PICTURE) {
         UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[[%c(YTPageStyleController) currentColorPalette] textPrimary]];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
@@ -157,7 +162,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", YT_PICTURE_IN_PICTURE, @"YouPiP.pip.command");
         if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
     }
@@ -166,7 +171,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 - (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
     if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", PiPButtonType, @"YouPiP.pip.command");
+        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", YT_PICTURE_IN_PICTURE, @"YouPiP.pip.command");
         if (![renderers containsObject:PiPButton])
             [renderers addObject:PiPButton];
     }
@@ -296,72 +301,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
 
 #pragma mark - Overlay PiP Button
 
-%hook YTMainAppVideoPlayerOverlayViewController
-
-- (void)updateTopRightButtonAvailability {
-    %orig;
-    YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
-    YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
-    c.pipButton.hidden = !UsePiPButton();
-    [c setNeedsLayout];
-}
-
-%end
-
-static void createPiPButton(YTMainAppControlsOverlayView *self) {
-    if (self) {
-        CGFloat padding = [[self class] topButtonAdditionalPadding];
-        UIImage *image = [self pipImage];
-        self.pipButton = [self buttonWithImage:image accessibilityLabel:@"pip" verticalContentPadding:padding];
-        self.pipButton.hidden = YES;
-        self.pipButton.alpha = 0;
-        [self.pipButton addTarget:self action:@selector(didPressPiP:) forControlEvents:UIControlEventTouchUpInside];
-        @try {
-            [[self valueForKey:@"_topControlsAccessibilityContainerView"] addSubview:self.pipButton];
-        } @catch (id ex) {
-            [self addSubview:self.pipButton];
-        }
-    }
-}
-
-static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
-    if (UsePiPButton())
-        [controls insertObject:self.pipButton atIndex:0];
-    return controls;
-}
-
-%hook YTMainAppControlsOverlayView
-
-%property (retain, nonatomic) YTQTMButton *pipButton;
-
-- (id)initWithDelegate:(id)delegate {
-    self = %orig;
-    createPiPButton(self);
-    return self;
-}
-
-- (id)initWithDelegate:(id)delegate autoplaySwitchEnabled:(BOOL)autoplaySwitchEnabled {
-    self = %orig;
-    createPiPButton(self);
-    return self;
-}
-
-- (NSMutableArray *)topButtonControls {
-    return topControls(self, %orig);
-}
-
-- (NSMutableArray *)topControls {
-    return topControls(self, %orig);
-}
-
-- (void)setTopOverlayVisible:(BOOL)visible isAutonavCanceledState:(BOOL)canceledState {
-    if (UsePiPButton())
-        self.pipButton.alpha = canceledState || !visible ? 0.0 : 1.0;
-    %orig;
-}
-
-%new(@@:)
-- (UIImage *)pipImage {
+static UIImage *pipImage() {
     static UIImage *image = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -373,9 +313,61 @@ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutable
     return image;
 }
 
+%hook YTMainAppControlsOverlayView
+
+%property (retain, nonatomic) YTQTMButton *pipButton;
+
+- (id)initWithDelegate:(id)delegate {
+    self = %orig;
+    self.pipButton = [self createButton:TweakName accessibilityLabel:@"pip" selector:@selector(didPressPiP:)];
+    return self;
+}
+
+- (id)initWithDelegate:(id)delegate autoplaySwitchEnabled:(BOOL)autoplaySwitchEnabled {
+    self = %orig;
+    self.pipButton = [self createButton:TweakName accessibilityLabel:@"pip" selector:@selector(didPressPiP:)];
+    return self;
+}
+
+- (YTQTMButton *)button:(NSString *)tweakId {
+    return [tweakId isEqualToString:TweakName] ? self.pipButton : %orig;
+}
+
+- (UIImage *)buttonImage:(NSString *)tweakId {
+    return [tweakId isEqualToString:TweakName] ? pipImage() : %orig;
+}
+
 %new(v@:@)
 - (void)didPressPiP:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
+    YTPlayerViewController *pvc = (YTPlayerViewController *)c.parentViewController;
+    FromUser = YES;
+    bootstrapPiP(pvc, YES);
+}
+
+%end
+
+%hook YTInlinePlayerBarContainerView
+
+%property (retain, nonatomic) YTQTMButton *pipButton;
+
+- (id)init {
+    self = %orig;
+    self.pipButton = [self createButton:TweakName accessibilityLabel:@"pip" selector:@selector(didPressPiP:)];
+    return self;
+}
+
+- (YTQTMButton *)button:(NSString *)tweakId {
+    return [tweakId isEqualToString:TweakName] ? self.pipButton : %orig;
+}
+
+- (UIImage *)buttonImage:(NSString *)tweakId {
+    return [tweakId isEqualToString:TweakName] ? pipImage() : %orig;
+}
+
+%new(v@:@)
+- (void)didPressPiP:(id)arg {
+    YTMainAppVideoPlayerOverlayViewController *c = [self.delegate valueForKey:@"_delegate"];
     YTPlayerViewController *pvc = (YTPlayerViewController *)c.parentViewController;
     FromUser = YES;
     bootstrapPiP(pvc, YES);
@@ -593,5 +585,7 @@ NSBundle *YouPiPBundle() {
     NSBundle *tweakBundle = YouPiPBundle();
     PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
     TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
+    initYTVideoOverlay(TweakName);
+    [%c(YTSettingsSectionItemManager) setTweak:TweakName hasOwnToggle:YES];
     %init;
 }

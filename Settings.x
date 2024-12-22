@@ -1,6 +1,5 @@
 #import <version.h>
 #import "Header.h"
-#import <YouTubeHeader/YTAlertView.h>
 #import <YouTubeHeader/YTHotConfig.h>
 #import <YouTubeHeader/YTSettingsGroupData.h>
 #import <YouTubeHeader/YTSettingsViewController.h>
@@ -24,10 +23,6 @@ extern BOOL LegacyPiP();
 extern BOOL NonBackgroundable();
 
 extern NSBundle *YouPiPBundle();
-
-NSString *currentVersion;
-
-static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 
 %hook YTAppSettingsPresentationData
 
@@ -138,7 +133,7 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
     }
     if ([delegate respondsToSelector:@selector(setSectionItems:forCategory:title:icon:titleDescription:headerHidden:)]) {
         YTIIcon *icon = [%c(YTIIcon) new];
-        icon.iconType = YT_PIP;
+        icon.iconType = YT_PICTURE_IN_PICTURE;
         [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:LOC(@"SETTINGS_TITLE") icon:icon titleDescription:nil headerHidden:NO];
     } else
         [delegate setSectionItems:sectionItems forCategory:YouPiPSection title:LOC(@"SETTINGS_TITLE") titleDescription:nil headerHidden:NO];
@@ -153,19 +148,3 @@ static NSString *YouPiPWarnVersionKey = @"YouPiPWarnVersionKey";
 }
 
 %end
-
-%ctor {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    currentVersion = [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey];
-    if (![defaults boolForKey:YouPiPWarnVersionKey] && [currentVersion compare:@(OS_STRINGIFY(MIN_YOUTUBE_VERSION)) options:NSNumericSearch] != NSOrderedDescending) {
-        [defaults setBool:YES forKey:YouPiPWarnVersionKey];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            NSBundle *tweakBundle = YouPiPBundle();
-            YTAlertView *alertView = [%c(YTAlertView) infoDialog];
-            alertView.title = TweakName;
-            alertView.subtitle = [NSString stringWithFormat:LOC(@"UNSUPPORTED_YT_VERSION"), currentVersion, @(OS_STRINGIFY(MIN_YOUTUBE_VERSION))];
-            [alertView show];
-        });
-    }
-    %init;
-}

@@ -20,5 +20,5 @@
 "NON_BACKGROUNDABLE_PIP" = "PiP sin segundo plano";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Habilita PiP para videos sin segundo plano.";
 
-// Compatibility warning
-"UNSUPPORTED_YT_VERSION" = "La versión %@ de YouTube no ha sido probada y puede no ser compatible con YouPiP, por favor actualice YouTube al menos a la versión %@";
+// Overlay
+"POSITION" = "Posición del botón PiP";
