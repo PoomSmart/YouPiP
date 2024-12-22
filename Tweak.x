@@ -19,7 +19,6 @@
 #import <YouTubeHeader/YTPlaybackStrippedWatchController.h>
 #import <YouTubeHeader/YTPlayerPIPController.h>
 #import <YouTubeHeader/YTPlayerStatus.h>
-#import <YouTubeHeader/YTSettingsSectionItem.h>
 #import <YouTubeHeader/YTSettingsSectionItemManager.h>
 #import <YouTubeHeader/YTSlimVideoDetailsActionView.h>
 #import <YouTubeHeader/YTSlimVideoScrollableActionBarCellController.h>
