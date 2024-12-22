@@ -586,6 +586,6 @@ NSBundle *YouPiPBundle() {
     PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
     TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
     initYTVideoOverlay(TweakName);
-    [%c(YTSettingsSectionItemManager) setTweak:TweakName hasOwnToggle:YES];
+    [%c(YTSettingsSectionItemManager) setTweak:TweakName withEnabledKey:PiPActivationMethodKey];
     %init;
 }
