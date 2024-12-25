@@ -29,12 +29,10 @@
 #import "../YTVideoOverlay/Init.x"
 
 @interface YTMainAppControlsOverlayView (YouPiP)
-@property (retain, nonatomic) YTQTMButton *pipButton;
 - (void)didPressPiP:(id)arg;
 @end
 
 @interface YTInlinePlayerBarContainerView (YouPiP)
-@property (retain, nonatomic) YTQTMButton *pipButton;
 - (void)didPressPiP:(id)arg;
 @end
 
@@ -314,24 +312,6 @@ static UIImage *pipImage() {
 
 %hook YTMainAppControlsOverlayView
 
-%property (retain, nonatomic) YTQTMButton *pipButton;
-
-- (id)initWithDelegate:(id)delegate {
-    self = %orig;
-    self.pipButton = [self createButton:TweakName accessibilityLabel:@"pip" selector:@selector(didPressPiP:)];
-    return self;
-}
-
-- (id)initWithDelegate:(id)delegate autoplaySwitchEnabled:(BOOL)autoplaySwitchEnabled {
-    self = %orig;
-    self.pipButton = [self createButton:TweakName accessibilityLabel:@"pip" selector:@selector(didPressPiP:)];
-    return self;
-}
-
-- (YTQTMButton *)button:(NSString *)tweakId {
-    return [tweakId isEqualToString:TweakName] ? self.pipButton : %orig;
-}
-
 - (UIImage *)buttonImage:(NSString *)tweakId {
     return [tweakId isEqualToString:TweakName] ? pipImage() : %orig;
 }
@@ -347,18 +327,6 @@ static UIImage *pipImage() {
 %end
 
 %hook YTInlinePlayerBarContainerView
-
-%property (retain, nonatomic) YTQTMButton *pipButton;
-
-- (id)init {
-    self = %orig;
-    self.pipButton = [self createButton:TweakName accessibilityLabel:@"pip" selector:@selector(didPressPiP:)];
-    return self;
-}
-
-- (YTQTMButton *)button:(NSString *)tweakId {
-    return [tweakId isEqualToString:TweakName] ? self.pipButton : %orig;
-}
 
 - (UIImage *)buttonImage:(NSString *)tweakId {
     return [tweakId isEqualToString:TweakName] ? pipImage() : %orig;
@@ -584,7 +552,10 @@ NSBundle *YouPiPBundle() {
     NSBundle *tweakBundle = YouPiPBundle();
     PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
     TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
-    initYTVideoOverlay(TweakName);
-    [%c(YTSettingsSectionItemManager) setTweak:TweakName withEnabledKey:PiPActivationMethodKey];
+    initYTVideoOverlay(TweakName, @{
+        AccessibilityLabelKey: @"PiP",
+        SelectorKey: @"didPressPiP:",
+        ToggleKey: PiPActivationMethodKey
+    });
     %init;
 }
