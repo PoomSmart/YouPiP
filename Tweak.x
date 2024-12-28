@@ -8,6 +8,7 @@
 #import <YouTubeHeader/MLPIPController.h>
 #import <YouTubeHeader/QTMIcon.h>
 #import <YouTubeHeader/YTBackgroundabilityPolicy.h>
+#import <YouTubeHeader/YTBackgroundabilityPolicyImpl.h>
 #import <YouTubeHeader/YTColor.h>
 #import <YouTubeHeader/YTColorPalette.h>
 #import <YouTubeHeader/YTCommonColorPalette.h>
@@ -452,6 +453,25 @@ static UIImage *pipImage() {
 - (void)updateIsBackgroundableByUserSettings {
     %orig;
     [self setValue:@(YES) forKey:@"_backgroundableByUserSettings"];
+}
+
+- (void)updateIsPictureInPicturePlayableByUserSettings {
+    %orig;
+    [self setValue:@(YES) forKey:@"_playableInPiPByUserSettings"];
+}
+
+%end
+
+%hook YTBackgroundabilityPolicyImpl
+
+- (void)updateIsBackgroundableByUserSettings {
+    %orig;
+    [self setValue:@(YES) forKey:@"_backgroundableByUserSettings"];
+}
+
+- (void)updateIsPictureInPicturePlayableByUserSettings {
+    %orig;
+    [self setValue:@(YES) forKey:@"_playableInPiPByUserSettings"];
 }
 
 %end
