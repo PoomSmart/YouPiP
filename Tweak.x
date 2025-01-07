@@ -57,12 +57,16 @@ BOOL UsePiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethodKey];
 }
 
-BOOL NoMiniPlayerPiP() {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:NoMiniPlayerPiPKey];
-}
-
 BOOL UseTabBarPiPButton() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:PiPActivationMethod2Key];
+}
+
+BOOL UseAllPiPMethod() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:PiPAllActivationMethodKey];
+}
+
+BOOL NoMiniPlayerPiP() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:NoMiniPlayerPiPKey];
 }
 
 BOOL NonBackgroundable() {
@@ -373,13 +377,12 @@ static UIImage *pipImage() {
 
 - (void)activatePiPController {
     %orig;
-    if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
-        MLHAMSBDLSampleBufferRenderingView *view = [self valueForKey:@"_HAMPlayerView"];
-        CGSize size = [self renderSizeForView:view];
-        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
-        [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
-        [avpip sampleBufferDisplayLayerDidAppear];
-    }
+    if (IS_IOS_OR_NEWER(iOS_15_0) || LegacyPiP()) return;
+    MLHAMSBDLSampleBufferRenderingView *view = [self valueForKey:@"_HAMPlayerView"];
+    CGSize size = [self renderSizeForView:view];
+    AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+    [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
+    [avpip sampleBufferDisplayLayerDidAppear];
 }
 
 - (BOOL)isPictureInPictureSupported {
@@ -403,26 +406,23 @@ static UIImage *pipImage() {
 
 %new(v@:{CGSize=dd})
 - (void)renderingViewSampleBufferFrameSizeDidChange:(CGSize)size {
-    if (!IS_IOS_OR_NEWER(iOS_15_0) && size.width && size.height) {
-        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
-        [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
-    }
+    if (IS_IOS_OR_NEWER(iOS_15_0) || !size.width || !size.height) return;
+    AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+    [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
 }
 
 %new(v@:@)
 - (void)appWillEnterForeground:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
-        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
-        [avpip sampleBufferDisplayLayerDidAppear];
-    }
+    if (IS_IOS_OR_NEWER(iOS_15_0) || LegacyPiP()) return;
+    AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+    [avpip sampleBufferDisplayLayerDidAppear];
 }
 
 %new(v@:@)
 - (void)appWillEnterBackground:(id)arg1 {
-    if (!IS_IOS_OR_NEWER(iOS_15_0) && !LegacyPiP()) {
-        AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
-        [avpip sampleBufferDisplayLayerDidDisappear];
-    }
+    if (IS_IOS_OR_NEWER(iOS_15_0) || LegacyPiP()) return;
+    AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+    [avpip sampleBufferDisplayLayerDidDisappear];
 }
 
 %end
@@ -510,6 +510,10 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 }
 
 - (void)appWillResignActive:(id)arg1 {
+    if (UseAllPiPMethod()) {
+        %orig;
+        return;
+    }
     // If PiP button on, PiP doesn't activate on app resign unless it's from user
     BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
     BOOL disablePiP = hasPiPButton && !FromUser;

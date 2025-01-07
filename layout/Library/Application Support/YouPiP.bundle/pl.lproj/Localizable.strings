@@ -11,6 +11,9 @@
 "USE_TAB_BAR_PIP_BUTTON" = "Użyj przycisku PiP pod odtwarzaczem";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "Dodaje przycisk PiP pod odtwarzaczem aby aktywować PiP zamiast zamykać aplikację. Wymagane jest ponowne uruchomienie aplikacji.";
 
+"USE_ALL_PIP" = "Nieograniczone aktywowanie PiP";
+"USE_ALL_PIP_DESC" = "Pozwala na aktywowanie PiP poprzez dotknięcie przycisku PiP na nakładce sterowania wideo, przycisku PiP na pasku kart wideo lub po prostu przez zamknięcie aplikacji w tym samym czasie.";
+
 "DISABLE_PIP_MINI_PLAYER" = "Wyłącz PiP dla Mini Odtwarzacza";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Wyłącza funkcję PiP podczas odtwarzania wideo w miniodtwarzaczu.";
 

@@ -11,6 +11,9 @@
 "USE_TAB_BAR_PIP_BUTTON" = "動画タブバーPiPボタンを使用";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "ビデオタブバーにPiPボタンを追加しアプリを終了する代わりにPiPを起動できるようにします。アプリの再起動が必要です。";
 
+"USE_ALL_PIP" = "PiPの無制限アクティベーション";
+"USE_ALL_PIP_DESC" = "ビデオコントロールオーバーレイのPiPボタン、ビデオタブバーのPiPボタンをタップするか、アプリを終了するだけでPiPを起動できるようにします。";
+
 "DISABLE_PIP_MINI_PLAYER" = "ミニプレーヤーでのPiPを無効化";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "ミニプレーヤーで再生している際にはPiPを無効化します。";
 

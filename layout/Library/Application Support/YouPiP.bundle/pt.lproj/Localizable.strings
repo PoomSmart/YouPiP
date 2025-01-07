@@ -11,6 +11,9 @@
 "USE_TAB_BAR_PIP_BUTTON" = "Usar o Botão PiP da Barra de Guia de Vídeo";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "Adiciona um botão PiP na barra de guia de vídeo para ativar o PiP em vez de dispensar o aplicativo. A reinicialização do app é necessária.";
 
+"USE_ALL_PIP" = "Ativação PiP irrestrita";
+"USE_ALL_PIP_DESC" = "Permite que o PiP seja ativado tocando no botão PiP da sobreposição de controle de vídeo, no botão PiP da barra de guia de vídeo ou simplesmente dispensando o aplicativo ao mesmo tempo.";
+
 "DISABLE_PIP_MINI_PLAYER" = "Desativar PiP para Mini Player";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Desativa o PiP durante a reprodução de um vídeo no mini player.";
 

@@ -11,6 +11,9 @@
 "USE_TAB_BAR_PIP_BUTTON" = "Usa Bottone PiP nella Barra dei Tab";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "Aggiunge un bottone PiP nella Barra dei Tab per attivare il PiP invece di chiudere l'app. È richiesto un riavvio dell'app.";
 
+"USE_ALL_PIP" = "Attivazione PiP senza restrizioni";
+"USE_ALL_PIP_DESC" = "Consenti di attivare PiP toccando il pulsante PiP nella sovrimpressione dei controlli video, il pulsante PiP nella barra dei tab video o semplicemente chiudendo l'app contemporaneamente.";
+
 "DISABLE_PIP_MINI_PLAYER" = "Disattiva PiP per Mini Player";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Disattiva PiP durante la riproduzione nel mini player.";
 

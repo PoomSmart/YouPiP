@@ -11,6 +11,9 @@
 "USE_TAB_BAR_PIP_BUTTON" = "Video Sekme Çubuğu PiP Düğmesini Kullan";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "Uygulamayı arkaplana almak yerine PiP'yi etkinleştirmek için video sekme çubuğuna bir PiP düğmesi ekler. Uygulamanın yeniden başlatılması gerekir.";
 
+"USE_ALL_PIP" = "Sınırsız PiP Etkinleştirme";
+"USE_ALL_PIP_DESC" = "PiP'yi video kontrol katmanı PiP düğmesine, video sekme çubuğu PiP düğmesine dokunarak veya uygulamayı kapatarak aynı anda etkinleştirmeye izin verir.";
+
 "DISABLE_PIP_MINI_PLAYER" = "Mini Oynatıcı için PiP'yi Devre Dışı Bırak";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Mini oynatıcıda video oynatırken PiP'yi devre dışı bırakır.";
 

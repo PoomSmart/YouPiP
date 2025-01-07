@@ -9,6 +9,7 @@
 #define CompatibilityModeKey @"CompatibilityModeKey"
 #define PiPActivationMethodKey @"PiPActivationMethodKey"
 #define PiPActivationMethod2Key @"PiPActivationMethod2Key"
+#define PiPAllActivationMethodKey @"PiPAllActivationMethodKey"
 #define NoMiniPlayerPiPKey @"NoMiniPlayerPiPKey"
 #define NonBackgroundableKey @"NonBackgroundableKey"
 

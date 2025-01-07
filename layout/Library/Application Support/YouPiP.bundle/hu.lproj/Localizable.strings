@@ -11,6 +11,9 @@
 "USE_TAB_BAR_PIP_BUTTON" = "Használja a Video Tab Bar PiP gombot";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "Hozzáad egy PiP gombot a videó lap sávjához a kép a képben funkció aktiválásához az alkalmazás elvetése helyett. Az alkalmazás újraindítása szükséges.";
 
+"USE_ALL_PIP" = "Korlátlan PiP aktiválás";
+"USE_ALL_PIP_DESC" = "Engedélyezze a PiP aktiválását a videovezérlő fedvény PiP gombjának megérintésével, a videó lap sáv PiP gombjával, vagy egyszerűen az alkalmazás elvetésével egyidejűleg.";
+
 "DISABLE_PIP_MINI_PLAYER" = "A PiP letiltása a Mini Player számára";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Letiltja a PiP-t videó lejátszása közben a minilejátszóban.";
 

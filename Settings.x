@@ -18,6 +18,7 @@ static const NSInteger YouPiPSection = 200;
 extern BOOL TweakEnabled();
 extern BOOL UsePiPButton();
 extern BOOL UseTabBarPiPButton();
+extern BOOL UseAllPiPMethod();
 extern BOOL NoMiniPlayerPiP();
 extern BOOL LegacyPiP();
 extern BOOL NonBackgroundable();
@@ -88,6 +89,16 @@ extern NSBundle *YouPiPBundle();
         }
         settingItemId:0];
     [sectionItems addObject:activationMethod2];
+    YTSettingsSectionItem *allActivationMethod = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"USE_ALL_PIP")
+        titleDescription:LOC(@"USE_ALL_PIP_DESC")
+        accessibilityIdentifier:nil
+        switchOn:UseAllPiPMethod()
+        switchBlock:^BOOL (YTSettingsCell *cell, BOOL enabled) {
+            [[NSUserDefaults standardUserDefaults] setBool:enabled forKey:PiPAllActivationMethodKey];
+            return YES;
+        }
+        settingItemId:0];
+    [sectionItems addObject:allActivationMethod];
     YTSettingsSectionItem *miniPlayer = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"DISABLE_PIP_MINI_PLAYER")
         titleDescription:LOC(@"DISABLE_PIP_MINI_PLAYER_DESC")
         accessibilityIdentifier:nil

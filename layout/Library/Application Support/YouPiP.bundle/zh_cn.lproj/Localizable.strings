@@ -11,6 +11,9 @@
 "USE_TAB_BAR_PIP_BUTTON" = "使用视频标签栏画中画按钮";
 "USE_TAB_BAR_PIP_BUTTON_DESC" = "在视频标签栏处显示用于手动启动画中画的按钮。开启本设置后，返回主屏幕时将不会启动画中画。";
 
+"USE_ALL_PIP" = "无限制画中画激活";
+"USE_ALL_PIP_DESC" = "允许通过点击视频控制覆盖层的画中画按钮、视频标签栏的画中画按钮或直接退出应用来激活画中画。";
+
 "DISABLE_PIP_MINI_PLAYER" = "禁用迷你播放器画中画";
 "DISABLE_PIP_MINI_PLAYER_DESC" = "在使用迷你播放器时禁用画中画。";
 
