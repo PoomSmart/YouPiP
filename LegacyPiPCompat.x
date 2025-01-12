@@ -192,18 +192,14 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %hook MLPIPController
 
 - (void)activatePiPController {
-    if (!isPictureInPictureActive(self)) {
-        AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
-        if (!pip) {
-            MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
-            if (avpip) {
-                AVPlayerLayer *playerLayer = [avpip playerLayer];
-                pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
-                [self setValue:pip forKey:@"_pictureInPictureController"];
-                pip.delegate = self;
-            }
-        }
-    }
+    if (isPictureInPictureActive(self)) return;
+    AVPictureInPictureController *pip = [self valueForKey:@"_pictureInPictureController"];
+    if (pip) return;
+    MLAVPIPPlayerLayerView *avpip = [self valueForKey:@"_AVPlayerView"];
+    AVPlayerLayer *playerLayer = [avpip playerLayer];
+    pip = [[AVPictureInPictureController alloc] initWithPlayerLayer:playerLayer];
+    [self setValue:pip forKey:@"_pictureInPictureController"];
+    pip.delegate = self;
 }
 
 - (void)deactivatePiPController {
@@ -324,7 +320,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %new(v@:{CGSize=dd})
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)size {}
 
-%new(v@:B)
+%new(v@:c)
 - (void)setRequiresLinearPlayback:(BOOL)linear {}
 
 %new(v@:)
@@ -369,7 +365,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %hook AVPictureInPictureController
 
-%new(v@:B)
+%new(v@:c)
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {}
 
 %end

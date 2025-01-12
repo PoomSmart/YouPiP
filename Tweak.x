@@ -80,7 +80,7 @@ BOOL isPictureInPictureActive(MLPIPController *pip) {
 static NSString *PiPIconPath;
 static NSString *TabBarPiPIconPath;
 
-static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
+static void activatePiPBase(YTPlayerPIPController *controller) {
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
@@ -98,27 +98,20 @@ static void activatePiPBase(YTPlayerPIPController *controller, BOOL playPiP) {
         }
     }
     AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
-    if (playPiP) {
-        if ([avpip isPictureInPicturePossible])
-            [avpip startPictureInPicture];
-    } else {
-        if ([pip respondsToSelector:@selector(deactivatePiPController)])
-            [pip deactivatePiPController];
-        else
-            [avpip stopPictureInPicture];
-    }
+    if ([avpip isPictureInPicturePossible])
+        [avpip startPictureInPicture];
 }
 
-static void activatePiP(YTLocalPlaybackController *local, BOOL playPiP) {
+static void activatePiP(YTLocalPlaybackController *local) {
     if (![local isKindOfClass:%c(YTLocalPlaybackController)])
         return;
     YTPlayerPIPController *controller = [local valueForKey:@"_playerPIPController"];
-    activatePiPBase(controller, playPiP);
+    activatePiPBase(controller);
 }
 
-static void bootstrapPiP(YTPlayerViewController *self, BOOL playPiP) {
+static void bootstrapPiP(YTPlayerViewController *self) {
     YTLocalPlaybackController *local = [self valueForKey:@"_playbackController"];
-    activatePiP(local, playPiP);
+    activatePiP(local);
 }
 
 #pragma mark - Video tab bar PiP Button (16.46.5 and below + offline mode)
@@ -147,6 +140,8 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
     return supportedRenderer;
 }
 
+%group Icon
+
 %hook YTIIcon
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
@@ -158,6 +153,8 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
     }
     return %orig;
 }
+%end
+
 %end
 
 %hook YTSlimVideoScrollableDetailsActionsView
@@ -206,7 +203,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
         }
         if (playerViewController && [playerViewController isKindOfClass:%c(YTPlayerViewController)]) {
             FromUser = YES;
-            bootstrapPiP(playerViewController, YES);
+            bootstrapPiP(playerViewController);
         }
         return;
     }
@@ -224,7 +221,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     UIColor *textColor = [palette textPrimary];
 
     ELMContainerNode *containerNode = (ELMContainerNode *)[[[[node yogaChildren] firstObject] yogaChildren] firstObject]; // To get node container properties
-    UIButton *buttonView = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 65, containerNode.calculatedSize.height)];
+    UIButton *buttonView = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 64, containerNode.calculatedSize.height)];
     buttonView.center = CGPointMake(CGRectGetMaxX([node.layoutAttributes frame]) + 65 / 2, CGRectGetMidY([node.layoutAttributes frame]));
     buttonView.backgroundColor = containerNode.backgroundColor;
     buttonView.accessibilityLabel = accessibilityLabel;
@@ -233,10 +230,14 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
     UIImageView *buttonImage = [[UIImageView alloc] initWithFrame:CGRectMake(12, ([buttonView frame].size.height - 15) / 2, 15, 15)];
     buttonImage.image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:textColor];
 
-    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, 9, 20, 14)];
-    buttonTitle.font = [UIFont boldSystemFontOfSize:10];
+    UIFontMetrics *metrics = [UIFontMetrics metricsForTextStyle:UIFontTextStyleBody];
+    UIFont *font = [metrics scaledFontForFont:[UIFont boldSystemFontOfSize:12]];
+    CGFloat fontSize = font.pointSize;
+    UILabel *buttonTitle = [[UILabel alloc] initWithFrame:CGRectMake(33, ([buttonView frame].size.height - fontSize - 1) / 2, 20, fontSize)];
+    buttonTitle.font = font;
     buttonTitle.textColor = textColor;
     buttonTitle.text = title;
+    [buttonTitle sizeToFit];
 
     [buttonView addSubview:buttonImage];
     [buttonView addSubview:buttonTitle];
@@ -289,7 +290,7 @@ static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NS
         YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
         YTPlayerViewController *playerViewController = [watchViewController valueForKey:@"_playerViewController"];
         FromUser = YES;
-        bootstrapPiP(playerViewController, YES);
+        bootstrapPiP(playerViewController);
     }
 }
 
@@ -326,7 +327,7 @@ static UIImage *pipImage() {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTPlayerViewController *pvc = (YTPlayerViewController *)c.parentViewController;
     FromUser = YES;
-    bootstrapPiP(pvc, YES);
+    bootstrapPiP(pvc);
 }
 
 %end
@@ -342,7 +343,7 @@ static UIImage *pipImage() {
     YTMainAppVideoPlayerOverlayViewController *c = [self.delegate valueForKey:@"_delegate"];
     YTPlayerViewController *pvc = (YTPlayerViewController *)c.parentViewController;
     FromUser = YES;
-    bootstrapPiP(pvc, YES);
+    bootstrapPiP(pvc);
 }
 
 %end
@@ -365,14 +366,6 @@ static UIImage *pipImage() {
 
 %end
 
-%hook AVSampleBufferDisplayLayerPlayerController
-
-- (void)setPictureInPictureAvailable:(BOOL)available {
-    %orig(YES);
-}
-
-%end
-
 %hook MLPIPController
 
 - (void)activatePiPController {
@@ -389,7 +382,7 @@ static UIImage *pipImage() {
     return YES;
 }
 
-%new(B@:@)
+%new(c@:@)
 - (BOOL)pictureInPictureControllerPlaybackPaused:(AVPictureInPictureController *)pictureInPictureController {
     return [self pictureInPictureControllerIsPlaybackPaused:pictureInPictureController];
 }
@@ -429,17 +422,17 @@ static UIImage *pipImage() {
 
 %hook YTIIosMediaHotConfig
 
-%new(B@:)
+%new(c@:)
 - (BOOL)enablePictureInPicture {
     return YES;
 }
 
-%new(B@:)
+%new(c@:)
 - (BOOL)enablePipForNonBackgroundableContent {
     return NonBackgroundable();
 }
 
-%new(B@:)
+%new(c@:)
 - (BOOL)enablePipForNonPremiumUsers {
     return YES;
 }
@@ -517,14 +510,10 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
     // If PiP button on, PiP doesn't activate on app resign unless it's from user
     BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
     BOOL disablePiP = hasPiPButton && !FromUser;
-    if (disablePiP) {
-        MLPIPController *pip = [self valueForKey:@"_pipController"];
-        [pip setValue:nil forKey:@"_pictureInPictureController"];
-    } else {
-        if (LegacyPiP())
-            activatePiPBase(self, YES);
-        %orig;
-    }
+    if (disablePiP) return;
+    if (LegacyPiP())
+        activatePiPBase(self);
+    %orig;
 }
 
 %end
@@ -572,10 +561,11 @@ NSBundle *YouPiPBundle() {
 }
 
 %ctor {
-    if (!TweakEnabled()) return;
     NSBundle *tweakBundle = YouPiPBundle();
-    PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
     TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
+    %init(Icon);
+    if (!TweakEnabled()) return;
+    PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
     initYTVideoOverlay(TweakName, @{
         AccessibilityLabelKey: @"PiP",
         SelectorKey: @"didPressPiP:",
