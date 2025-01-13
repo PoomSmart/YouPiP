@@ -7,6 +7,8 @@
 #import <YouTubeHeader/MLDefaultPlayerViewFactory.h>
 #import <YouTubeHeader/MLPIPController.h>
 #import <YouTubeHeader/QTMIcon.h>
+#import <YouTubeHeader/YTAppDelegate.h>
+#import <YouTubeHeader/YTAppViewControllerImpl.h>
 #import <YouTubeHeader/YTBackgroundabilityPolicy.h>
 #import <YouTubeHeader/YTBackgroundabilityPolicyImpl.h>
 #import <YouTubeHeader/YTColor.h>
@@ -146,7 +148,18 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == YT_PICTURE_IN_PICTURE) {
-        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:[[%c(YTPageStyleController) currentColorPalette] textPrimary]];
+        UIColor *color;
+        Class YTPageStyleControllerClass = %c(YTPageStyleController);
+        if (YTPageStyleControllerClass)
+            color = [[YTPageStyleControllerClass currentColorPalette] textPrimary];
+        else {
+            YTAppDelegate *delegate = (YTAppDelegate *)[UIApplication sharedApplication].delegate;
+            YTAppViewControllerImpl *appViewController = [delegate valueForKey:@"_appViewController"];
+            NSInteger pageStyle = [appViewController pageStyle];
+            YTCommonColorPalette *palette = pageStyle == 1 ? [%c(YTCommonColorPalette) darkPalette] : [%c(YTCommonColorPalette) lightPalette];
+            color = [palette textPrimary];
+        }
+        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:color];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
         return image;
@@ -552,10 +565,7 @@ NSBundle *YouPiPBundle() {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
-        if (tweakBundlePath)
-            bundle = [NSBundle bundleWithPath:tweakBundlePath];
-        else
-            bundle = [NSBundle bundleWithPath:ROOT_PATH_NS(@"/Library/Application Support/YouPiP.bundle")];
+        bundle = [NSBundle bundleWithPath:tweakBundlePath ?: ROOT_PATH_NS(@"/Library/Application Support/" TweakName ".bundle")];
     });
     return bundle;
 }
