@@ -116,6 +116,19 @@ static void bootstrapPiP(YTPlayerViewController *self) {
     activatePiP(local);
 }
 
+static YTCommonColorPalette *currentColorPalette() {
+    Class YTPageStyleControllerClass = %c(YTPageStyleController);
+    if (YTPageStyleControllerClass)
+        return [YTPageStyleControllerClass currentColorPalette];
+    YTAppDelegate *delegate = (YTAppDelegate *)[UIApplication sharedApplication].delegate;
+    YTAppViewControllerImpl *appViewController = [delegate valueForKey:@"_appViewController"];
+    NSInteger pageStyle = [appViewController pageStyle];
+    Class YTCommonColorPaletteClass = %c(YTCommonColorPalette);
+    if (YTCommonColorPaletteClass)
+        return pageStyle == 1 ? [YTCommonColorPaletteClass darkPalette] : [YTCommonColorPaletteClass lightPalette];
+    return [%c(YTColorPalette) colorPaletteForPageStyle:pageStyle];
+}
+
 #pragma mark - Video tab bar PiP Button (16.46.5 and below + offline mode)
 
 static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSString *title, int iconType, NSString *browseId) {
@@ -148,17 +161,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == YT_PICTURE_IN_PICTURE) {
-        UIColor *color;
-        Class YTPageStyleControllerClass = %c(YTPageStyleController);
-        if (YTPageStyleControllerClass)
-            color = [[YTPageStyleControllerClass currentColorPalette] textPrimary];
-        else {
-            YTAppDelegate *delegate = (YTAppDelegate *)[UIApplication sharedApplication].delegate;
-            YTAppViewControllerImpl *appViewController = [delegate valueForKey:@"_appViewController"];
-            NSInteger pageStyle = [appViewController pageStyle];
-            YTCommonColorPalette *palette = pageStyle == 1 ? [%c(YTCommonColorPalette) darkPalette] : [%c(YTCommonColorPalette) lightPalette];
-            color = [palette textPrimary];
-        }
+        UIColor *color = [currentColorPalette() textPrimary];
         UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:color];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
@@ -228,9 +231,7 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
 #pragma mark - Video tab bar PiP Button (17.01.4 and up)
 
 static UIButton *makeUnderNewPlayerButton(ELMCellNode *node, NSString *title, NSString *accessibilityLabel) {
-    NSInteger pageStyle = [%c(YTPageStyleController) pageStyle];
-    YTCommonColorPalette *palette = pageStyle == 1 ? [%c(YTCommonColorPalette) darkPalette] : [%c(YTCommonColorPalette) lightPalette];
-    if (!palette) palette = [%c(YTColorPalette) colorPaletteForPageStyle:pageStyle]; // YouTube 17.18.4 and below
+    YTCommonColorPalette *palette = currentColorPalette();
     UIColor *textColor = [palette textPrimary];
 
     ELMContainerNode *containerNode = (ELMContainerNode *)[[[[node yogaChildren] firstObject] yogaChildren] firstObject]; // To get node container properties
