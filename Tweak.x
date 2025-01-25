@@ -9,8 +9,6 @@
 #import <YouTubeHeader/QTMIcon.h>
 #import <YouTubeHeader/YTAppDelegate.h>
 #import <YouTubeHeader/YTAppViewControllerImpl.h>
-#import <YouTubeHeader/YTBackgroundabilityPolicy.h>
-#import <YouTubeHeader/YTBackgroundabilityPolicyImpl.h>
 #import <YouTubeHeader/YTColor.h>
 #import <YouTubeHeader/YTColorPalette.h>
 #import <YouTubeHeader/YTCommonColorPalette.h>
@@ -396,7 +394,7 @@ static UIImage *pipImage() {
     return YES;
 }
 
-%new(c@:@)
+%new(B@:@)
 - (BOOL)pictureInPictureControllerPlaybackPaused:(AVPictureInPictureController *)pictureInPictureController {
     return [self pictureInPictureControllerIsPlaybackPaused:pictureInPictureController];
 }
@@ -436,49 +434,19 @@ static UIImage *pipImage() {
 
 %hook YTIIosMediaHotConfig
 
-%new(c@:)
+%new(B@:)
 - (BOOL)enablePictureInPicture {
     return YES;
 }
 
-%new(c@:)
+%new(B@:)
 - (BOOL)enablePipForNonBackgroundableContent {
     return NonBackgroundable();
 }
 
-%new(c@:)
+%new(B@:)
 - (BOOL)enablePipForNonPremiumUsers {
     return YES;
-}
-
-%end
-
-#pragma mark - PiP Support, Backgroundable
-
-%hook YTBackgroundabilityPolicy
-
-- (void)updateIsBackgroundableByUserSettings {
-    %orig;
-    [self setValue:@(YES) forKey:@"_backgroundableByUserSettings"];
-}
-
-- (void)updateIsPictureInPicturePlayableByUserSettings {
-    %orig;
-    [self setValue:@(YES) forKey:@"_playableInPiPByUserSettings"];
-}
-
-%end
-
-%hook YTBackgroundabilityPolicyImpl
-
-- (void)updateIsBackgroundableByUserSettings {
-    %orig;
-    [self setValue:@(YES) forKey:@"_backgroundableByUserSettings"];
-}
-
-- (void)updateIsPictureInPicturePlayableByUserSettings {
-    %orig;
-    [self setValue:@(YES) forKey:@"_playableInPiPByUserSettings"];
 }
 
 %end

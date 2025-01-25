@@ -320,7 +320,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %new(v@:{CGSize=dd})
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)size {}
 
-%new(v@:c)
+%new(v@:B)
 - (void)setRequiresLinearPlayback:(BOOL)linear {}
 
 %new(v@:)
@@ -365,7 +365,7 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 
 %hook AVPictureInPictureController
 
-%new(v@:c)
+%new(v@:B)
 - (void)setCanStartPictureInPictureAutomaticallyFromInline:(BOOL)canStartFromInline {}
 
 %end
