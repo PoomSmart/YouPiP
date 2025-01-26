@@ -1,6 +1,5 @@
 #import <version.h>
-#import <rootless.h>
-#import "Header.h"
+#import <PSHeader/Misc.h>
 #import <YouTubeHeader/ASCollectionView.h>
 #import <YouTubeHeader/ELMCellNode.h>
 #import <YouTubeHeader/ELMContainerNode.h>
@@ -26,6 +25,7 @@
 #import <YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h>
 #import <YouTubeHeader/YTTouchFeedbackController.h>
 #import <YouTubeHeader/YTWatchViewController.h>
+#import "Header.h"
 #import "../YTVideoOverlay/Header.h"
 #import "../YTVideoOverlay/Init.x"
 
@@ -534,7 +534,7 @@ NSBundle *YouPiPBundle() {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
-        bundle = [NSBundle bundleWithPath:tweakBundlePath ?: ROOT_PATH_NS(@"/Library/Application Support/" TweakName ".bundle")];
+        bundle = [NSBundle bundleWithPath:tweakBundlePath ?: PS_ROOT_PATH(@"/Library/Application Support/" TweakName ".bundle")];
     });
     return bundle;
 }
