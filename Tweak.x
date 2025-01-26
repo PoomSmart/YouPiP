@@ -534,7 +534,7 @@ NSBundle *YouPiPBundle() {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSString *tweakBundlePath = [[NSBundle mainBundle] pathForResource:@"YouPiP" ofType:@"bundle"];
-        bundle = [NSBundle bundleWithPath:tweakBundlePath ?: PS_ROOT_PATH(@"/Library/Application Support/" TweakName ".bundle")];
+        bundle = [NSBundle bundleWithPath:tweakBundlePath ?: PS_ROOT_PATH_NS(@"/Library/Application Support/" TweakName ".bundle")];
     });
     return bundle;
 }
