@@ -7,7 +7,7 @@ else
 endif
 ARCHS = arm64
 INSTALL_TARGET_PROCESSES = YouTube
-PACKAGE_VERSION = 1.12.3
+PACKAGE_VERSION = 1.12.4
 
 include $(THEOS)/makefiles/common.mk
 

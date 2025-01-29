@@ -281,7 +281,18 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
     return %orig;
 }
 
+- (id)hamPlayerViewForPlayerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    forceRenderViewType([self valueForKey:@"_hotConfig"]);
+    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
+    return %orig;
+}
+
 - (BOOL)canUsePlayerView:(id)playerView forVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
+    forceRenderViewTypeBase([playerConfig hamplayerConfig]);
+    return %orig;
+}
+
+- (BOOL)canUsePlayerView:(id)playerView forPlayerConfig:(MLInnerTubePlayerConfig *)playerConfig {
     forceRenderViewTypeBase([playerConfig hamplayerConfig]);
     return %orig;
 }
