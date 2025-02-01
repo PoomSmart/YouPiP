@@ -109,7 +109,7 @@ extern NSBundle *YouPiPBundle();
         }
         settingItemId:0];
     [sectionItems addObject:miniPlayer];
-    if (IS_IOS_OR_NEWER(iOS_13_0)) {
+    if (IS_IOS_OR_NEWER(iOS_14_0)) {
         YTSettingsSectionItem *legacyPiP = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"LEGACY_PIP")
             titleDescription:LOC(@"LEGACY_PIP_DESC")
             accessibilityIdentifier:nil

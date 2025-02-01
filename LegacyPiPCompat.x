@@ -26,12 +26,12 @@ BOOL LegacyPiP() {
 }
 
 static void forceRenderViewTypeBase(YTIHamplayerConfig *hamplayerConfig) {
-    if (!LegacyPiP()) return;
+    if (!hamplayerConfig || !LegacyPiP()) return;
     hamplayerConfig.renderViewType = 2;
 }
 
 static void forceRenderViewTypeHot(YTIHamplayerHotConfig *hamplayerHotConfig) {
-    if (!LegacyPiP()) return;
+    if (!hamplayerHotConfig || !LegacyPiP()) return;
     hamplayerHotConfig.renderViewType = 2;
 }
 
@@ -401,13 +401,12 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
             InjectYTHotConfig = (YTHotConfig *(*)(void))MSFindSymbol(ref, "_InjectYTHotConfig");
             %init(WithInjection);
         } else
-            hasSampleBufferPiP = IS_IOS_OR_NEWER(iOS_13_0);
+            hasSampleBufferPiP = IS_IOS_OR_NEWER(iOS_14_0);
     } else
         hasSampleBufferPiP = YES;
     if (!IS_IOS_OR_NEWER(iOS_14_0)) {
         %init(Compat);
-        if (!IS_IOS_OR_NEWER(iOS_13_0))
-            isLegacyVersion = YES;
+        isLegacyVersion = YES;
     }
     if (LegacyPiP()) {
         %init(Legacy);

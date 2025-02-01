@@ -23,6 +23,7 @@
 #import <YouTubeHeader/YTSlimVideoDetailsActionView.h>
 #import <YouTubeHeader/YTSlimVideoScrollableActionBarCellController.h>
 #import <YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h>
+#import <YouTubeHeader/YTSystemNotifications.h>
 #import <YouTubeHeader/YTTouchFeedbackController.h>
 #import <YouTubeHeader/YTWatchViewController.h>
 #import "Header.h"
@@ -362,22 +363,6 @@ static UIImage *pipImage() {
 
 #pragma mark - PiP Support
 
-%hook AVPictureInPictureController
-
-+ (BOOL)isPictureInPictureSupported {
-    return YES;
-}
-
-%end
-
-%hook AVPlayerController
-
-- (BOOL)isPictureInPictureSupported {
-    return YES;
-}
-
-%end
-
 %hook MLPIPController
 
 - (void)activatePiPController {
@@ -388,10 +373,6 @@ static UIImage *pipImage() {
     AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
     [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
     [avpip sampleBufferDisplayLayerDidAppear];
-}
-
-- (BOOL)isPictureInPictureSupported {
-    return YES;
 }
 
 %new(B@:@)
@@ -485,14 +466,12 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 }
 
 - (void)appWillResignActive:(id)arg1 {
-    if (UseAllPiPMethod()) {
-        %orig;
-        return;
+    if (!UseAllPiPMethod()) {
+        // If PiP button on, PiP doesn't activate on app resign unless it's from user
+        BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
+        BOOL disablePiP = hasPiPButton && !FromUser;
+        if (disablePiP) return;
     }
-    // If PiP button on, PiP doesn't activate on app resign unless it's from user
-    BOOL hasPiPButton = UsePiPButton() || UseTabBarPiPButton();
-    BOOL disablePiP = hasPiPButton && !FromUser;
-    if (disablePiP) return;
     if (LegacyPiP())
         activatePiPBase(self);
     %orig;
@@ -525,6 +504,30 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 - (BOOL)hasPictureInPicture {
     return YES;
+}
+
+%end
+
+#pragma mark - App background event
+
+@protocol YTSystemNotificationsObserverExtended <YTSystemNotificationsObserver>
+- (void)appWillEnterBackground:(UIApplication *)application;
+@end
+
+%hook YTSystemNotifications
+
+- (void)registerForNotifications {
+    %orig;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+}
+
+%new(v@:@)
+- (void)appWillEnterBackground:(id)arg {
+    [self callBlockForEveryObserver:^(id <YTSystemNotificationsObserver> observer) {
+        id <YTSystemNotificationsObserverExtended> observerExtended = (id <YTSystemNotificationsObserverExtended>)observer;
+        if ([observerExtended respondsToSelector:@selector(appWillEnterBackground:)])
+            [observerExtended appWillEnterBackground:UIApplication.sharedApplication];
+    }];
 }
 
 %end
