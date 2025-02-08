@@ -11,6 +11,7 @@
 
 @interface AVPictureInPictureController (Private)
 @property (nonatomic, strong) AVPictureInPictureControllerContentSource *contentSource API_AVAILABLE(ios(15.0));
+@property (assign, nonatomic) BOOL canStartAutomaticallyWhenEnteringBackground API_AVAILABLE(ios(14.0));
 - (instancetype)initWithContentSource:(AVPictureInPictureControllerContentSource *)contentSource API_AVAILABLE(ios(15.0));
 - (void)sampleBufferDisplayLayerRenderSizeDidChangeToSize:(CGSize)renderSize;
 - (void)sampleBufferDisplayLayerDidAppear;

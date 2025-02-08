@@ -369,11 +369,14 @@ static UIImage *pipImage() {
 
 - (void)activatePiPController {
     %orig;
+    BOOL blockPiP = !UseAllPiPMethod() && (UsePiPButton() || UseTabBarPiPButton());
     AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
-    if (!UseAllPiPMethod() && (UsePiPButton() || UseTabBarPiPButton()) && [avpip respondsToSelector:@selector(canStartPictureInPictureAutomaticallyFromInline)])
+    if (blockPiP && [avpip respondsToSelector:@selector(canStartPictureInPictureAutomaticallyFromInline)])
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability-new"
         avpip.canStartPictureInPictureAutomaticallyFromInline = NO;
+    if ([avpip respondsToSelector:@selector(canStartAutomaticallyWhenEnteringBackground)])
+        avpip.canStartAutomaticallyWhenEnteringBackground = !blockPiP;
 #pragma clang diagnostic pop
     if (IS_IOS_OR_NEWER(iOS_15_0) || LegacyPiP()) return;
     MLHAMSBDLSampleBufferRenderingView *view = [self valueForKey:@"_HAMPlayerView"];
