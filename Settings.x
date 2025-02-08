@@ -123,12 +123,7 @@ extern NSBundle *YouPiPBundle();
     }
     YTAppSettingsSectionItemActionController *sectionItemActionController = [delegate valueForKey:@"_sectionItemActionController"];
     YTSettingsSectionItemManager *sectionItemManager = [sectionItemActionController valueForKey:@"_sectionItemManager"];
-    YTHotConfig *hotConfig;
-    @try {
-        hotConfig = [sectionItemManager valueForKey:@"_hotConfig"];
-    } @catch (id ex) {
-        hotConfig = [sectionItemManager.gimme instanceForType:%c(YTHotConfig)];
-    }
+    YTHotConfig *hotConfig = [sectionItemManager valueForKey:@"_hotConfig"];
     YTIIosMediaHotConfig *iosMediaHotConfig = hotConfig.hotConfigGroup.mediaHotConfig.iosMediaHotConfig;
     if ([iosMediaHotConfig respondsToSelector:@selector(setEnablePipForNonBackgroundableContent:)]) {
         YTSettingsSectionItem *nonBackgroundable = [%c(YTSettingsSectionItem) switchItemWithTitle:LOC(@"NON_BACKGROUNDABLE_PIP")

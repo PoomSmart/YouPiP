@@ -180,10 +180,9 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 
 %group Legacy
 
-static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig *playerConfig, MLPlayerStickySettings *stickySettings, BOOL gimmeAlloc) {
+static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig *playerConfig, MLPlayerStickySettings *stickySettings) {
     BOOL externalPlaybackActive = [(MLAVPlayer *)[self valueForKey:@"_activePlayer"] externalPlaybackActive];
-    MLAVPlayer *player = gimmeAlloc ? [((MLPlayerPool *)self).gimme allocOf:%c(MLAVPlayer)] : [%c(MLAVPlayer) alloc];
-    player = [player initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
+    MLAVPlayer *player = [[%c(MLAVPlayer) alloc] initWithVideo:video playerConfig:playerConfig stickySettings:stickySettings externalPlaybackActive:externalPlaybackActive];
     if (stickySettings)
         player.rate = stickySettings.rate;
     return player;
@@ -212,19 +211,19 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %hook MLPlayerPoolImpl
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings {
-    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
+    return makeAVPlayer(self, video, playerConfig, stickySettings);
 }
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger {
-    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
+    return makeAVPlayer(self, video, playerConfig, stickySettings);
 }
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger reloadContext:(id)reloadContext {
-    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
+    return makeAVPlayer(self, video, playerConfig, stickySettings);
 }
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger reloadContext:(id)reloadContext mediaPlayerResources:(id)mediaPlayerResources {
-    return makeAVPlayer(self, video, playerConfig, stickySettings, NO);
+    return makeAVPlayer(self, video, playerConfig, stickySettings);
 }
 
 - (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {
@@ -250,11 +249,11 @@ static MLAVPlayer *makeAVPlayer(id self, MLVideo *video, MLInnerTubePlayerConfig
 %hook MLPlayerPool
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings {
-    return makeAVPlayer(self, video, playerConfig, stickySettings, YES);
+    return makeAVPlayer(self, video, playerConfig, stickySettings);
 }
 
 - (id)acquirePlayerForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig stickySettings:(MLPlayerStickySettings *)stickySettings latencyLogger:(id)latencyLogger {
-    return makeAVPlayer(self, video, playerConfig, stickySettings, YES);
+    return makeAVPlayer(self, video, playerConfig, stickySettings);
 }
 
 - (MLAVPlayerLayerView *)playerViewForVideo:(MLVideo *)video playerConfig:(MLInnerTubePlayerConfig *)playerConfig {

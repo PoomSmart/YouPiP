@@ -8,6 +8,7 @@
 #import <YouTubeHeader/QTMIcon.h>
 #import <YouTubeHeader/YTAppDelegate.h>
 #import <YouTubeHeader/YTAppViewControllerImpl.h>
+#import <YouTubeHeader/YTBackgroundabilityPolicy.h>
 #import <YouTubeHeader/YTColor.h>
 #import <YouTubeHeader/YTColorPalette.h>
 #import <YouTubeHeader/YTCommonColorPalette.h>
@@ -50,8 +51,7 @@ BOOL PiPDisabled = NO;
 extern BOOL LegacyPiP();
 
 BOOL TweakEnabled() {
-    id value = [[NSUserDefaults standardUserDefaults] objectForKey:EnabledKey];
-    return value ? [value boolValue] : YES;
+    return [[NSUserDefaults standardUserDefaults] boolForKey:EnabledKey];
 }
 
 BOOL UsePiPButton() {
@@ -82,6 +82,8 @@ static NSString *PiPIconPath;
 static NSString *TabBarPiPIconPath;
 
 static void activatePiPBase(YTPlayerPIPController *controller) {
+    YTBackgroundabilityPolicy *backgroundabilityPolicy = [controller valueForKey:@"_backgroundabilityPolicy"];
+    if (!backgroundabilityPolicy.playableInPiPByUserSettings) return;
     MLPIPController *pip = [controller valueForKey:@"_pipController"];
     if ([controller respondsToSelector:@selector(maybeEnablePictureInPicture)])
         [controller maybeEnablePictureInPicture];
@@ -367,10 +369,15 @@ static UIImage *pipImage() {
 
 - (void)activatePiPController {
     %orig;
+    AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
+    if (!UseAllPiPMethod() && (UsePiPButton() || UseTabBarPiPButton()) && [avpip respondsToSelector:@selector(canStartPictureInPictureAutomaticallyFromInline)])
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+        avpip.canStartPictureInPictureAutomaticallyFromInline = NO;
+#pragma clang diagnostic pop
     if (IS_IOS_OR_NEWER(iOS_15_0) || LegacyPiP()) return;
     MLHAMSBDLSampleBufferRenderingView *view = [self valueForKey:@"_HAMPlayerView"];
     CGSize size = [self renderSizeForView:view];
-    AVPictureInPictureController *avpip = [self valueForKey:@"_pictureInPictureController"];
     [avpip sampleBufferDisplayLayerRenderSizeDidChangeToSize:size];
     [avpip sampleBufferDisplayLayerDidAppear];
 }
@@ -546,6 +553,9 @@ NSBundle *YouPiPBundle() {
     NSBundle *tweakBundle = YouPiPBundle();
     TabBarPiPIconPath = [tweakBundle pathForResource:@"yt-pip-tabbar" ofType:@"png"];
     %init(Icon);
+    [[NSUserDefaults standardUserDefaults] registerDefaults:@{
+        EnabledKey: @YES,
+    }];
     if (!TweakEnabled()) return;
     PiPIconPath = [tweakBundle pathForResource:@"yt-pip-overlay" ofType:@"png"];
     initYTVideoOverlay(TweakName, @{
