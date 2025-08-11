@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Désactive le PiP pendant la lecture d'une vidéo dans le mini-lecteur";
 
 "LEGACY_PIP" = "PiP hérité";
-"LEGACY_PIP_DESC" = "Utilise AVPlayerLayer pour le PiP. Cela corrige le bug d'accélération mais supprime également les options UHD (2K/4K) de toutes les vidéos. Un redémarrage de l'application est nécessaire.";
+"LEGACY_PIP_DESC" = "Utilise AVPlayerLayer pour le PiP. Cela corrige apparemment le bug d'accélération. Un redémarrage de l'application est nécessaire.";
 
 "NON_BACKGROUNDABLE_PIP" = "PiP non rétroactif";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Active le PiP pour les vidéos qui ne sont pas en arrière-plan";

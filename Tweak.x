@@ -12,7 +12,7 @@
 #import <YouTubeHeader/YTColor.h>
 #import <YouTubeHeader/YTColorPalette.h>
 #import <YouTubeHeader/YTCommonColorPalette.h>
-#import <YouTubeHeader/YTISlimMetadataButtonSupportedRenderers.h>
+#import <YouTubeHeader/YTIIcon.h>
 #import <YouTubeHeader/YTLocalPlaybackController.h>
 #import <YouTubeHeader/YTMainAppControlsOverlayView.h>
 #import <YouTubeHeader/YTMainAppVideoPlayerOverlayViewController.h>
@@ -21,9 +21,6 @@
 #import <YouTubeHeader/YTPlayerPIPController.h>
 #import <YouTubeHeader/YTPlayerStatus.h>
 #import <YouTubeHeader/YTSettingsSectionItemManager.h>
-#import <YouTubeHeader/YTSlimVideoDetailsActionView.h>
-#import <YouTubeHeader/YTSlimVideoScrollableActionBarCellController.h>
-#import <YouTubeHeader/YTSlimVideoScrollableDetailsActionsView.h>
 #import <YouTubeHeader/YTSystemNotifications.h>
 #import <YouTubeHeader/YTTouchFeedbackController.h>
 #import <YouTubeHeader/YTWatchViewController.h>
@@ -101,7 +98,7 @@ static void activatePiPBase(YTPlayerPIPController *controller) {
         }
     }
     AVPictureInPictureController *avpip = [pip valueForKey:@"_pictureInPictureController"];
-    if ([avpip isPictureInPicturePossible])
+    if (avpip.pictureInPicturePossible)
         [avpip startPictureInPicture];
 }
 
@@ -130,32 +127,6 @@ static YTCommonColorPalette *currentColorPalette() {
     return [%c(YTColorPalette) colorPaletteForPageStyle:pageStyle];
 }
 
-#pragma mark - Video tab bar PiP Button (16.46.5 and below + offline mode)
-
-static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSString *title, int iconType, NSString *browseId) {
-    YTISlimMetadataButtonSupportedRenderers *supportedRenderer = [[%c(YTISlimMetadataButtonSupportedRenderers) alloc] init];
-    YTISlimMetadataButtonRenderer *metadataButtonRenderer = [[%c(YTISlimMetadataButtonRenderer) alloc] init];
-    YTIButtonSupportedRenderers *buttonSupportedRenderer = [[%c(YTIButtonSupportedRenderers) alloc] init];
-    YTIBrowseEndpoint *endPoint = [[%c(YTIBrowseEndpoint) alloc] init];
-    YTICommand *command = [[%c(YTICommand) alloc] init];
-    YTIButtonRenderer *button = [[%c(YTIButtonRenderer) alloc] init];
-    YTIIcon *icon = [[%c(YTIIcon) alloc] init];
-    endPoint.browseId = browseId;
-    command.browseEndpoint = endPoint;
-    icon.iconType = iconType;
-    button.style = 8; // Opacity style
-    button.tooltip = title;
-    button.size = 1; // Default size
-    button.isDisabled = NO;
-    button.text = [%c(YTIFormattedString) formattedStringWithString:title];
-    button.icon = icon;
-    button.navigationEndpoint = command;
-    buttonSupportedRenderer.buttonRenderer = button;
-    metadataButtonRenderer.button = buttonSupportedRenderer;
-    supportedRenderer.slimMetadataButtonRenderer = metadataButtonRenderer;
-    return supportedRenderer;
-}
-
 %group Icon
 
 %hook YTIIcon
@@ -170,62 +141,8 @@ static YTISlimMetadataButtonSupportedRenderers *makeUnderOldPlayerButton(NSStrin
     }
     return %orig;
 }
-%end
 
 %end
-
-%hook YTSlimVideoScrollableDetailsActionsView
-
-- (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers { // for old YouTube version
-    if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", YT_PICTURE_IN_PICTURE, @"YouPiP.pip.command");
-        if (![renderers containsObject:PiPButton])
-            [renderers addObject:PiPButton];
-    }
-    %orig;
-}
-
-- (void)createActionViewsFromSupportedRenderers:(NSMutableArray *)renderers withElementsContextBlock:(id)arg2 {
-    if (UseTabBarPiPButton()) {
-        YTISlimMetadataButtonSupportedRenderers *PiPButton = makeUnderOldPlayerButton(@"PiP", YT_PICTURE_IN_PICTURE, @"YouPiP.pip.command");
-        if (![renderers containsObject:PiPButton])
-            [renderers addObject:PiPButton];
-    }
-    %orig;
-}
-
-%end
-
-%hook YTSlimVideoDetailsActionView
-
-- (void)didTapButton:(id)arg1 {
-    if ([self.label.attributedText.string isEqualToString:@"PiP"]) {
-        YTSlimVideoScrollableActionBarCellController *_delegate = self.delegate;
-        YTPlayerViewController *playerViewController = nil;
-        @try {
-            id provider = [_delegate valueForKey:@"_metadataPanelStateProvider"];
-            if ([provider isKindOfClass:%c(YTWatchController)] || [provider isKindOfClass:%c(YTPlaybackStrippedWatchController)]) {
-                @try {
-                    YTWatchViewController *watchViewController = [provider valueForKey:@"_watchViewController"];
-                    playerViewController = [watchViewController valueForKey:@"_playerViewController"];
-                } @catch (id ex) {
-                    playerViewController = [provider valueForKey:@"_playerViewController"];
-                }
-            }
-        } @catch (id ex) { // for old YouTube version
-            if ([[_delegate valueForKey:@"_ngwMetadataPanelStateProvider"] isKindOfClass:%c(YTNGWatchController)]) {
-                id provider = [_delegate valueForKey:@"_ngwMetadataPanelStateProvider"];
-                playerViewController = [provider valueForKey:@"_playerViewController"];
-            }
-        }
-        if (playerViewController && [playerViewController isKindOfClass:%c(YTPlayerViewController)]) {
-            FromUser = YES;
-            bootstrapPiP(playerViewController);
-        }
-        return;
-    }
-    %orig;
-}
 
 %end
 
@@ -514,6 +431,14 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 - (BOOL)hasPictureInPicture {
     return YES;
+}
+
+%end
+
+%hook YTHotConfig
+
+- (BOOL)iosPlayerClientSharedConfigSkipPipToggleOnStateChange {
+    return NO;
 }
 
 %end

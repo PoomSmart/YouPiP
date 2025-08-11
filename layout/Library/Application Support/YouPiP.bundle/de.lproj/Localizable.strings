@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Deaktiviert PiP während videos im Miniplayer laufen.";
 
 "LEGACY_PIP" = "Legacy PiP";
-"LEGACY_PIP_DESC" = "Verwendet AVPlayerLayer für PiP. Dies behebt das Geschwindigkeitsproblem, entfernt aber auch die UHD-Optionen (2K/4K) aus allen Videos. App-Neustart erforderlich!";
+"LEGACY_PIP_DESC" = "Verwendet AVPlayerLayer für PiP. Dies behebt angeblich den Geschwindigkeitsfehler. App-Neustart erforderlich!";
 
 "NON_BACKGROUNDABLE_PIP" = "Nicht-hintergrundfähiges PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Aktiviert PiP für nicht im Hintergrund laufende Videos.";

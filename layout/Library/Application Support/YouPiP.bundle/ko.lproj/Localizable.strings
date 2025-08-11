@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "미니 플레이어에서 영상을 재생하고 있는동안 PiP를 비활성화 합니다.";
 
 "LEGACY_PIP" = "레거시 PiP";
-"LEGACY_PIP_DESC" = "PiP용 AVPlayerLayer를 사용합니다. 이것은 속도향상 버그를 수정하지만 모든 영상에서 UHD 옵션(2K/4K)이 제거됩니다. 앱 재시작이 필요합니다.";
+"LEGACY_PIP_DESC" = "PiP용 AVPlayerLayer를 사용합니다. 이는 속도 향상 버그를 수정한다고 보고되었습니다. 앱 재시작이 필요합니다.";
 
 "NON_BACKGROUNDABLE_PIP" = "강제 백그라운드 PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "백그라운드가 되지 않는 영상에 PiP를 활성화합니다.";

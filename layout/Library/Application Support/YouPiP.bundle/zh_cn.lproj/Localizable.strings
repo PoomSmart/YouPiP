@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "在使用迷你播放器时禁用画中画。";
 
 "LEGACY_PIP" = "使用传统视频框架";
-"LEGACY_PIP_DESC" = "使用 AVPlayerLayer 来进行画中画以修复视频加速播放的问题，但同时也将禁用所有视频的 UHD （2K/4K）画质选项。更改本设置后需要重启App。";
+"LEGACY_PIP_DESC" = "使用 AVPlayerLayer 进行画中画。据报告这可以修复加速播放错误。需要重启App。";
 
 "NON_BACKGROUNDABLE_PIP" = "强制画中画";
 "NON_BACKGROUNDABLE_PIP_DESC" = "为不支持后台播放的视频启用画中画。";

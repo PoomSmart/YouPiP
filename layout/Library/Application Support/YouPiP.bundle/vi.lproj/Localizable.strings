@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "PiP sẽ không tự động kích hoạt khi video đang chạy ở dạng trình phát thủ nhỏ.";
 
 "LEGACY_PIP" = "Legacy PiP";
-"LEGACY_PIP_DESC" = "Sử dụng AVPlayerLayer cho PiP. Bật tính năng này để sửa lỗi speed-up của YouPiP. Tuy nhiên, video sẽ bị mất chất lượng 2K/4K (nếu có), đồng thời tính năng lựa chọn chất lượng video mặc định của uYou cũng sẽ không hoạt động. Cần khởi động lại ứng dụng.";
+"LEGACY_PIP_DESC" = "Sử dụng AVPlayerLayer cho PiP. Điều này được báo cáo là sửa lỗi tăng tốc. Cần khởi động lại ứng dụng.";
 
 "NON_BACKGROUNDABLE_PIP" = "Non-backgroundable PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Cho phép PiP hoạt động với những video không cho chạy nền (không khuyến khích).";

@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Desactiva PiP mientras se reproduce un vídeo en el minirreproductor";
 
 "LEGACY_PIP" = "PiP heredado";
-"LEGACY_PIP_DESC" = "Utiliza AVPlayerLayer para PiP. Esto corrige el error de velocidad, pero puede eliminar las opciones UHD (2K/4K) de cualquier vídeo. Es necesario reiniciar la aplicación";
+"LEGACY_PIP_DESC" = "Utiliza AVPlayerLayer para PiP. Esto supuestamente corrige el error de velocidad. Es necesario reiniciar la aplicación";
 
 "NON_BACKGROUNDABLE_PIP" = "PiP sin segundo plano";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Habilita PiP para videos sin segundo plano.";

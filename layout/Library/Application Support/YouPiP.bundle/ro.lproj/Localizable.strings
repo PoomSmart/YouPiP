@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Dezactivează PiP în timp ce este redat un videoclip în mini player.";
 
 "LEGACY_PIP" = "PiP Legacy";
-"LEGACY_PIP_DESC" = "Utilizează AVPlayerLayer pentru PiP. Acesta rezolvă bug-ul legat de viteza de redare, dar poate elimina opțiunile de calitate UHD (2K/4K) de la videoclip. Este necesară repornirea aplicației.";
+"LEGACY_PIP_DESC" = "Utilizează AVPlayerLayer pentru PiP. Acesta rezolvă bug-ul de accelerare. Este necesară repornirea aplicației.";
 
 "NON_BACKGROUNDABLE_PIP" = "PiP neredabil în fundal";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Activează PiP pentru videoclipuri ce nu pot fi redate în fundal.";

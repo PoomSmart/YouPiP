@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Disattiva PiP durante la riproduzione nel mini player.";
 
 "LEGACY_PIP" = "Legacy PiP";
-"LEGACY_PIP_DESC" = "Usa AVPlayerLayer per PiP. Questo ripara il bug relativo all'accelerazione ma rimuove anche le opzioni UHD (2K/4K) da qualsiasi video. È richiesto un riavvio dell'app.";
+"LEGACY_PIP_DESC" = "Usa AVPlayerLayer per PiP. Questo presumibilmente risolve il bug di accelerazione. È richiesto un riavvio dell'app.";
 
 "NON_BACKGROUNDABLE_PIP" = "Non sullo sfondo PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Attiva PiP per i video che non possono essere messi sullo sfondo.";

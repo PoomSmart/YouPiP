@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Schakelt PiP uit tijdens het afspelen van een video in de minispeler.";
 
 "LEGACY_PIP" = "Verouderd PiP";
-"LEGACY_PIP_DESC" = "Gebruikt AVPlayerLayer voor PiP. Dit lost versnellingsfouten op, maar verwijdert mogelijke UHD-opties (2K/4K) van alle video's. App herstart is vereist.";
+"LEGACY_PIP_DESC" = "Gebruik AVPlayerLayer voor PiP. Dit lost naar verluidt de versnellingsfout op. App herstart is vereist.";
 
 "NON_BACKGROUNDABLE_PIP" = "Niet-achtergrondgebonden PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Schakelt PiP in voor niet-achtergrondgebonden video.";

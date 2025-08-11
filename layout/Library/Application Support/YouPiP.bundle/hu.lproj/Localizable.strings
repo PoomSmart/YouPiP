@@ -16,7 +16,7 @@
 "DISABLE_PIP_MINI_PLAYER_DESC" = "Letiltja a PiP-t videó lejátszása közben a minilejátszóban.";
 
 "LEGACY_PIP" = "Legacy PiP";
-"LEGACY_PIP_DESC" = "AVPlayerLayert használ a képben. Ez javítja a gyorsítási hibát, de eltávolíthatja az UHD opciókat (2K/4K) minden videóból. Az alkalmazás újraindítása szükséges.";
+"LEGACY_PIP_DESC" = "AVPlayerLayer használata PiP-hez. Ez állítólag javítja a gyorsítási hibát. Az alkalmazás újraindítása szükséges.";
 
 "NON_BACKGROUNDABLE_PIP" = "Háttérben nem használható PiP";
 "NON_BACKGROUNDABLE_PIP_DESC" = "Engedélyezi a PiP-t a nem háttérrel ellátott videókhoz.";
