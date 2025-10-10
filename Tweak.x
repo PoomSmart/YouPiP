@@ -23,6 +23,7 @@
 #import <YouTubeHeader/YTSettingsSectionItemManager.h>
 #import <YouTubeHeader/YTSystemNotifications.h>
 #import <YouTubeHeader/YTTouchFeedbackController.h>
+#import <YouTubeHeader/YTUIResources.h>
 #import <YouTubeHeader/YTWatchViewController.h>
 #import "Header.h"
 #import "../YTVideoOverlay/Header.h"
@@ -129,17 +130,30 @@ static YTCommonColorPalette *currentColorPalette() {
 
 %group Icon
 
+BOOL shouldUseNewSettingIcon = NO;
+
 %hook YTIIcon
 
 - (UIImage *)iconImageWithColor:(UIColor *)color {
     if (self.iconType == YT_PICTURE_IN_PICTURE) {
         UIColor *color = [currentColorPalette() textPrimary];
-        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:TabBarPiPIconPath] color:color];
+        NSString *iconPath = shouldUseNewSettingIcon ? PiPIconPath : TabBarPiPIconPath;
+        UIImage *image = [%c(QTMIcon) tintImage:[UIImage imageWithContentsOfFile:iconPath] color:color];
         if ([image respondsToSelector:@selector(imageFlippedForRightToLeftLayoutDirection)])
             image = [image imageFlippedForRightToLeftLayoutDirection];
         return image;
     }
     return %orig;
+}
+
+%end
+
+%hook YTAppDelegate
+
+- (void)performPostCriticalInitializationWithApplication:(UIApplication *)application withOptions:(NSDictionary *)launchOptions {
+    %orig;
+    Class YTUIResourcesClass = %c(YTUIResources);
+    shouldUseNewSettingIcon = [YTUIResourcesClass respondsToSelector:@selector(delhiIconsEnabled)] ? [YTUIResourcesClass delhiIconsEnabled] : NO;
 }
 
 %end
