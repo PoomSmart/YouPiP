@@ -455,6 +455,22 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
     return NO;
 }
 
+- (BOOL)iosPlayerClientSharedConfigOffsetPipControllerTimeRangeWithSbdlCurrentTime {
+    return NO;
+}
+
+%end
+
+%hook YTColdConfig
+
+- (BOOL)addPipMenuItem {
+    return YES;
+}
+
+- (BOOL)enablePipMenuItem {
+    return YES;
+}
+
 %end
 
 #pragma mark - App background event
