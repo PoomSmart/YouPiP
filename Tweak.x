@@ -461,18 +461,6 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 %end
 
-%hook YTColdConfig
-
-- (BOOL)addPipMenuItem {
-    return YES;
-}
-
-- (BOOL)enablePipMenuItem {
-    return YES;
-}
-
-%end
-
 #pragma mark - App background event
 
 @protocol YTSystemNotificationsObserverExtended <YTSystemNotificationsObserver>
