@@ -449,6 +449,22 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 %end
 
+%hook YTPlayerResponse
+
+- (BOOL)isPlayableInPictureInPicture { 
+    return YES;
+}
+
+%end
+
+%hook YTBackgroundabilityPolicyImpl
+
+- (BOOL)isPlayableInPictureInPictureByUserSettings { 
+    return YES; // The setting don't show up, so we have to force it here.
+}
+
+%end
+
 %hook YTHotConfig
 
 - (BOOL)iosPlayerClientSharedConfigSkipPipToggleOnStateChange {
