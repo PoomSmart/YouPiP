@@ -449,13 +449,17 @@ BOOL YTSingleVideo_isLivePlayback_override = NO;
 
 %end
 
+%hook YTPlayerResponse
+
+- (BOOL)isPlayableInPictureInPicture { 
+    return YES;
+}
+
+%end
+
 %hook YTHotConfig
 
 - (BOOL)iosPlayerClientSharedConfigSkipPipToggleOnStateChange {
-    return NO;
-}
-
-- (BOOL)iosPlayerClientSharedConfigOffsetPipControllerTimeRangeWithSbdlCurrentTime {
     return NO;
 }
 
