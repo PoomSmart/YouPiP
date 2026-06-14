@@ -13,3 +13,11 @@ Also clone [YTVideoOverlay](https://github.com/PoomSmart/YTVideoOverlay) and put
 ## Sideloading
 
 Ensure that you inject YTVideoOverlay tweak alongside YouPiP, as YouPiP depends on YTVideoOverlay to work.
+
+## No stream, tap to retry
+
+On iOS 11 - 13, YouPiP forces Legacy PiP to work around PiP compatibility. It also forces the video player to be `AVPlayer`, which only supports HLS playlist. When YouTube server doesn't return HLS data, YouTube app fails to play the video and reports `No stream, tap to retry` error. The same will happen when you use AirPlay, as it uses `AVPlayer` as well.
+
+This behavior is account-based. It can happen in one account but not the other.
+
+It is recommended to use a dedicated iOS YouTube client that works without issues while still using `AVPlayer`, check out [YTLite (verback2308)](https://github.com/verback2308/YTLite).
