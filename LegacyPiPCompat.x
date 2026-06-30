@@ -77,11 +77,13 @@ YTPlayerPIPController *initPlayerPiPControllerIfNeeded(YTPlayerPIPController *co
 %hook YTPlayerPIPController
 
 - (instancetype)initWithDelegate:(id)delegate {
-    return initPlayerPiPControllerIfNeeded(%orig, delegate, nil);
+    YTPlayerPIPController *controller = %orig;
+    return initPlayerPiPControllerIfNeeded(controller, delegate, nil);
 }
 
 - (instancetype)initWithDelegate:(id)delegate parentResponder:(id)parentResponder {
-    return initPlayerPiPControllerIfNeeded(%orig, delegate, parentResponder);
+    YTPlayerPIPController *controller = %orig;
+    return initPlayerPiPControllerIfNeeded(controller, delegate, parentResponder);
 }
 
 %end
